@@ -57,18 +57,47 @@ hub v2 outpaint 4:3   2400x1792      03c0350d-a9f3-46f4-83f9-e1c77adf6280
 hub v2 outpaint 16:9  2752x1536      ce361baa-0784-43c2-a331-1cd9d8597f83
 ```
 
-The current hub frame is **not** any of those. It is `hub_v3`, uploaded as media
-`eddd6e1f-7352-4b50-97d9-ad1cb759f062`, built deterministically from `de88ebd0`
-rather than generated. See "Why the hub frame is composited" below.
+The hub frame is `ff8cc524-3c4c-43ec-b199-65288e916619`, a fresh generation.
+Feed that job id straight into the video calls as the start frame.
 
 ```
-hub v3 (current)  media  eddd6e1f-7352-4b50-97d9-ad1cb759f062
+hub frame (current)   job  ff8cc524-3c4c-43ec-b199-65288e916619
 ```
 
-## Why the hub frame is composited
+Measured: headroom above the hair 34.6%, character height 61.8% of frame, feet
+clear of the bottom edge, background red-minus-green `+0.63` and even to within
+1.9 levels corner to corner, nothing in the upper band, right third open for the
+walk path.
 
-Two generative approaches were tried for widening the frame and both failed in a
-way worth remembering.
+Superseded attempts, kept only so the failures are not repeated:
+`691206aa` (clean top but feet clipped at the bottom edge), `0a691dcd` (props
+intruding into the headline area), `2a672255` (correct in every respect except
+the character came out at 70.8% height).
+
+## Getting the framing right
+
+Two things drive the composition and both took several attempts to pin down.
+
+**Passing a full scene as a reference locks the framing.** Asking for a pulled
+back camera while passing the previous render as reference returned the character
+*larger*, at 80% of frame height. Image-to-image anchors to the reference
+composition and will not rescale it. Pass identity photographs only, never a
+previous full frame, and describe the scene fresh.
+
+**Reference photographs bias the character larger.** Same prompt, text only, put
+him at 61.5% height; adding the four identity photographs pushed it to 70.8%. The
+fix is to overshoot: ask for roughly 40% height and 55% headroom and it lands
+near 60% and 35%. Do not ask for the number you actually want.
+
+Framing language that works: "wide cinematic hero banner", "the upper N percent
+is blank copy space for a headline", "a small distant figure in a gigantic empty
+studio", plus an explicit instruction that both sneakers stay clear of the bottom
+edge, which one attempt got wrong.
+
+## An alternative if generation is unavailable
+
+Before the framing was solved above, the frame was widened by outpainting, and
+that is worth avoiding.
 
 **Outpainting drifts the colour.** Each pass re-encodes the whole canvas and adds
 a warm cast. Measuring background pixels only, red minus green went `+5.4` in the
@@ -76,11 +105,9 @@ first good render, `+7.3` after the chin edit, `+9.5` after one outpaint and
 `+12.9` after two. Green falling away from red is what reads as pink. Kemal
 spotted it by eye at `+12.9`.
 
-**Regenerating with a reference resists scale changes.** Asked to pull the camera
-back to 60% character height, the model instead returned 80%, larger than the
-reference. Image-to-image anchors hard to the reference composition.
-
-So the final frame is composited in code instead. The studio is a seamless
+A composite was then built in code, kept here as the fallback for when the daily
+generation cap is spent, since it costs nothing. It is media
+`eddd6e1f-7352-4b50-97d9-ad1cb759f062`. The studio is a seamless
 cyclorama with a gentle vertical brightness gradient and no horizontal structure,
 which makes it safe to model: fit a linear vertical gradient to the background
 pixels, extrapolate it over a larger canvas, paste the scaled-down scene with a
@@ -119,7 +146,8 @@ and FLUX 3 covers 5 to 20 seconds at 1080p.
 
 ## Open items
 
-1. Sign off the hub frame `eddd6e1f` by eye.
+1. Sign off the hub frame `ff8cc524` by eye, above all whether the face still
+   reads as Kemal.
 2. Decide whether the moustache stays.
 3. Agency name and the tagline that sits under "Hi, I'm Kemal."
 4. Generate the three clips from the hub frame, then extract each clip's real
