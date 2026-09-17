@@ -57,10 +57,43 @@ hub v2 outpaint 4:3   2400x1792      03c0350d-a9f3-46f4-83f9-e1c77adf6280
 hub v2 outpaint 16:9  2752x1536      ce361baa-0784-43c2-a331-1cd9d8597f83
 ```
 
-`ce361baa` is the current best hub frame. Measured off the pixels: head top at
-about 34% of frame height, feet at about 94%, background a warm off-white near
-`rgb(226,213,210)`. Its corners read slightly darker, near `rgb(201,186,183)`,
-which is an outpaint artifact to check by eye before locking it.
+The current hub frame is **not** any of those. It is `hub_v3`, uploaded as media
+`eddd6e1f-7352-4b50-97d9-ad1cb759f062`, built deterministically from `de88ebd0`
+rather than generated. See "Why the hub frame is composited" below.
+
+```
+hub v3 (current)  media  eddd6e1f-7352-4b50-97d9-ad1cb759f062
+```
+
+## Why the hub frame is composited
+
+Two generative approaches were tried for widening the frame and both failed in a
+way worth remembering.
+
+**Outpainting drifts the colour.** Each pass re-encodes the whole canvas and adds
+a warm cast. Measuring background pixels only, red minus green went `+5.4` in the
+first good render, `+7.3` after the chin edit, `+9.5` after one outpaint and
+`+12.9` after two. Green falling away from red is what reads as pink. Kemal
+spotted it by eye at `+12.9`.
+
+**Regenerating with a reference resists scale changes.** Asked to pull the camera
+back to 60% character height, the model instead returned 80%, larger than the
+reference. Image-to-image anchors hard to the reference composition.
+
+So the final frame is composited in code instead. The studio is a seamless
+cyclorama with a gentle vertical brightness gradient and no horizontal structure,
+which makes it safe to model: fit a linear vertical gradient to the background
+pixels, extrapolate it over a larger canvas, paste the scaled-down scene with a
+180px feather, then neutralise the white point by equalising the channel means of
+the background.
+
+A first attempt fitted a full 2nd-order polynomial in both axes. Do not do this.
+It extrapolates fine inside the fitted region and bends badly outside it, giving
+corners that measured 203 against a centre of 238, which looks like a dirty
+background. Vertical-only is the right model.
+
+Result: character height 59.9% of frame, head at 35.0% down, feet at 94.9%,
+background even to within 1.5 levels corner to corner, red minus green `+0.18`.
 
 Uploaded reference media IDs (Kemal's photos, held on Higgsfield, not in this repo):
 
@@ -86,18 +119,24 @@ and FLUX 3 covers 5 to 20 seconds at 1080p.
 
 ## Open items
 
-1. Confirm by eye whether the outpainted edges and corners of `ce361baa` are
-   clean. If not, regenerate the hub wider rather than outpainting it.
+1. Sign off the hub frame `eddd6e1f` by eye.
 2. Decide whether the moustache stays.
 3. Agency name and the tagline that sits under "Hi, I'm Kemal."
-4. Build the page: the video stitcher, a skip control, reduced-motion handling,
+4. Generate the three clips from the hub frame, then extract each clip's real
+   last frame with ffmpeg for the poster images rather than trusting the still
+   that was fed in.
+5. Build the page: the video stitcher, a skip control, reduced-motion handling,
    a mobile path that shows the hub still instead of the walk, and the
    black-screen boot handoff.
 
-## Blocked as of 2026-09-16
+## Account state
 
-Higgsfield refused further generations with "You've reached the daily generation
-limit for your grace period." Credits were not the problem; the balance was about
-1,304. The ledger shows subscription credits granted on 6 August and none in
-September, so the September renewal looks like it did not go through. Five
-generation jobs ran today before the refusal.
+On 2026-09-16 Higgsfield refused generations with "You've reached the daily
+generation limit for your grace period." Credits were not the cause; the balance
+was about 1,304. The ledger shows subscription credits granted on 6 August and
+none in September, so the September renewal did not go through and the account
+is in a payment grace period with a daily cap of roughly five generation jobs.
+The cap does reset daily; it had cleared by the next morning.
+
+Budget generations accordingly while this lasts, and prefer deterministic image
+work over generative retries where the two are interchangeable.
