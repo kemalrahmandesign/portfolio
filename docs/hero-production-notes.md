@@ -57,7 +57,8 @@ hub v2 outpaint 4:3   2400x1792      03c0350d-a9f3-46f4-83f9-e1c77adf6280
 hub v2 outpaint 16:9  2752x1536      ce361baa-0784-43c2-a331-1cd9d8597f83
 ```
 
-The hub frame is media `bb93a0a8-27ef-4694-9bf3-c9b0aba3d9d5`. It is the
+The hub frame is media `bb93a0a8-27ef-4694-9bf3-c9b0aba3d9d5`, **approved by
+Kemal on 2026-09-18 and locked**. It is the
 generation `f362d44f-7fde-4539-8fbd-93d0c3dd4f5f`, whose props Kemal approved,
 scaled down 6% in code to correct the framing. Feed the media id to the video
 calls as the start frame.
@@ -162,14 +163,13 @@ and FLUX 3 covers 5 to 20 seconds at 1080p.
 
 ## Open items
 
-1. Sign off the hub frame `ff8cc524` by eye, above all whether the face still
-   reads as Kemal.
-2. Decide whether the moustache stays.
-3. Agency name and the tagline that sits under "Hi, I'm Kemal."
-4. Generate the three clips from the hub frame, then extract each clip's real
+1. Decide whether the moustache stays. Every clip inherits it, so this gates
+   clip generation.
+2. Agency name and the tagline that sits under "Hi, I'm Kemal."
+3. Generate the three clips from the hub frame, then extract each clip's real
    last frame with ffmpeg for the poster images rather than trusting the still
    that was fed in.
-5. Build the page: the video stitcher, a skip control, reduced-motion handling,
+4. Build the page: the video stitcher, a skip control, reduced-motion handling,
    a mobile path that shows the hub still instead of the walk, and the
    black-screen boot handoff.
 
