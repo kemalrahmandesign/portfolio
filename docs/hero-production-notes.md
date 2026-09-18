@@ -57,42 +57,58 @@ hub v2 outpaint 4:3   2400x1792      03c0350d-a9f3-46f4-83f9-e1c77adf6280
 hub v2 outpaint 16:9  2752x1536      ce361baa-0784-43c2-a331-1cd9d8597f83
 ```
 
-The hub frame is `ff8cc524-3c4c-43ec-b199-65288e916619`, a fresh generation.
-Feed that job id straight into the video calls as the start frame.
+The hub frame is media `bb93a0a8-27ef-4694-9bf3-c9b0aba3d9d5`. It is the
+generation `f362d44f-7fde-4539-8fbd-93d0c3dd4f5f`, whose props Kemal approved,
+scaled down 6% in code to correct the framing. Feed the media id to the video
+calls as the start frame.
 
 ```
-hub frame (current)   job  ff8cc524-3c4c-43ec-b199-65288e916619
+hub frame (current)   media  bb93a0a8-27ef-4694-9bf3-c9b0aba3d9d5
+  built from          job    f362d44f-7fde-4539-8fbd-93d0c3dd4f5f
 ```
 
-Measured: headroom above the hair 34.6%, character height 61.8% of frame, feet
-clear of the bottom edge, background red-minus-green `+0.63` and even to within
-1.9 levels corner to corner, nothing in the upper band, right third open for the
-walk path.
+Measured: headroom above the hair 35.0%, character height 60.2%, feet at 95.2%,
+background red-minus-green `-0.52`, even to within 0.3 levels corner to corner,
+nothing in the upper band, no seam detectable at the composite boundary.
 
-Superseded attempts, kept only so the failures are not repeated:
-`691206aa` (clean top but feet clipped at the bottom edge), `0a691dcd` (props
-intruding into the headline area), `2a672255` (correct in every respect except
-the character came out at 70.8% height).
+## Do not chase the framing through the prompt
 
-## Getting the framing right
+This cost the most attempts of anything in the project, so the finding matters.
 
-Two things drive the composition and both took several attempts to pin down.
+Reference photographs bias the character larger, which is real. What is not real
+is any fine-grained control over how much. Asking for a body height of:
 
-**Passing a full scene as a reference locks the framing.** Asking for a pulled
-back camera while passing the previous render as reference returned the character
-*larger*, at 80% of frame height. Image-to-image anchors to the reference
-composition and will not rescale it. Pass identity photographs only, never a
-previous full frame, and describe the scene fresh.
+| Asked | Returned |
+|---|---|
+| 40% | 65.2%, 64.1% |
+| 39% | 75.6% |
+| 38% | 65.5% |
+| 33% | 45.7% |
 
-**Reference photographs bias the character larger.** Same prompt, text only, put
-him at 61.5% height; adding the four identity photographs pushed it to 70.8%. The
-fix is to overshoot: ask for roughly 40% height and 55% headroom and it lands
-near 60% and 35%. Do not ask for the number you actually want.
+Asking for 39% produced the largest result in the set. Only a large change in the
+request (33%) moved the output reliably. Between roughly 38 and 40 the response
+is noise, so tuning the number wastes a capped daily budget.
 
-Framing language that works: "wide cinematic hero banner", "the upper N percent
-is blank copy space for a headline", "a small distant figure in a gigantic empty
-studio", plus an explicit instruction that both sneakers stay clear of the bottom
-edge, which one attempt got wrong.
+The working method is to stop at any generation whose props, likeness and
+background are right, ignore its framing, and fix the framing in code. A 6% scale
+correction is visually lossless and lands the numbers exactly.
+
+## Getting the props right
+
+The motorcycle, guitar and amp are only accurate when their photographs are
+passed as references. An attempt that dropped them and kept only the identity
+photos and the style reference left the model inventing those objects from the
+text, and all three degraded. Kemal caught it immediately.
+
+The confusion that caused it is worth stating plainly. A previous *full frame*
+passed as a reference does lock the composition and must never be used. Photos of
+*individual objects* do not, because there is no scene layout in them to copy.
+Both were removed when only the first was the problem.
+
+So: pass all seven references, always. Repeat the identifying detail in the text
+as well, since the photographs fix shape and colour but the words are what stop
+the model simplifying away the number 95, the white pickguard and the red amp
+handle.
 
 ## An alternative if generation is unavailable
 
