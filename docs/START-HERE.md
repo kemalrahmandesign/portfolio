@@ -91,9 +91,13 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
 - **Preset recommendations block video submission.** Retry with
   `declined_preset_id` set to the offered preset. The walk prompt drew
   "IN THE DARK".
-- **Wan 3.0 rejects keyframes plus references** with a 422. `start_image` and
-  `end_image` cannot be combined with `image_references`. Keyframes win, so
-  anything absent from the start frame must be carried by the prompt text.
+- **Only FLUX 3 Video takes keyframes and references together.** Wan 3.0 rejects
+  the combination with a 422, and **Veo accepts no reference images at all** (Veo
+  3 and 3.1 take a start frame only; 3.1 Lite takes start and end, capped at 8s).
+  FLUX 3 is 90 credits for 10s/1080p against Wan's 35.
+- **`get_cost` does not validate media combinations.** It priced the exact Wan
+  call that 422s on submission. Submitting is the only test, and it is free when
+  it fails.
 - **The agent cannot see any image it generates.** Both result and input CDNs
   are blocked; only the S3 input host is reachable, which is why uploads work.
   Images Kemal attaches to the chat *are* visible, so ask him to paste a result

@@ -577,20 +577,40 @@ Screen went from 62.5% x 61.3% to 69.5% x 68.1%. Panel measures 235.58,
 red-minus-green -0.12, identical to the source, because nothing but the crop
 was applied.
 
-### Wan 3.0 will not take keyframes and references together
+### Which video models take keyframes AND references
 
-`start_image`/`end_image` cannot be combined with `image_references`: the
-backend rejects it with a 422. It is one or the other.
+This is the constraint that decides the model, and it is not in any model's
+declared `medias` roles. Every model below lists `start_image`, `end_image` and
+`image_references` as available roles; only some accept them together.
 
-Keyframes win, always. Pinning both ends is the entire reason the stitch is
-invisible. The consequence is that anything not present in the start frame has
-to be carried by the prompt text: the desk, the monitor and its arm, the tower,
-the easel and the cat. The hub props are safe either way, because the start
-frame locks them harder than a photograph would.
+| Model | start+end pin | references | both at once |
+|---|---|---|---|
+| Wan 3.0 | yes | yes | **no**, 422 |
+| FLUX 3 Video | yes | yes | **yes** |
+| Veo 3, Veo 3.1 | no, `start_image` only | **none** | n/a |
+| Veo 3.1 Lite | yes | **none** | n/a |
 
-This also retires the standing advice to "pass all seven references, always".
-That rule holds for **image** generation. For a keyframed video it is not
-available.
+**Veo takes no reference images at all.** Veo 3 and Veo 3.1 accept only a
+`start_image`; Veo 3.1 Lite accepts `start_image` and `end_image`. There is no
+role to put a reference in, so "use Veo with the reference photos" is not a
+thing that can be done, however the request is phrased. Veo 3.1 Lite is also
+capped at 4, 6 or 8 seconds.
+
+So FLUX 3 Video is the only model here that can pin both ends *and* take the
+object photographs. It costs 90 credits for 10s at 1080p against Wan's 35.
+
+When a model will not take both, keyframes win: pinning both ends is the entire
+reason the stitch is invisible, and anything not in a keyframe has to be carried
+by the prompt text. The fallback for accuracy in that case is to put the objects
+into a keyframe instead, by generating an intermediate still *with* references
+and splitting the clip in two at it. Image generation always takes references.
+
+### `get_cost` does not validate media combinations
+
+`get_cost: true` returned a cost of 35 credits for the exact Wan 3.0 call that
+422s on real submission. It prices the request; it does not check it. Do not use
+it to test whether a media combination is legal. The only test is to submit,
+which is free when it fails.
 
 ### A blocked agent should not pretend to have looked
 
