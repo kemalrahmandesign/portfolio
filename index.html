@@ -42,8 +42,11 @@ body{
   opacity:0;transition:opacity .22s linear;
 }
 .stage video.is-live,.stage img.is-live{opacity:1}
-/* The wave and idle both end on the hub frame, so .22s is plenty. The walk
-   begins from whatever pose the idle happens to be in, so it gets longer. */
+/* The idle does not return to its own first frame, so the wrap is crossfaded
+   in the player. This duration must match XF in the script. */
+.stage.looping video{transition:opacity .34s linear}
+/* The walk begins from whatever pose the idle happens to be in, so it gets
+   a little longer than a swap between two clips that share the hub frame. */
 .stage.handoff video{transition:opacity .32s linear}
 
 /* Shown only when the clips cannot be fetched, so the layout still reads. */
@@ -139,6 +142,7 @@ h1{
     <img id="poster" alt="" src="">
     <video id="vidA" playsinline muted preload="auto"></video>
     <video id="vidB" playsinline muted preload="auto"></video>
+    <video id="vidC" playsinline muted preload="auto"></video>
     <div class="stage-missing">
       Scene clips can&rsquo;t be fetched from here.<br>
       Layout, type and motion above are live.
@@ -167,19 +171,23 @@ h1{
 
 <script>
 (() => {
-  const CDN = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/';
   const CLIPS = {
-    // Wave plays once on load, then hands to idle. Both end on the hub frame.
-    // In the wave clip the arm starts rising at 0.5s and peaks from 1.5 to 3.4s,
-    // which lands it mid-headline.
-    wave: CDN + 'ed3c524f-cea1-4b6c-8683-46edd68f159f.mp4',
-    idle: CDN + '1e31d7f1-7b9c-493c-875d-f6dc067deb59.mp4',
+    // Wave plays once on load, then hands to the idle loop. The arm starts
+    // rising at 0.5s and peaks 1.5-3.4s, which lands it mid-headline.
+    wave: 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
+        + 'ed3c524f-cea1-4b6c-8683-46edd68f159f.mp4',
+    // 10s, locked-off, breathing and blinks only. Measured: his own pixels
+    // move across 0.19% of frames on average against 0.38% for the 3.5s clip,
+    // and the motorcycle is static rather than drifting across 4.9%.
+    idle: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
+        + 'hf_20260919_182126_adac86ab-3d37-41ff-860a-4c713b405a9c.mp4',
     walk: null,                                        // pending generation
   };
-  // The hub frame. Every clip starts and ends on it, so it doubles as the
-  // poster and as the whole hero on mobile and reduced motion.
   const POSTER = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
                + 'hf_20260918_131857_3f470988-9df8-4d61-98f6-e316d6f6ad9e.png';
+
+  // Seconds of crossfade over the idle's wrap. Must match .stage.looping in CSS.
+  const XF = 0.34;
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const mobile  = matchMedia('(max-width: 760px)').matches;
@@ -191,7 +199,9 @@ h1{
   const skip = document.getElementById('skip');
   const cover = document.getElementById('cover');
   const work = document.getElementById('work');
-  let A = document.getElementById('vidA'), B = document.getElementById('vidB');
+  const A = document.getElementById('vidA');
+  const B = document.getElementById('vidB');
+  const C = document.getElementById('vidC');
 
   /* ---- headline: split to words, rise from below, stagger left to right ---- */
   const h1 = document.getElementById('headline');
@@ -200,33 +210,56 @@ h1{
     `<span style="transition-delay:${i * 90}ms">${w}</span></span>`
   ).join(' ');
 
-  /* ---- clip playback: two stacked elements, swap by opacity ---- */
   function show(el){
-    el.classList.add('is-live');
-    (el === A ? B : A).classList.remove('is-live');
+    [A, B, C].forEach(v => v.classList.toggle('is-live', v === el));
     poster.classList.remove('is-live');
   }
-  function play(url, {loop = false, onEnd} = {}){
-    if (!url) return null;
-    const next = A.classList.contains('is-live') ? B : A;
-    next.loop = loop;
-    next.onended = null;
-    next.src = url;
-    next.currentTime = 0;
-    const go = () => { show(next); [A, B] = [next, next === A ? B : A]; };
-    if (onEnd) next.onended = onEnd;
-    const p = next.play();
-    if (p && p.catch) p.catch(() => {});
-    next.readyState >= 2 ? go() : next.oncanplay = go;
-    return next;
+
+  function playOnce(el, url, onEnd){
+    el.loop = false;
+    el.onended = onEnd || null;
+    el.src = url;
+    el.currentTime = 0;
+    const go = () => show(el);
+    const p = el.play(); if (p && p.catch) p.catch(() => {});
+    el.readyState >= 2 ? go() : (el.oncanplay = go);
+  }
+
+  /* ---- the idle loop ----
+     Pinning the end frame does not produce a pixel-exact return: 3.88% of
+     pixels differ between the clip's last frame and its first, and searching
+     every frame for a better wrap only reaches 3.59%, so trimming does not
+     help. Instead two elements hold the same clip and the wrap is crossfaded:
+     the outgoing copy plays its tail while the incoming one restarts beneath
+     it. Nothing is re-encoded and the full 10s is kept. */
+  let looping = false;
+  function idleLoop(){
+    const pair = [A, B];
+    pair.forEach(v => { v.loop = false; v.onended = null; v.src = CLIPS.idle; });
+    looping = true;
+    stage.classList.add('looping');
+    let i = 0;
+    const step = () => {
+      if (!looping) return;
+      const cur = pair[i];
+      cur.currentTime = 0;
+      const p = cur.play(); if (p && p.catch) p.catch(() => {});
+      show(cur);
+      const watch = () => {
+        if (!looping) return;
+        const d = cur.duration;
+        if (d && cur.currentTime >= d - XF) { i = 1 - i; step(); return; }
+        requestAnimationFrame(watch);
+      };
+      requestAnimationFrame(watch);
+    };
+    step();
   }
 
   /* ---- keep the walk clip warm ----
-     play() sets src at click time. For the walk that means a cold fetch of a
-     multi-megabyte file at the exact moment the user is watching for a
-     reaction, which stalls the handoff no matter how good the clip is. Pull it
-     into the HTTP cache while the idle plays instead. The element is kept on
-     the function so it is not collected mid-fetch. */
+     Setting src at click time means a cold fetch of a multi-megabyte file at
+     the exact moment the user is watching for a reaction. Pull it into the
+     cache during the idle instead. */
   function warm(url){
     if (!url) return;
     const v = document.createElement('video');
@@ -235,23 +268,21 @@ h1{
   }
 
   /* ---- boot ---- */
-  // If the media host is unreachable, fall back to the layout-only view rather
-  // than an empty frame.
   poster.onerror = () => stage.classList.add('is-empty');
-  A.onerror = B.onerror = () => stage.classList.add('is-empty');
+  A.onerror = B.onerror = C.onerror = () => stage.classList.add('is-empty');
   poster.src = POSTER;
   poster.classList.add('is-live');
   requestAnimationFrame(() => hero.classList.add('is-in'));
 
   if (!reduced && !mobile) {
-    // The wave lands mid-headline: the clip holds still for ~0.5s first,
-    // which is roughly when the second word is arriving.
-    if (CLIPS.wave) play(CLIPS.wave, { onEnd: () => play(CLIPS.idle, {loop:true}) });
-    else play(CLIPS.idle, { loop: true });
+    if (CLIPS.wave) playOnce(C, CLIPS.wave, idleLoop);
+    else idleLoop();
     warm(CLIPS.walk);
   }
 
   /* ---- the handoff into the monitor ---- */
+  const TAKE = 0.45;                    // must match the `take` animation
+
   function reveal(){
     work.hidden = false;
     document.body.style.overflow = '';
@@ -260,33 +291,35 @@ h1{
     cover.classList.add('clear');
     window.scrollTo(0, 0);
   }
-  const TAKE = 0.45;                    // must match the `take` animation
 
   function enter(){
     cta.disabled = true;
+    looping = false;                    // stop the loop watcher
+    stage.classList.remove('looping');
     stage.classList.add('handoff');
     if (!CLIPS.walk || reduced || mobile) { cover.style.opacity = 1; setTimeout(reveal, 180); return; }
-    const v = play(CLIPS.walk, { onEnd: reveal });
+    playOnce(C, CLIPS.walk, reveal);
 
     // Hand over during the clip's final stretch, by which point the monitor has
-    // already powered on inside the shot and the frame is mostly white.
+    // powered on inside the shot and the frame is mostly white.
     let armed = false;
     const at = () => {
-      const end = v.duration || 10;
-      if (!armed && v.currentTime >= end - TAKE) { armed = true; cover.classList.add('take'); }
+      const end = C.duration || 10;
+      if (!armed && C.currentTime >= end - TAKE) { armed = true; cover.classList.add('take'); }
     };
-    // requestVideoFrameCallback fires per decoded frame, so the handover lands
-    // on the frame we asked for. timeupdate only fires about four times a
-    // second, which is loose enough to miss a 450ms window.
-    if (v.requestVideoFrameCallback) {
-      const tick = () => { at(); if (!armed) v.requestVideoFrameCallback(tick); };
-      v.requestVideoFrameCallback(tick);
+    if (C.requestVideoFrameCallback) {
+      const tick = () => { at(); if (!armed) C.requestVideoFrameCallback(tick); };
+      C.requestVideoFrameCallback(tick);
     } else {
-      v.addEventListener('timeupdate', at);
+      C.addEventListener('timeupdate', at);
     }
   }
+
   cta.addEventListener('click', enter);
-  skip.addEventListener('click', () => { cover.style.opacity = 1; setTimeout(reveal, 160); });
+  skip.addEventListener('click', () => {
+    looping = false;
+    cover.style.opacity = 1; setTimeout(reveal, 160);
+  });
 })();
 </script>
 </body>

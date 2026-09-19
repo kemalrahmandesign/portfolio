@@ -16,7 +16,7 @@ into the monitor, which powers on white. The site is underneath it.
 | Clip | Start | End | Model | Status |
 |---|---|---|---|---|
 | Wave | hub | hub | Wan 3.0 | **done**, media `ed3c524f-cea1-4b6c-8683-46edd68f159f`, 5s |
-| Idle loop | hub | hub | Wan 3.0 | **done**, media `1e31d7f1-7b9c-493c-875d-f6dc067deb59`, 3.5s |
+| Idle loop | hub | hub | Wan 3.0 | **done**, job `adac86ab-3d37-41ff-860a-4c713b405a9c`, 10s |
 | Walk / sit / push-in | hub | end frame | Wan 3.0 | prompt ready, see `walk-clip-prompt.md` |
 
 The hub frame is the single still every clip starts or ends on. That is what
@@ -72,7 +72,54 @@ literally.
 Veo 3.1 Lite refused the idle prompt with an `nsfw` status, a false positive on a
 cartoon man in a studio. The credits were refunded automatically.
 
-## Baking a seamless loop
+## Idle motion: measured, not eyeballed
+
+Kemal's note on the 3.5s loop was that he moved too much and it read as an
+obvious loop. Both complaints have one cause. A loop is only detectable when it
+contains a landmark, and a visible sway every few seconds is a perfect one. Take
+the landmark away and the period stops being findable, even at 3.5s.
+
+The 10s replacement (`adac86ab`) asks for a locked-off camera, breathing and
+three blinks, and nothing else, with every prop named and forbidden to move.
+Measured on the character's own pixels, counting pixels that change by more than
+6 levels between frames:
+
+| | 3.5s clip | 10s clip |
+|---|---|---|
+| Mean per frame | 0.376% | 0.187% |
+| Peak frame | 7.6% | 3.6% |
+| Share of frames above 1% | 11.4% | 6.7% |
+| Motorcycle, own pixels | 4.9% | 0.0% |
+
+The motorcycle drift is gone, which earlier prompt wording never achieved. The
+likely difference is `enable_thinking`, plus naming each prop individually
+rather than saying "the props".
+
+**This also fixes the click handoff.** The walk clip starts on the hub frame, so
+clicking mid-idle blends whatever pose the idle is in against that frame. With
+the amplitude halved, every idle frame is close enough to the hub frame that a
+320ms crossfade has nothing to hide. Waiting for the loop to reach its end
+instead would mean up to a 10s delay between the click and anything happening,
+which is worse at every clip length and much worse at this one.
+
+## Closing the loop in the player, not in ffmpeg
+
+The 10s clip does not return to its own first frame: 3.88% of pixels differ, and
+searching every frame past the halfway point for a better wrap only reaches
+3.59%. Trimming does not help, exactly as with the 3.5s clip.
+
+The 3.5s clip was closed by baking a crossfade with ffmpeg and re-uploading. That
+is not available from the agent container any more, because the egress policy
+blocks the result CDN and the proxy documentation is explicit that a policy
+denial must not be routed around. So the wrap is crossfaded in the player
+instead: two video elements hold the same clip, and the outgoing copy plays its
+tail while the incoming one restarts underneath it.
+
+This is the better version regardless. Nothing is re-encoded, the full 10s is
+kept rather than losing half a second to the overlap, and the technique works
+for any clip without a hosting round trip.
+
+## Baking a seamless loop (superseded, kept for reference)
 
 The end-frame constraint does not produce a pixel-exact return. The raw idle clip
 differed from its own first frame across 3.06% of pixels, and searching all 120
