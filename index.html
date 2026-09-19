@@ -42,6 +42,9 @@ body{
   opacity:0;transition:opacity .22s linear;
 }
 .stage video.is-live,.stage img.is-live{opacity:1}
+/* The wave and idle both end on the hub frame, so .22s is plenty. The walk
+   begins from whatever pose the idle happens to be in, so it gets longer. */
+.stage.handoff video{transition:opacity .32s linear}
 
 /* Shown only when the clips cannot be fetched, so the layout still reads. */
 .stage-missing{
@@ -218,6 +221,19 @@ h1{
     return next;
   }
 
+  /* ---- keep the walk clip warm ----
+     play() sets src at click time. For the walk that means a cold fetch of a
+     multi-megabyte file at the exact moment the user is watching for a
+     reaction, which stalls the handoff no matter how good the clip is. Pull it
+     into the HTTP cache while the idle plays instead. The element is kept on
+     the function so it is not collected mid-fetch. */
+  function warm(url){
+    if (!url) return;
+    const v = document.createElement('video');
+    v.preload = 'auto'; v.muted = true; v.src = url;
+    warm.held = v;
+  }
+
   /* ---- boot ---- */
   // If the media host is unreachable, fall back to the layout-only view rather
   // than an empty frame.
@@ -232,6 +248,7 @@ h1{
     // which is roughly when the second word is arriving.
     if (CLIPS.wave) play(CLIPS.wave, { onEnd: () => play(CLIPS.idle, {loop:true}) });
     else play(CLIPS.idle, { loop: true });
+    warm(CLIPS.walk);
   }
 
   /* ---- the handoff into the monitor ---- */
@@ -247,6 +264,7 @@ h1{
 
   function enter(){
     cta.disabled = true;
+    stage.classList.add('handoff');
     if (!CLIPS.walk || reduced || mobile) { cover.style.opacity = 1; setTimeout(reveal, 180); return; }
     const v = play(CLIPS.walk, { onEnd: reveal });
 
