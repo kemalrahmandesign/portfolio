@@ -102,6 +102,37 @@ the amplitude halved, every idle frame is close enough to the hub frame that a
 instead would mean up to a 10s delay between the click and anything happening,
 which is worse at every clip length and much worse at this one.
 
+## The generated clips open dark: skip the head on every start
+
+This was the real cause of the flash Kemal kept seeing, and it cost two wrong
+diagnoses before anyone measured luminance.
+
+Both clips begin about **2.8 levels darker** than they settle, recovering over
+roughly four frames:
+
+| Frame | 0 | 1 | 2 | 3 | 4 | ... | tail |
+|---|---|---|---|---|---|---|---|
+| Idle, studio pixels | 234.55 | 235.99 | 236.70 | 236.71 | 237.25 | | 237.36 |
+| Wave, studio pixels | 234.55 | 235.84 | 236.54 | 236.56 | 236.87 | | 236.84 |
+
+So every time a clip starts, the picture dips and brightens back within 133ms.
+That fast dark-to-bright pulse is what reads as a flash, and `--clip-lift`
+multiplies it to about 3 levels. It fires at every loop wrap because the wrap is
+a start.
+
+It is also why the wrap could not be trimmed away. The 3.88% mismatch was mostly
+this luminance offset spread across the whole background, not a pose
+difference. Looping in at frame 4 instead of frame 0 takes it to 1.15%.
+
+**Fix:** every clip carries a `head` in the player, the first frame measured
+within 0.3 levels of its settled value, and every start seeks there rather than
+to zero. Idle 0.14s, wave 0.11s. Measure this for the walk clip too; it is the
+same model and will have the same ramp.
+
+**Lesson worth keeping:** when something looks like a compositing bug, measure
+the content before rewriting the compositor. Mean luminance per frame would have
+found this in one pass, on day one.
+
 ## Never crossfade two layers by fading both
 
 The first attempt at the player-side loop flashed on every wrap, and on every

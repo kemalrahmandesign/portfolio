@@ -169,16 +169,23 @@ h1{
 
 <script>
 (() => {
+  /* Each clip carries a `head`: seconds to skip on every start.
+     Both generated clips open 2.8 luminance levels darker than they settle,
+     recovering over about four frames. Starting at 0 therefore plays a fast
+     dark-to-bright pulse every time a clip begins, which is what reads as a
+     flash at each loop wrap. Skipping the ramp removes it, and also takes the
+     idle's wrap mismatch from 3.88% of pixels to 1.15%. The values are the
+     first frame measured within 0.3 levels of each clip's settled value. */
   const CLIPS = {
     // Wave plays once on load, then hands to the idle loop. The arm starts
     // rising at 0.5s and peaks 1.5-3.4s, which lands it mid-headline.
-    wave: 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
-        + 'ed3c524f-cea1-4b6c-8683-46edd68f159f.mp4',
+    wave: { src: 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
+               + 'ed3c524f-cea1-4b6c-8683-46edd68f159f.mp4', head: 0.11 },
     // 10s, locked-off, breathing and blinks only. Measured: his own pixels
     // move across 0.19% of frames on average against 0.38% for the 3.5s clip,
     // and the motorcycle is static rather than drifting across 4.9%.
-    idle: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
-        + 'hf_20260919_182126_adac86ab-3d37-41ff-860a-4c713b405a9c.mp4',
+    idle: { src: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
+               + 'hf_20260919_182126_adac86ab-3d37-41ff-860a-4c713b405a9c.mp4', head: 0.14 },
     walk: null,                                        // pending generation
   };
   const POSTER = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
@@ -240,14 +247,14 @@ h1{
     ms ? setTimeout(settle, ms + 30) : settle();
   }
 
-  function playOnce(el, url, onEnd, fade){
+  function playOnce(el, clip, onEnd, fade){
     el.loop = false;
     el.onended = onEnd || null;
-    el.src = url;
-    el.currentTime = 0;
-    const go = () => show(el, fade);
-    const p = el.play(); if (p && p.catch) p.catch(() => {});
-    el.readyState >= 2 ? go() : (el.oncanplay = go);
+    el.src = clip.src;
+    atTime(el, clip.head, () => {
+      const p = el.play(); if (p && p.catch) p.catch(() => {});
+      show(el, fade);
+    });
   }
 
   /* ---- the idle loop ----
@@ -257,27 +264,28 @@ h1{
      help. Instead two elements hold the same clip and the wrap is crossfaded:
      the outgoing copy plays its tail while the incoming one restarts beneath
      it. Nothing is re-encoded and the full 10s is kept. */
-  // Run cb once v is parked on its first frame with that frame decoded.
-  function atStart(v, cb){
-    if (v.readyState < 2) { v.addEventListener('canplay', () => atStart(v, cb), {once:true}); return; }
-    if (v.currentTime < 0.05) { cb(); return; }
+  // Run cb once v is parked at time t with that frame decoded.
+  function atTime(v, t, cb){
+    if (v.readyState < 2) { v.addEventListener('canplay', () => atTime(v, t, cb), {once:true}); return; }
+    if (Math.abs(v.currentTime - t) < 0.02) { cb(); return; }
     v.addEventListener('seeked', cb, {once:true});
-    v.currentTime = 0;
+    v.currentTime = t;
   }
 
   let looping = false;
   function idleLoop(){
     const pair = [A, B];
-    pair.forEach(v => { v.loop = false; v.onended = null; v.src = CLIPS.idle; });
+    const clip = CLIPS.idle;
+    pair.forEach(v => { v.loop = false; v.onended = null; v.src = clip.src; });
     looping = true;
     let i = 0;
     const step = () => {
       if (!looping) return;
       const cur = pair[i];
-      // Raise the layer only once frame 0 is actually decoded. The element has
-      // just played to its end, so raising it while the seek is still in
-      // flight would show its last frame for a beat -- a glitch at every wrap.
-      atStart(cur, () => {
+      // Raise the layer only once the target frame is actually decoded. The
+      // element has just played to its end, so raising it while the seek is
+      // still in flight would show its last frame for a beat.
+      atTime(cur, clip.head, () => {
         if (!looping) return;
         const p = cur.play(); if (p && p.catch) p.catch(() => {});
         show(cur, XF * 1000);
@@ -297,10 +305,10 @@ h1{
      Setting src at click time means a cold fetch of a multi-megabyte file at
      the exact moment the user is watching for a reaction. Pull it into the
      cache during the idle instead. */
-  function warm(url){
-    if (!url) return;
+  function warm(clip){
+    if (!clip) return;
     const v = document.createElement('video');
-    v.preload = 'auto'; v.muted = true; v.src = url;
+    v.preload = 'auto'; v.muted = true; v.src = clip.src;
     warm.held = v;
   }
 
@@ -313,6 +321,7 @@ h1{
 
   if (!reduced && !mobile) {
     if (CLIPS.wave) playOnce(C, CLIPS.wave, idleLoop, 220);
+    // (wave hands to idleLoop on `ended`)
     else idleLoop();
     warm(CLIPS.walk);
   }
