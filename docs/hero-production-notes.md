@@ -16,7 +16,7 @@ into the monitor, which goes black. The site then boots on underneath.
 | Clip | Start | End | Model | Status |
 |---|---|---|---|---|
 | Wave | hub | hub | Wan 3.0 | not started |
-| Idle loop | hub | hub | Wan 3.0 | **done**, media `7fef8f52-abc3-4ee6-9a7c-fb8df5d995f1` |
+| Idle loop | hub | hub | Wan 3.0 | **done**, media `1e31d7f1-7b9c-493c-875d-f6dc067deb59` |
 | Walk / sit / push-in | hub | black | Veo 3.1 | not started |
 
 The hub frame is the single still every clip starts or ends on. That is what
@@ -90,20 +90,31 @@ hub v2 outpaint 4:3   2400x1792      03c0350d-a9f3-46f4-83f9-e1c77adf6280
 hub v2 outpaint 16:9  2752x1536      ce361baa-0784-43c2-a331-1cd9d8597f83
 ```
 
-The hub frame is media `bb93a0a8-27ef-4694-9bf3-c9b0aba3d9d5`, **approved by
-Kemal on 2026-09-18 and locked**. It is the
-generation `f362d44f-7fde-4539-8fbd-93d0c3dd4f5f`, whose props Kemal approved,
-scaled down 6% in code to correct the framing. Feed the media id to the video
-calls as the start frame.
+The hub frame is generation `3f470988-9df8-4d61-98f6-e316d6f6ad9e`, **the one
+Kemal chose**. Pass that job id straight to the video calls as the start frame;
+job ids work as media references.
 
 ```
-hub frame (current)   media  bb93a0a8-27ef-4694-9bf3-c9b0aba3d9d5
-  built from          job    f362d44f-7fde-4539-8fbd-93d0c3dd4f5f
+hub frame (current)   job  3f470988-9df8-4d61-98f6-e316d6f6ad9e
 ```
 
-Measured: headroom above the hair 35.0%, character height 60.2%, feet at 95.2%,
-background red-minus-green `-0.52`, even to within 0.3 levels corner to corner,
-nothing in the upper band, no seam detectable at the composite boundary.
+Measured: headroom above the hair 28.5%, character height 65.5%, feet clear of
+the bottom edge, background red-minus-green `+0.09`, even to within 11.7 levels,
+nothing in the upper band.
+
+Note the headroom is tighter than the 33-40% the earlier work aimed at, and the
+background is less even than the composite that was briefly used instead. Kemal
+picked this frame on how it looks, which overrides both numbers. Do not
+substitute a "better measuring" frame for it.
+
+**How the wrong frame got used.** A composite built by scaling another
+generation was uploaded as a media item and treated as approved. It was the
+newest image in the account, but it sat in the media list rather than the
+generation history, so it was not what Kemal saw as most recent. Folders and
+favourites are not exposed through the API at all: there is no tool that lists
+them, and `folder_id` appears only as a write-time destination. When Kemal
+refers to a frame by folder or favourite, ask him to paste it or delete the
+others, rather than inferring from timestamps.
 
 ## Do not chase the framing through the prompt
 
