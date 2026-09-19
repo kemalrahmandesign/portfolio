@@ -47,6 +47,21 @@ body{
   opacity:0;z-index:1;
 }
 
+/* Ease the lift back to 1 over the take.
+
+   --clip-lift is calibrated for the hero, where the studio renders near 222 and
+   wants to sit at 241. By the end of the walk the picture is almost entirely
+   the monitor's white panel, which the clip already renders at about 235.
+   Multiplying that by 1.085 gives 255 on all three channels, so it clips: the
+   panel arrives as blown pure white and the hue clips away with the level. That
+   is what read as a harsh cold white at the handoff, next to a page that is
+   actually a warm 240. Easing the lift out over the same 450ms as the cover
+   lets the panel arrive at its own value, against a cover painted in --bg. */
+.stage video.settle{
+  transition:filter 450ms ease-in;
+  filter:brightness(1) saturate(var(--clip-warm));
+}
+
 /* Shown only when the clips cannot be fetched, so the layout still reads. */
 .stage-missing{
   position:absolute;left:50%;bottom:8%;transform:translateX(-50%);
@@ -184,12 +199,16 @@ h1{
 <script>
 (() => {
   /* Each clip carries a `head`: seconds to skip on every start.
-     Both generated clips open 2.8 luminance levels darker than they settle,
-     recovering over about four frames. Starting at 0 therefore plays a fast
-     dark-to-bright pulse every time a clip begins, which is what reads as a
-     flash at each loop wrap. Skipping the ramp removes it, and also takes the
-     idle's wrap mismatch from 3.88% of pixels to 1.15%. The values are the
-     first frame measured within 0.3 levels of each clip's settled value. */
+     The wave and the idle both open about 2.8 luminance levels darker than they
+     settle, recovering over roughly four frames. Starting at 0 therefore plays a
+     fast dark-to-bright pulse every time such a clip begins, which is what reads
+     as a flash at each loop wrap. Skipping the ramp removes it, and also takes
+     the idle's wrap mismatch from 3.88% of pixels to 1.15%.
+
+     The walk clip does not have the ramp, which is worth knowing rather than
+     assuming: it came from the same model and was expected to behave the same
+     way, but measures +0.02 levels against its settled value at frame 0. So its
+     head is 0. Measure this per clip; do not infer it from the model. */
   const CLIPS = {
     // Wave plays once on load, then hands to the idle loop. The arm starts
     // rising at 0.5s and peaks 1.5-3.4s, which lands it mid-headline.
@@ -200,7 +219,14 @@ h1{
     // and the motorcycle is static rather than drifting across 4.9%.
     idle: { src: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
                + 'hf_20260919_182126_adac86ab-3d37-41ff-860a-4c713b405a9c.mp4', head: 0.14 },
-    walk: null,                                        // pending generation
+    // 10s, one continuous take: turn, walk, camera swings right, Nova crosses
+    // and settles on the tower, he sits, the monitor powers on. Measured: no
+    // cut (peak frame-to-frame motion sits inside a smooth ramp, not a spike),
+    // the power-on runs 8.6s to 9.1s, and the last frame matches the pinned end
+    // frame to within 6% of pixels. head is 0: unlike the other two clips this
+    // one has no dark opening ramp, measured at +0.02 levels against settled.
+    walk: { src: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
+               + 'hf_20260919_231638_4d06b164-e302-407c-8efc-ba043f01df0e.mp4', head: 0 },
   };
   const POSTER = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
                + 'hf_20260918_131857_3f470988-9df8-4d61-98f6-e316d6f6ad9e.png';
@@ -363,7 +389,11 @@ h1{
     let armed = false;
     const at = () => {
       const end = C.duration || 10;
-      if (!armed && C.currentTime >= end - TAKE) { armed = true; cover.classList.add('take'); }
+      if (!armed && C.currentTime >= end - TAKE) {
+        armed = true;
+        C.classList.add('settle');      // ease --clip-lift out, see the CSS
+        cover.classList.add('take');
+      }
     };
     if (C.requestVideoFrameCallback) {
       const tick = () => { at(); if (!armed) C.requestVideoFrameCallback(tick); };
