@@ -449,9 +449,9 @@ work over generative retries where the two are interchangeable.
 
 ## The end frame, and the two lines that were costing the most
 
-**Use generation `7d173967-d6b1-459b-b3ce-770a78076907`, unmodified.** Pass it
-to the walk call as the end image. It is the first generation in this project
-to hit every target raw, with no crop and no colour surgery.
+**Use media `f9a03660-1c4b-47b0-8323-95918531479d`.** That is generation
+`10dffcf6-095a-487c-956e-6478ceebc14b` cropped to 90% and rescaled, nothing
+else touched. Pass it to the walk call as the end image.
 
 | Measure | Target | Result |
 |---|---|---|
@@ -538,3 +538,75 @@ what sits between them.
 Before trusting any detector, print a 72x26 ASCII luminance map. It settles in
 one call what a detector will argue about for three, and it is how the vignette
 in variant D was spotted.
+
+## What finally worked on the end frame, and what it cost
+
+Nine generations. Every one of the first six failed on a line the prompt itself
+put there, and the run only converged once Kemal supplied a reference and took
+over the direction.
+
+**The sequence of self-inflicted failures**, kept because each is a rule:
+
+1. *"from just behind and slightly above a seated person's shoulder"* tilted the
+   camera, and the model overshot into a low angle looking up at the monitor.
+2. *"slightly brighter at the centre and very gently softer toward the edges"*
+   produced a centre hotspot 15.8 levels hot, which was then written up as a
+   defect. Explicit negatives (no vignette, no radial glow, no hotspot, no
+   bloom, no gradient, corners as bright as the centre) took it to +0.1. The
+   hedged phrasing "evenly backlit" on its own did nothing.
+3. An exhaustive list of what to *exclude* with no list of what to *include*
+   returned a screen floating in empty space. Asking for the arm after that
+   produced one so thin Kemal called it wire.
+4. Keeping a shoulder in frame contradicts the move: the camera has already
+   pushed past him by the last frame. One attempt drew it as the top of a chair
+   he would supposedly be sitting on.
+
+**The thing that unlocked it was a reference image, not a better prompt.**
+Kemal supplied a product-style render of a monitor on an arm, and it solved a
+constraint that had been treated as unavoidable. Shot dead on, an arm mounted
+*behind* the monitor is occluded by it, so showing the arm costs screen height.
+An arm entering from the **lower left** is visible at any zoom. The trade
+disappears once the arm is off-axis.
+
+**The final frame** is generation `10dffcf6` cropped to 90% and rescaled to
+2752x1536, aspect preserved to five decimal places, with 30% of the removed
+height taken off the top and 70% off the bottom. What was floating was not the
+arm, which already ran to the frame edge, but the desk *clamp foot*, which
+flares out from about y=1490 and clamps onto nothing. The crop cuts above it.
+Screen went from 62.5% x 61.3% to 69.5% x 68.1%. Panel measures 235.58,
+red-minus-green -0.12, identical to the source, because nothing but the crop
+was applied.
+
+### Wan 3.0 will not take keyframes and references together
+
+`start_image`/`end_image` cannot be combined with `image_references`: the
+backend rejects it with a 422. It is one or the other.
+
+Keyframes win, always. Pinning both ends is the entire reason the stitch is
+invisible. The consequence is that anything not present in the start frame has
+to be carried by the prompt text: the desk, the monitor and its arm, the tower,
+the easel and the cat. The hub props are safe either way, because the start
+frame locks them harder than a photograph would.
+
+This also retires the standing advice to "pass all seven references, always".
+That rule holds for **image** generation. For a keyframed video it is not
+available.
+
+### A blocked agent should not pretend to have looked
+
+The result CDN and the input CDN are both blocked from the agent container;
+only the S3 *input* host is reachable, which is why uploads work and reads do
+not. So the agent cannot see any generation it makes.
+
+Reporting luminance tables in that situation reads as if the image had been
+reviewed, and it had not. The tables were accurate and still missed a floating
+screen, a wire-thin arm and whatever Kemal saw as glitching, because none of
+those are luminance. Say plainly that the image has not been seen, and ask for
+it to be pasted into the chat, which is the one path that does work: images the
+user attaches are visible.
+
+Three bright-region detectors gave confidently wrong answers before one worked.
+In a white studio the background is as bright as the screen, so brightness
+cannot locate the monitor. **Find the dark bezel bars and take the screen as
+what sits between them.** Print a 72x26 ASCII luminance map before trusting any
+detector at all.

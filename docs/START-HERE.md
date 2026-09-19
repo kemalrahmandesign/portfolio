@@ -26,7 +26,7 @@ which is also the default branch.
 | Wave clip, 5s | done, `ed3c524f-cea1-4b6c-8683-46edd68f159f` |
 | Idle loop, 10s | done, `adac86ab-3d37-41ff-860a-4c713b405a9c` |
 | Hero page | built, deployed |
-| End frame (monitor, white) | done, generation `7d173967-d6b1-459b-b3ce-770a78076907` |
+| End frame (monitor on its arm) | done, media `f9a03660-1c4b-47b0-8323-95918531479d` |
 | Walk clip | **prompt ready, not generated** — `walk-clip-prompt.md` |
 
 The walk clip is the last generation. It starts on the hub frame and ends on
@@ -89,7 +89,15 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
   before assuming the cap is gone. The cap counts submissions, so a refused and
   refunded job still costs a slot.
 - **Preset recommendations block video submission.** Retry with
-  `declined_preset_id` set to the offered preset.
+  `declined_preset_id` set to the offered preset. The walk prompt drew
+  "IN THE DARK".
+- **Wan 3.0 rejects keyframes plus references** with a 422. `start_image` and
+  `end_image` cannot be combined with `image_references`. Keyframes win, so
+  anything absent from the start frame must be carried by the prompt text.
+- **The agent cannot see any image it generates.** Both result and input CDNs
+  are blocked; only the S3 input host is reachable, which is why uploads work.
+  Images Kemal attaches to the chat *are* visible, so ask him to paste a result
+  back rather than reporting statistics as if they were a look.
 
 ## The three findings that cost the most to learn
 
