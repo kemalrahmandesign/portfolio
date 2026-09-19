@@ -19,7 +19,7 @@
   --clip-warm:1.02;
 
   --pad:clamp(20px,3.4vw,64px);
-  --head:clamp(52px,11.6vw,196px);
+  --head:clamp(62px,14.4vw,250px);
   --stage-max:1800px;
 }
 
@@ -67,6 +67,8 @@ body{
 h1{
   margin:0;font-weight:800;letter-spacing:-.045em;line-height:.92;
   font-size:var(--head);
+  /* Centred on the frame, which is where he stands, rather than flush left. */
+  text-align:center;
 }
 .word{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.08em}
 .word > span{
@@ -76,7 +78,13 @@ h1{
 .is-in .word > span{transform:translateY(0)}
 
 /* ---------- call to action ---------- */
-.cta-wrap{display:flex;align-items:center;justify-content:flex-end;padding-right:clamp(0px,4vw,90px)}
+/* Pulled out of the grid flow so it sits at the middle of the screen rather
+   than the middle of whatever space the headline leaves behind. */
+.cta-wrap{
+  position:absolute;top:50%;transform:translateY(-50%);
+  right:clamp(14px,2.2vw,44px);
+  display:flex;align-items:center;justify-content:flex-end;
+}
 .cta{
   pointer-events:auto;appearance:none;cursor:pointer;
   font:inherit;font-weight:700;font-size:clamp(17px,1.65vw,27px);
@@ -123,8 +131,11 @@ h1{
   color:#8d8b87;font-weight:500}
 
 @media (max-width:760px){
-  h1{font-size:clamp(42px,13.5vw,90px)}
-  .cta-wrap{justify-content:flex-start;align-items:flex-end;padding:0 0 16vh}
+  h1{font-size:clamp(46px,15vw,104px)}
+  .cta-wrap{
+    position:static;transform:none;
+    justify-content:center;align-items:flex-end;padding:0 0 16vh;
+  }
 }
 @media (prefers-reduced-motion:reduce){
   .word > span{transition:none;transform:none}
