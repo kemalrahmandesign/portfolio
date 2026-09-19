@@ -43,6 +43,16 @@ body{
 }
 .stage video.is-live,.stage img.is-live{opacity:1}
 
+/* Shown only when the clips cannot be fetched, so the layout still reads. */
+.stage-missing{
+  position:absolute;left:50%;bottom:8%;transform:translateX(-50%);
+  width:min(62%,880px);aspect-ratio:16/9;
+  border:2px dashed rgba(10,10,10,.22);border-radius:12px;
+  display:none;place-items:center;text-align:center;
+  color:rgba(10,10,10,.42);font-size:14px;line-height:1.5;padding:20px;
+}
+.stage.is-empty .stage-missing{display:grid}
+
 .overlay{
   position:relative;z-index:2;min-height:100svh;
   max-width:var(--stage-max);margin:0 auto;padding:var(--pad);
@@ -127,6 +137,10 @@ h1{
     <img id="poster" alt="" src="">
     <video id="vidA" playsinline muted preload="auto"></video>
     <video id="vidB" playsinline muted preload="auto"></video>
+    <div class="stage-missing">
+      Scene clips can&rsquo;t be fetched from here.<br>
+      Layout, type and motion above are live.
+    </div>
   </div>
 
   <div class="overlay">
@@ -206,6 +220,10 @@ h1{
   }
 
   /* ---- boot ---- */
+  // If the media host is unreachable, fall back to the layout-only view rather
+  // than an empty frame.
+  poster.onerror = () => stage.classList.add('is-empty');
+  A.onerror = B.onerror = () => stage.classList.add('is-empty');
   poster.src = POSTER;
   poster.classList.add('is-live');
   requestAnimationFrame(() => hero.classList.add('is-in'));
