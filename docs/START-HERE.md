@@ -26,28 +26,30 @@ which is also the default branch.
 | Wave clip, 5s | done, `ed3c524f-cea1-4b6c-8683-46edd68f159f` |
 | Idle loop, 10s | done, `adac86ab-3d37-41ff-860a-4c713b405a9c` |
 | Hero page | built, deployed |
-| End frame (monitor, white) | **prompt ready, not generated** — `end-frame-prompt.md` |
+| End frame (monitor, white) | done, media `7b3f10b4-daff-47f5-8dff-817e2d871796` |
 | Walk clip | **prompt ready, not generated** — `walk-clip-prompt.md` |
 
-Next two jobs are the end frame, then the walk clip using it as the end image.
+The walk clip is the last generation. It starts on the hub frame and ends on
+the end frame above.
 
-## What Kemal needs to re-send
+## Reference images
 
-Reference images live in the chat that received them, not in this repo, and
-**not in Higgsfield yet**. A new session needs him to re-attach:
+All re-sent and uploaded on 2026-09-19. Nothing is outstanding.
 
-1. The **studio version of his desk** — his real desk composited onto a white
-   background with the paper lantern. This is the good one; it measures neutral
-   (red minus green `-0.24`) and sits at 236 luminance.
-2. The **original easel photo** — the green cartoon figure on orange. The studio
-   render replaced it with a generic abstract, and it is a personality detail.
-3. **Nova lying on the PC tower.**
-4. The **PC tower close-up.**
+```
+painting on easel (the Squidward)  c9933ed2-a0f4-4162-a097-3cc6d6f2b15c
+Nova lying on the PC tower         b90c0b3f-e8d0-4724-a6af-062ba4a0abd5
+Nova, full body on the floor       28c8ae01-229f-47e6-8013-0123338f9e00
+PC tower, close                    a1c507b8-5093-484d-943b-33144e4d4daa
+desk layout, already in studio     900f41ac-ce38-4bf8-be62-e4f2b345cc06
+```
 
-Uploading attached images to Higgsfield needs `media_upload_widget`, called as
-the only tool in its turn.
+`media_upload_widget` does not render in Claude Code. The path that works is
+`media_upload` for presigned URLs, PUT the bytes (the S3 *input* host is allowed
+through the egress proxy even though the *result* CDN is not), then
+`media_confirm`.
 
-Already uploaded and safe to reference by id:
+Earlier uploads, still valid:
 
 ```
 face closeup     fc39e6cc-91c9-4fc5-bdc1-01299706aaa0
