@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kemal Rahman</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Page tone, taken from the Figma reference. */
+  --bg:#f1f0ee;
+  --ink:#0a0a0a;
+
+  /* The clips render their studio at about 222 luminance, the design sits
+     nearer 241. This lifts the video to match instead of dulling the page. */
+  --clip-lift:1.085;
+  --clip-warm:1.02;
+
+  --pad:clamp(20px,3.4vw,64px);
+  --head:clamp(52px,11.6vw,196px);
+  --stage-max:1800px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:100svh;width:100%;overflow:hidden;isolation:isolate}
+
+.stage{position:absolute;inset:0;z-index:0}
+.stage video,.stage img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center bottom;
+  filter:brightness(var(--clip-lift)) saturate(var(--clip-warm));
+  opacity:0;transition:opacity .22s linear;
+}
+.stage video.is-live,.stage img.is-live{opacity:1}
+
+.overlay{
+  position:relative;z-index:2;min-height:100svh;
+  max-width:var(--stage-max);margin:0 auto;padding:var(--pad);
+  display:grid;grid-template-rows:auto 1fr;pointer-events:none;
+}
+
+/* ---------- headline ---------- */
+h1{
+  margin:0;font-weight:800;letter-spacing:-.045em;line-height:.92;
+  font-size:var(--head);
+}
+.word{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.08em}
+.word > span{
+  display:inline-block;transform:translateY(110%);
+  transition:transform .82s cubic-bezier(.16,1,.3,1);
+}
+.is-in .word > span{transform:translateY(0)}
+
+/* ---------- call to action ---------- */
+.cta-wrap{display:flex;align-items:center;justify-content:flex-end;padding-right:clamp(0px,4vw,90px)}
+.cta{
+  pointer-events:auto;appearance:none;cursor:pointer;
+  font:inherit;font-weight:700;font-size:clamp(17px,1.65vw,27px);
+  letter-spacing:-.01em;color:var(--ink);background:transparent;
+  border:2px dashed var(--ink);border-radius:999px;
+  padding:.62em 1.25em;display:inline-flex;align-items:center;gap:.6em;
+  opacity:0;transform:translateY(14px);
+  transition:opacity .5s ease .55s,transform .5s cubic-bezier(.16,1,.3,1) .55s,
+             background-color .18s ease,color .18s ease;
+}
+.is-in .cta{opacity:1;transform:translateY(0)}
+.cta:hover,.cta:focus-visible{background:var(--ink);color:var(--bg)}
+.cta .arw{transition:transform .18s ease}
+.cta:hover .arw{transform:translateX(4px)}
+
+/* ---------- skip ---------- */
+.skip{
+  position:absolute;left:var(--pad);bottom:var(--pad);z-index:3;pointer-events:auto;
+  appearance:none;border:0;background:transparent;font:inherit;font-size:14px;
+  color:var(--ink);opacity:.45;cursor:pointer;text-decoration:underline;
+  text-underline-offset:3px;
+}
+.skip:hover{opacity:.85}
+
+/* ---------- the handoff ---------- */
+/* A CSS-drawn cover, so the seam is CSS white against CSS white and never
+   depends on the video's encoded white matching the page. */
+#cover{
+  position:fixed;inset:0;z-index:40;background:#fff;
+  opacity:0;pointer-events:none;
+}
+#cover.flare{animation:flare 620ms steps(1,end) forwards}
+@keyframes flare{
+  0%{opacity:0}  8%{opacity:.55} 13%{opacity:0}
+  22%{opacity:.8} 27%{opacity:.15}
+  38%{opacity:1}  100%{opacity:1}
+}
+#cover.clear{opacity:0;transition:opacity .5s ease}
+
+/* ---------- the site under the hero ---------- */
+.work{max-width:var(--stage-max);margin:0 auto;padding:clamp(60px,9vw,150px) var(--pad)}
+.work h2{font-size:clamp(28px,4.4vw,64px);letter-spacing:-.035em;margin:0 0 .5em}
+.grid{display:grid;gap:clamp(14px,1.8vw,26px);grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.card{aspect-ratio:4/3;border-radius:14px;background:#e4e3e0;display:grid;place-items:center;
+  color:#8d8b87;font-weight:500}
+
+@media (max-width:760px){
+  h1{font-size:clamp(42px,13.5vw,90px)}
+  .cta-wrap{justify-content:flex-start;align-items:flex-end;padding:0 0 16vh}
+}
+@media (prefers-reduced-motion:reduce){
+  .word > span{transition:none;transform:none}
+  .cta{transition:none;opacity:1;transform:none}
+  #cover.flare{animation:none;opacity:1}
+}
+</style>
+</head>
+<body>
+
+<section class="hero" id="hero">
+  <div class="stage" id="stage">
+    <img id="poster" alt="" src="">
+    <video id="vidA" playsinline muted preload="auto"></video>
+    <video id="vidB" playsinline muted preload="auto"></video>
+  </div>
+
+  <div class="overlay">
+    <h1 id="headline">Hi, I&rsquo;m Kemal</h1>
+    <div class="cta-wrap">
+      <button class="cta" id="cta">Cool Sh*t <span class="arw">&rarr;</span></button>
+    </div>
+  </div>
+
+  <button class="skip" id="skip">Skip intro</button>
+</section>
+
+<main class="work" id="work" hidden>
+  <h2>Selected work</h2>
+  <div class="grid">
+    <div class="card">Case study</div><div class="card">Case study</div>
+    <div class="card">Case study</div><div class="card">Case study</div>
+  </div>
+</main>
+
+<div id="cover"></div>
+
+<script>
+(() => {
+  const CDN = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/';
+  const CLIPS = {
+    // Wave plays once on load, then hands to idle. Both end on the hub frame.
+    // In the wave clip the arm starts rising at 0.5s and peaks from 1.5 to 3.4s,
+    // which lands it mid-headline.
+    wave: CDN + 'ed3c524f-cea1-4b6c-8683-46edd68f159f.mp4',
+    idle: CDN + '1e31d7f1-7b9c-493c-875d-f6dc067deb59.mp4',
+    walk: null,                                        // pending generation
+  };
+  // The hub frame. Every clip starts and ends on it, so it doubles as the
+  // poster and as the whole hero on mobile and reduced motion.
+  const POSTER = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
+               + 'hf_20260918_131857_3f470988-9df8-4d61-98f6-e316d6f6ad9e.png';
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mobile  = matchMedia('(max-width: 760px)').matches;
+
+  const hero = document.getElementById('hero');
+  const stage = document.getElementById('stage');
+  const poster = document.getElementById('poster');
+  const cta = document.getElementById('cta');
+  const skip = document.getElementById('skip');
+  const cover = document.getElementById('cover');
+  const work = document.getElementById('work');
+  let A = document.getElementById('vidA'), B = document.getElementById('vidB');
+
+  /* ---- headline: split to words, rise from below, stagger left to right ---- */
+  const h1 = document.getElementById('headline');
+  h1.innerHTML = h1.textContent.trim().split(' ').map((w, i) =>
+    `<span class="word" style="transition-delay:${i * 90}ms">` +
+    `<span style="transition-delay:${i * 90}ms">${w}</span></span>`
+  ).join(' ');
+
+  /* ---- clip playback: two stacked elements, swap by opacity ---- */
+  function show(el){
+    el.classList.add('is-live');
+    (el === A ? B : A).classList.remove('is-live');
+    poster.classList.remove('is-live');
+  }
+  function play(url, {loop = false, onEnd} = {}){
+    if (!url) return null;
+    const next = A.classList.contains('is-live') ? B : A;
+    next.loop = loop;
+    next.onended = null;
+    next.src = url;
+    next.currentTime = 0;
+    const go = () => { show(next); [A, B] = [next, next === A ? B : A]; };
+    if (onEnd) next.onended = onEnd;
+    const p = next.play();
+    if (p && p.catch) p.catch(() => {});
+    next.readyState >= 2 ? go() : next.oncanplay = go;
+    return next;
+  }
+
+  /* ---- boot ---- */
+  poster.src = POSTER;
+  poster.classList.add('is-live');
+  requestAnimationFrame(() => hero.classList.add('is-in'));
+
+  if (!reduced && !mobile) {
+    // The wave lands mid-headline: the clip holds still for ~0.5s first,
+    // which is roughly when the second word is arriving.
+    if (CLIPS.wave) play(CLIPS.wave, { onEnd: () => play(CLIPS.idle, {loop:true}) });
+    else play(CLIPS.idle, { loop: true });
+  }
+
+  /* ---- the handoff into the monitor ---- */
+  function reveal(){
+    work.hidden = false;
+    document.body.style.overflow = '';
+    hero.style.display = 'none';
+    cover.classList.remove('flare');
+    cover.classList.add('clear');
+    window.scrollTo(0, 0);
+  }
+  function enter(){
+    cta.disabled = true;
+    if (!CLIPS.walk || reduced || mobile) { cover.style.opacity = 1; setTimeout(reveal, 180); return; }
+    const v = play(CLIPS.walk, { onEnd: reveal });
+    // Start the flare so it peaks as the screen fills the frame.
+    const fireAt = Math.max(0, (v.duration || 9) - 0.62);
+    const t = setInterval(() => {
+      if (v.currentTime >= fireAt) { clearInterval(t); cover.classList.add('flare'); }
+    }, 40);
+  }
+  cta.addEventListener('click', enter);
+  skip.addEventListener('click', () => { cover.style.opacity = 1; setTimeout(reveal, 160); });
+})();
+</script>
+</body>
+</html>
