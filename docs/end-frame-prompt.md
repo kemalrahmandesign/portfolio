@@ -36,19 +36,40 @@ uncovered underneath it.
 
 ## References
 
-Desk photographs are worth having but are **not** blocking this frame. At this
-distance the desk is mostly out of shot; what is actually on screen is the
-monitor, its bezel, and Nova. Those are covered by photographs already uploaded.
-
 ```
 512cb519-021c-469e-a277-4a87f2db7bfa   PC tower with cat
 0beed3b6-923e-45ec-ad8d-a4a8b20c5d80   cat (Nova)
-03415c45-a290-4886-b366-d4df6e253c8b   painting on easel
 7d9079c7-f8b9-410e-83cb-9ffdf1619225   cartoon style reference
+<pending>                              desk, wide
+<pending>                              PC tower, close
+<pending>                              Nova lying on the tower
+<pending>                              painting on its easel
 ```
 
 Do not pass the hub frame or any other full scene. A previous full frame locks
 the composition, which is the mistake documented in the production notes.
+
+**The desk photographs are of a warm beige room with a paper lantern, a wood
+floor and a white door.** The scene is a white studio cyclorama. Use the
+photographs for the shapes and colours of the objects only; nothing about that
+room comes across. Say so in the prompt, because a reference photograph with
+strong ambient colour will drag it in.
+
+## Nova is not in this frame, and that is a correction
+
+The first draft of this prompt had her lying along the top of the monitor. She
+does not. The photograph shows her on top of the tower, which is where Kemal
+said she goes ("she jumps up on desk and then on my pc"), and his monitor is on
+a thin articulating arm with no top surface to lie on anyway.
+
+That matters for the framing. The tower stands to the right of the monitor, so
+once the screen fills 85 to 90 percent of the frame the tower is outside it and
+she is not visible. Putting her in the end frame would mean either shrinking the
+monitor or moving her somewhere she does not sit.
+
+So she is not in the last frame. The beat where he reaches out to pet her comes
+earlier in the push-in, while the tower is still in shot, which is what Kemal
+described anyway: he pets her as the view is *nearly* at the monitor, not at it.
 
 ## Prompt
 
@@ -57,12 +78,11 @@ the composition, which is the mistake documented in the production notes.
 > textures, gentle global illumination.
 >
 > FRAMING, the most important requirement. An extreme close push-in on a
-> computer monitor, shot from just behind and slightly above a seated person's
-> shoulder. The monitor is enormous in frame: its screen fills about 85 to 90
-> percent of the picture height and runs past the left and right edges, with
-> only a thin dark bezel visible along the top and sides. The camera is close
-> enough that the screen dominates everything. No wide view of the room, no
-> visible desk surface beyond a sliver at the very bottom edge.
+> widescreen computer monitor, shot from just behind and slightly above a
+> seated person's shoulder. The monitor is enormous in frame: its screen fills
+> about 85 to 90 percent of the picture height and runs past the left and right
+> edges, with only a thin dark bezel visible along the top and sides. The camera
+> is close enough that the screen dominates everything.
 >
 > THE SCREEN. The monitor is switched on and the screen is a clean, even, blank
 > white, glowing softly and evenly with no image, no icons, no text, no windows,
@@ -72,15 +92,14 @@ the composition, which is the mistake documented in the production notes.
 >
 > WHAT ELSE IS IN FRAME. Along the very bottom edge, slightly out of focus, the
 > top of the seated person's shoulder and the back of his long dark wavy hair,
-> dark against the glow, cropped by the frame. In the upper left, the grey
-> tabby cat from the reference photograph lying along the top of the monitor,
-> seen from behind and below, with her tail hanging down across the edge of the
-> screen. She is relaxed and settled. Everything except the screen sits in soft
-> shallow focus.
+> dark against the glow, cropped by the frame. Nothing else. No cat.
 >
-> LIGHT. The screen is the only light source. It throws a soft white rim onto
-> the cat, the bezel and the shoulder, and everything not lit by it falls into
-> soft neutral grey. Clean and calm, not dramatic.
+> LIGHT AND SETTING. The room is a seamless pure neutral white studio, not a
+> home. The screen is the only light source: it throws a soft white rim onto the
+> bezel and the shoulder, and everything not lit by it falls to soft neutral
+> grey. Clean and calm, not dramatic. Absolutely no warm or orange ambient
+> light, no lamp glow, no beige or tan walls, no wood floor, no door and no
+> domestic room of any kind.
 >
 > No text, no letters, no logos, no watermark, no user interface elements, no
 > other people.
