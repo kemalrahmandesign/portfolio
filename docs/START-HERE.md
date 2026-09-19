@@ -91,6 +91,9 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
 - **Preset recommendations block video submission.** Retry with
   `declined_preset_id` set to the offered preset. The walk prompt drew
   "IN THE DARK".
+- **FLUX 3 cuts the take.** It is the only model that carries references, and it
+  inserted two hard cuts (f93, f105) on the walk prompt. Do not use it for a
+  continuous move. Get references in via an intermediate keyframe instead.
 - **Only FLUX 3 Video takes keyframes and references together.** Wan 3.0 rejects
   the combination with a 422, and **Veo accepts no reference images at all** (Veo
   3 and 3.1 take a start frame only; 3.1 Lite takes start and end, capped at 8s).

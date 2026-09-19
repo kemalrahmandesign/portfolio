@@ -630,3 +630,52 @@ In a white studio the background is as bright as the screen, so brightness
 cannot locate the monitor. **Find the dark bezel bars and take the screen as
 what sits between them.** Print a 72x26 ASCII luminance map before trusting any
 detector at all.
+
+## The model bake-off, and why the split is the answer
+
+Three models were run on the same walk prompt with the same pinned frames.
+
+| | Wan 3.0 | Veo 3.1 Lite | FLUX 3 Video |
+|---|---|---|---|
+| Takes the object photos | no | **no role exists** | yes |
+| Cuts inserted | none | none | **two, f93 and f105** |
+| Resolution / fps | 1920x1080 @30 | 1280x720 @24 | 1920x1088 @24 |
+| `head` | 0 | 0.533s | ~0 |
+| Last frame vs the pinned end frame | 6.0% of px | 51.6% | 10.9% |
+| Credits, 10s | 35 | - | 90 |
+
+**FLUX is the only model that carries references, and it cut the take twice.**
+At f105 luminance jumps 101 to 163 with 98.4% of pixels changing between
+consecutive frames, and f104/f105 are plainly different pictures. It is also
+1088 pixels tall at 24fps, so it would not have matched the other clips even
+without the cuts.
+
+**Veo 3.1 Lite's end pin is weak.** 51.6% of pixels differ from the frame it was
+given, against 6.0% for Wan: it produces something resembling the end frame
+rather than landing on it. It also opens 3.02 levels *bright* and takes 16
+frames to settle, so it needs a 0.533s head, and it is 720p/24.
+
+Wan 3.0 wins on every measurable axis except references. Which is why the way
+to get the references in is not a different video model:
+
+**Put the objects in a keyframe, not in the video call.** Image generation
+always accepts references. Generate an intermediate still of the desk with the
+tower, cat and painting photographs passed in, approve it as a picture, then run
+two clips that both pin it: hub -> desk, and desk -> monitor. The objects are
+then locked by a frame rather than described in prose, which is the same
+mechanism that makes the hub frame's motorcycle accurate. It also halves the
+beat density, which the ten-beats-in-ten-seconds note warned about.
+
+### The cut test that could not fail
+
+The first cut test thresholded at `6 * median + 5`. With a median motion of
+17.9% that is 112.3%, and no frame can change more than 100% of its pixels, so
+the test was incapable of reporting a cut. It passed all three clips, including
+the one with two obvious cuts in it.
+
+**A cut is local, not global.** Compare each frame's motion against the median
+of the twenty frames around it, and flag a ratio above 3 with absolute motion
+above 55%. On that test FLUX shows 4.3x and 3.9x at its two cuts, Wan's worst
+real frame is 1.3x, and Veo's is 1.9x. Ignore ratios in the opening frames,
+where near-zero motion divided by near-zero neighbours gives meaningless
+thousands.
