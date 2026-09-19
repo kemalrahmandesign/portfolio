@@ -91,6 +91,15 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
 - **Preset recommendations block video submission.** Retry with
   `declined_preset_id` set to the offered preset. The walk prompt drew
   "IN THE DARK".
+- **Veo silently converts `image_references` into extra `start_image`s.** It has
+  no reference role. Passing photos anyway does not error, it hands Veo several
+  competing opening frames. Give Veo objects via its start frame instead, and
+  read the `adjustments` block on every media response.
+- **Veo's filter has returned `nsfw` twice** on this cartoon scene. Credits
+  refund, but any Veo plan needs a fallback.
+- **Never shorten a prompt for one arm of a comparison.** Doing so produced a
+  confident wrong verdict that Veo's end pin and camera were weak; with the full
+  text it beats Wan on both.
 - **FLUX 3 cuts the take.** It is the only model that carries references, and it
   inserted two hard cuts (f93, f105) on the walk prompt. Do not use it for a
   continuous move. Get references in via an intermediate keyframe instead.

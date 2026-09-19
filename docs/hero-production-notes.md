@@ -679,3 +679,61 @@ above 55%. On that test FLUX shows 4.3x and 3.9x at its two cuts, Wan's worst
 real frame is 1.3x, and Veo's is 1.9x. Ignore ratios in the opening frames,
 where near-zero motion divided by near-zero neighbours gives meaningless
 thousands.
+
+## Veo, corrected: the prompt was the variable, not the model
+
+An earlier comparison ran Veo 3.1 Lite against Wan 3.0 and concluded Veo's end
+pin was weak and its camera barely moved. **That conclusion was wrong**, and the
+cause was a confound introduced by the comparison itself: the Veo prompt had
+been shortened to "fit" 8 seconds, merging beats and cutting the camera
+direction down to a clause. Kemal spotted it from the output.
+
+Re-run with the *identical* full prompt, on the same pinned frames:
+
+| | Wan 3.0 | Veo Lite, short prompt | Veo Lite, full prompt |
+|---|---|---|---|
+| Cuts | none | none | none |
+| Directional pan bias | 34.8% | 17.9% | **63.3%** |
+| Cumulative pan | -64px | -69px | **-129px** |
+| Last frame vs the pinned end frame | 6.6% | 51.6% | **5.8%** |
+
+Veo Lite with the full text pans twice as far as Wan, holds the strongest
+directional bias of the three, and lands on the end frame slightly *better*.
+Its real drawbacks are format, not craft: 1280x720 at 24fps against Wan's
+1920x1080 at 30, and a hard cap of 4, 6 or 8 seconds.
+
+**Never shorten a prompt for one arm of a comparison.** Duration is a parameter;
+the text is the variable under test. Compressing it changed two things at once
+and produced a confident, wrong answer about a model.
+
+Repeating the camera instruction as its own opening paragraph, in the
+imperative and with negatives ("the camera moves constantly and never stops...
+never static, never hold still"), is what raised the pan. Same shape as the
+fix for the vignette and the tilt: the model does what the prompt insists on,
+and a clause buried mid-paragraph is not insistence.
+
+### Veo silently turns reference photos into start frames
+
+Veo exposes no reference role: `veo3` and `veo3_1` take `start_image` only,
+`veo3_1_lite` takes `start_image` and `end_image`. Passing `image_references`
+anyway does **not** error. The backend coerces every one of them:
+
+```
+medias[2].role  requested "image_references"  ->  used "start_image"
+reason: "Google Veo 3.1 Lite backend expects schema-key media roles"
+```
+
+So attaching four object photographs hands Veo five competing opening frames.
+This is worse than omitting them, and it fails silently, which is how it would
+be missed. Check the `adjustments` block on every response that carries media.
+
+**The way to give Veo accurate objects is to put them in its start frame.**
+Generate the still with the photographs as references, then hand that still to
+Veo as `start_image`. The objects are then in the picture it begins from.
+
+### Veo's safety filter rejects this scene
+
+Veo 3.1 at `quality: high` returned status `nsfw` on the walk prompt: a cartoon
+man walking to a desk. Veo 3.1 Lite did the same on the idle prompt earlier.
+Credits refund automatically, but it is a standing risk on any Veo run here,
+and it is the reason a Veo-only plan needs a fallback.
