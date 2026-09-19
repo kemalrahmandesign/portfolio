@@ -447,66 +447,94 @@ not return the slot.
 Budget generations accordingly while this lasts, and prefer deterministic image
 work over generative retries where the two are interchangeable.
 
-## The end frame, and what the camera line cost
+## The end frame, and the two lines that were costing the most
 
-Generated 2026-09-19. **Use media `7b3f10b4-daff-47f5-8dff-817e2d871796`.**
-That is generation `2372eaec-7d96-4bca-841b-81ecb044e7b0` cropped and
-white-balanced in code; pass it to the walk call as the end image.
-
-Three attempts, and the useful part is what each one got wrong.
-
-**The camera line was the bug.** The original prompt said "from just behind and
-slightly above a seated person's shoulder". The model took "slightly above" and
-returned a tilted shot that reads as looking *up* at the monitor. Kemal caught
-it immediately and asked for flat and centred, which is right for a reason
-beyond taste: the CSS cover that ramps to white is an axis-aligned rectangle.
-A monitor at an angle means the video's white area is a trapezoid dissolving
-into a rectangle, and that mismatch lands on exactly the frame where the
-handoff happens. Perpendicular and centred makes the two shapes agree.
-
-The replacement prompt names the camera first and says it in negatives: no high
-angle, no low angle, no tilt, no roll, no keystoning, edges parallel to the
-frame. That worked on the first try.
-
-**A blank white screen is where a model puts a vignette.** The variant with no
-shoulder (`36a28624`) came back with a strong radial hotspot, roughly 25 to 30
-levels brighter at the centre than at the edges against an 8-level target. The
-variant that keeps a soft shoulder along the bottom did not. If a future frame
-needs an empty glowing panel, expect the vignette and check for it.
-
-**Framing still does not come from the prompt, and here that costs nothing.**
-Asked for 87% of frame height, got 74.2%. Cropping to 2347x1310 and rescaling
-lands 88.1% exactly. This is the one case where the documented "fix it in code"
-rule is free rather than merely cheap: the region being enlarged is flat white,
-so there is no detail to lose.
-
-**Check the white point on the screen, not just on the background.** The
-cropped frame measured red-minus-green -4.67 and blue-minus-green +5.70: a
-visible blue cast, on a prompt that said "no blue tint" in those words. The
-first attempt had been neutral to within 0.13, so this is per-generation
-variance, not a model-wide bias. Equalising the channel means over the panel
-(gains R 1.0208, G 1.0014, B 0.9787) takes both to 0.00. Same technique as the
-background neutralisation already documented, applied to the screen.
-
-Measured on the delivered frame:
+**Use generation `7d173967-d6b1-459b-b3ce-770a78076907`, unmodified.** Pass it
+to the walk call as the end image. It is the first generation in this project
+to hit every target raw, with no crop and no colour surgery.
 
 | Measure | Target | Result |
 |---|---|---|
-| Screen height | 85-90% | 88.1% |
-| Screen luminance | above 235 | 244.62 |
-| Red minus green | under 1.5 | 0.00 |
-| Blue minus green | under 1.5 | 0.00 |
-| Text or icons on the panel | none | 0.0000% of pixels |
-| Evenness across the panel | under 8 | 10.68 (240.2 to 250.8) |
+| Screen height | 85-90% | 89.5% |
+| Screen luminance | above 235 | 240.88 |
+| Red minus green | under 1.5 | -0.06 |
+| Blue minus green | under 1.5 | -0.09 |
+| Evenness across the panel | under 8 | 1.62 (239.9 to 241.5) |
+| Text or icons | none | 0.0000% of pixels |
 
-The evenness miss is accepted. The spread is a gentle centre-bright falloff,
-which the prompt asked for, and every value in it is between 240 and 251.
+Four attempts. Each one failed on a line the prompt itself put there.
 
-**A measurement trap worth keeping.** Two different bright-region detectors gave
-wrong answers before one worked: "the first bright row in each column" found
-the shoulder, and "rows that are mostly bright" returned the whole frame. Both
-reported the frame as tilted when it was flat. What worked was thresholding at
-225, well above the bezel, and taking rows and columns carrying more than 60%
-of the peak count. When the agent cannot see the image, a coarse ASCII
-luminance map at 76x30 settles in one call what a detector argues about for
-three.
+**"Slightly above the shoulder" is what tilted the camera.** The first frame
+read as looking up at the monitor. Kemal caught it. Flat and perpendicular is
+right for a reason past taste: the CSS cover is an axis-aligned rectangle, so an
+angled monitor means a trapezoid dissolving into a rectangle on exactly the
+handoff frame. Naming the camera first and in negatives (no high angle, no low
+angle, no tilt, no roll, no keystoning, edges parallel to the frame) fixed it in
+one try and has held for every attempt since.
+
+**"Slightly brighter at the centre" is what caused the vignette.** The prompt
+asked for a centre-bright falloff and then the result was written up as a defect
+for having one. Deleting that clause and replacing it with explicit negatives
+(no vignette, no radial glow, no hotspot, no bloom, no gradient, corners as
+bright as the centre) took the centre-to-edge difference from +15.8 levels to
+**+0.1**. A hedged version of the same idea, "evenly backlit" without the
+negatives, still came back at +15.8. The negatives are doing the work.
+
+**Nobody should be in this frame.** Drafts kept a shoulder along the bottom to
+ground the shot. Kemal's objection is the correct one and it is about continuity,
+not composition: the camera has already pushed *past* him by the final frame, so
+he cannot be in it. One attempt rendered the "shoulder" as the top of a chair
+back he would supposedly be sitting on, which is worse than either option. The
+working prompt lists what is absent item by item: no person, no shoulder, no
+head, no hair, no chair, no cat, no desk, no keyboard, no hands.
+
+**Framing did come from the prompt this time**, which is worth recording against
+the standing rule that it never does. Asked for 87%, got 89.5%. The difference
+from the earlier attempts is that the frame is nearly empty, so there is no
+character whose size the model is trading against. The rule still holds wherever
+a figure is in shot.
+
+### The white was never the generation's fault
+
+Kemal asked whether the blue-white end frame was really what the site should be
+built around, and whether something warmer would suit better. Both halves of
+that turned out to be code, not art direction.
+
+The page is `--bg: #f1f0ee`, luminance **240.07**, already slightly warm. The
+delivered panel measures **240.88** and dead neutral. Those are the same white.
+
+Two things in the player then break it:
+
+1. **`--clip-lift: 1.085` blows the panel out.** The lift is calibrated for the
+   hero studio, taking 222 to 241. The end frame's panel is already at 241, so
+   the lift takes it to 261 and it clips to 255 on all three channels. Clipping
+   destroys the hue along with the level, so no amount of warming baked into the
+   still survives it. This is what reads as a harsh cold white at the handoff.
+2. **`#cover` was hardcoded `#fff`**, on a comment asserting the page was 255.
+   It is 240. So the cover ramped to pure white and then cleared fifteen levels
+   down onto the real page, creating a step at the end of the reveal in order to
+   hide one in the middle. Now `var(--bg)`, so clearing it is a no-op.
+
+Fixing the cover is done. Tapering the lift over the take is not, and is the
+remaining piece: the panel needs to arrive at 241 rather than 255.
+
+**The lesson, which is the third time this project has learned it in a different
+costume:** when a generated result looks wrong, check what the prompt or the
+code actually asked for before blaming the model. The tilt, the vignette and the
+cold white were all specified, in writing, by us.
+
+### Measuring a frame the agent cannot see
+
+The result CDN is blocked from the agent container. The S3 *input* host is not,
+which is what makes `media_upload` work for references.
+
+Two bright-region detectors gave confidently wrong answers before one worked.
+"First bright row in each column" found the shoulder; "rows that are mostly
+bright" returned the whole frame. Both reported a flat frame as tilted. In a
+white studio the wall is as bright as the screen, so brightness alone cannot
+find the monitor: **locate the dark bezel bars instead** and take the screen as
+what sits between them.
+
+Before trusting any detector, print a 72x26 ASCII luminance map. It settles in
+one call what a detector will argue about for three, and it is how the vignette
+in variant D was spotted.

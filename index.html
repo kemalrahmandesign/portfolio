@@ -112,11 +112,14 @@ h1{
 /* ---------- the handoff ---------- */
 /* The monitor's power-on flicker happens inside the clip, so this cover has
    only one job: close the gap between the video's white and the page's white.
-   Video encodes limited range, so its white lands near 235 while the page is
-   255, and cutting between the two is a visible step. Ramping up to an opaque
-   CSS white hides it, because the move is toward white rather than a match. */
+
+   It used to be #fff, on a comment that claimed the page was 255. The page is
+   --bg, which is #f1f0ee, luminance 240. So the cover ramped up to pure white
+   and then cleared 15 levels down onto the real page: it created a step at the
+   end of the reveal to hide one in the middle. Painting the cover in --bg
+   instead means clearing it is a no-op, because it is already the page colour. */
 #cover{
-  position:fixed;inset:0;z-index:40;background:#fff;
+  position:fixed;inset:0;z-index:40;background:var(--bg);
   opacity:0;pointer-events:none;
 }
 #cover.take{animation:take 450ms ease-in forwards}

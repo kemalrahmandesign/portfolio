@@ -26,7 +26,7 @@ which is also the default branch.
 | Wave clip, 5s | done, `ed3c524f-cea1-4b6c-8683-46edd68f159f` |
 | Idle loop, 10s | done, `adac86ab-3d37-41ff-860a-4c713b405a9c` |
 | Hero page | built, deployed |
-| End frame (monitor, white) | done, media `7b3f10b4-daff-47f5-8dff-817e2d871796` |
+| End frame (monitor, white) | done, generation `7d173967-d6b1-459b-b3ce-770a78076907` |
 | Walk clip | **prompt ready, not generated** — `walk-clip-prompt.md` |
 
 The walk clip is the last generation. It starts on the hub frame and ends on
