@@ -13,22 +13,55 @@ into the monitor, which goes black. The site then boots on underneath.
 
 ## Clip plan
 
-| Clip | Start frame | End frame | Notes |
-|---|---|---|---|
-| Wave | hub | hub | Plays once on load, hands off to idle |
-| Idle loop | hub | hub | Seamless because both ends are the same still |
-| Walk / sit / push-in | hub | black monitor | One continuous camera move |
+| Clip | Start | End | Model | Status |
+|---|---|---|---|---|
+| Wave | hub | hub | Wan 3.0 | not started |
+| Idle loop | hub | hub | Wan 3.0 | **done**, media `7fef8f52-abc3-4ee6-9a7c-fb8df5d995f1` |
+| Walk / sit / push-in | hub | black | Veo 3.1 | not started |
 
 The hub frame is the single still every clip starts or ends on. That is what
 makes the stitch invisible. The final clip ends on a monitor filling the frame
 with the screen off; the last frames are hard-faded to pure black in ffmpeg and
 the page background is the same black, so the handoff is black-to-black.
 
+## Picking the video model
+
+Veo is the better model but the good tiers cannot pin the last frame, which the
+loops require.
+
+| Model | End frame | Verdict |
+|---|---|---|
+| Veo 3.1, Veo 3 | no | disqualified for loops |
+| Veo 3.1 Lite | yes, but forces 8s | fallback |
+| Wan 3.0 | yes, 2-30s, 1080p | used for the loops |
+
+So: Wan 3.0 for the wave and idle loops, Veo 3.1 at full quality for the walk,
+which only has to start on the hub frame and finish dark. Pass
+`generate_audio: false`; it defaults to true and costs more. A preset
+recommendation can block submission, so pass `declined_preset_id` to retry
+literally.
+
+Veo 3.1 Lite refused the idle prompt with an `nsfw` status, a false positive on a
+cartoon man in a studio. The credits were refunded automatically.
+
+## Baking a seamless loop
+
+The end-frame constraint does not produce a pixel-exact return. The raw idle clip
+differed from its own first frame across 3.06% of pixels, and searching all 120
+frames for a better loop point only reached 2.96%, so trimming does not help.
+
+Fix it in post instead. With `L` frames and a `d`-frame overlap, output `N = L-d`
+frames where `out[i] = clip[i]` for `i >= d`, and
+`out[i] = clip[i]*(i/d) + clip[i+N]*(1-i/d)` for `i < d`. A 15-frame overlap at
+30fps took the wrap mismatch from 3.06% to 0.086% of pixels, and the headline
+area stays clean through the blend. The result loops with a plain `loop`
+attribute, no player-side crossfade needed.
+
 ## Character lock
 
 - Long dark wavy hair to the shoulders, middle part
 - Thin round wire-frame glasses
-- Thin moustache, **no goatee or chin hair** (removed at Kemal's request)
+- Thin moustache **kept** (confirmed 2026-09-19), no goatee or chin hair
 - Cream-white crew-neck tee, light-blue plaid flannel pajama pants, plain
   cream-white low sneakers
 - Pose: weight on one leg, left hand in pocket, right arm loose at his side,
@@ -163,12 +196,13 @@ and FLUX 3 covers 5 to 20 seconds at 1080p.
 
 ## Open items
 
-1. Decide whether the moustache stays. Every clip inherits it, so this gates
-   clip generation.
-2. Agency name and the tagline that sits under "Hi, I'm Kemal."
-3. Generate the three clips from the hub frame, then extract each clip's real
-   last frame with ffmpeg for the poster images rather than trusting the still
-   that was fed in.
+1. Agency name and the tagline that sits under "Hi, I'm Kemal."
+2. Decide whether the motorcycle wobble in the idle loop is acceptable. The
+   props were told to stay rigid; the bike still shifts across 6.3% of its
+   pixels between frames, against 1.4% for the guitar and amp. Fixing it means
+   regenerating the loop.
+3. Generate the wave and walk clips, then extract each clip's real last frame
+   with ffmpeg for the poster images rather than trusting the still fed in.
 4. Build the page: the video stitcher, a skip control, reduced-motion handling,
    a mobile path that shows the hub still instead of the walk, and the
    black-screen boot handoff.
