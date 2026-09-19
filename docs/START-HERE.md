@@ -68,6 +68,8 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
 2. **Agency name and the tagline** under "Hi, I'm Kemal".
 3. **Typeface.** Inter is a placeholder; his Figma uses something tighter.
 4. Whether the new 10s idle reads as calm or as frozen.
+5. Whether to fix the Higgsfield billing or wait out the daily cap. Nothing
+   further can be generated until one of the two happens.
 
 ## Constraints that will bite you
 
@@ -78,9 +80,12 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
   through Higgsfield's `sandbox_exec`, which can reach them.
 - **Do not commit his reference photos.** The repo is public. `refs/` is
   gitignored and must stay that way.
-- **Higgsfield was capped at 5 generation jobs/day** during a payment grace
-  period. Kemal was moving to a paid subscription; confirm before assuming the
-  cap is gone.
+- **Higgsfield is still capped at 5 generation jobs/day** (confirmed
+  2026-09-19). `balance` says `plus` with 1,204 credits and that is misleading:
+  the ledger shows no subscription grant since 6 August, so the renewal has not
+  cleared and the grace period is still on. Check `transactions` for a grant
+  before assuming the cap is gone. The cap counts submissions, so a refused and
+  refunded job still costs a slot.
 - **Preset recommendations block video submission.** Retry with
   `declined_preset_id` set to the offered preset.
 
@@ -93,4 +98,6 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
    previous *full frame* does, and must never be passed.
 3. **Measure the content before rewriting the code.** The "flash" between clips
    was two wrong diagnoses deep before anyone measured luminance and found that
-   both clips open 2.8 levels dark.
+   both clips open 2.8 levels dark. The last open suspect, the poster-to-wave
+   handoff at boot, has since been measured and is clean: 0.24 levels apart.
+   Kemal's read that the flash is fixed is supported by the numbers.

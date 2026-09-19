@@ -133,6 +133,51 @@ same model and will have the same ramp.
 the content before rewriting the compositor. Mean luminance per frame would have
 found this in one pass, on day one.
 
+## The boot handoff was the last suspect, and it is clean
+
+The previous session closed with one unmeasured suspect for the flash: the
+poster-to-wave handoff at boot. The hub PNG is a full-range still and the clips
+decode limited-range, so there was no reason to assume they landed on the same
+value. Measured now, they do.
+
+Comparing the hub PNG against the wave clip, both at 1920x1080, over the studio
+pixels (luminance above 200, which is 86.7% of the frame):
+
+| | studio luminance | red minus green |
+|---|---|---|
+| Hub PNG, cover-cropped to 16:9 | 235.55 | +0.08 |
+| Wave at its head, frame 3 | 235.31 | -1.10 |
+
+**0.24 levels apart**, inside the 0.3-level tolerance that defines `head` in the
+first place. And `--clip-lift` is applied to `.stage img` as well as
+`.stage video`, so both layers are multiplied by 1.085 and both clip to 255 on
+the studio. There is nothing for the boot fade to expose. The suspect is
+cleared; no code change follows from it.
+
+Two things worth keeping from the measurement.
+
+**Skipping the head helps the boot handoff too, it does not trade against it.**
+Against the poster, mean absolute luminance difference is 2.25 levels at the
+clip's frame 0 and 1.80 at frame 3. Seeking past the dark ramp moves the first
+visible frame closer to the still it is replacing, not further away.
+
+**Cover-crop before comparing a still to a clip.** The hub PNG is 2752x1536,
+which is 1.7917, not 16:9's 1.7778. Scaling it to 1920x1080 stretches it by
+0.8% horizontally, and that alone reported 7.74% of pixels differing where the
+correctly cropped comparison reports 4.35%. Nearly half the apparent mismatch
+was measurement error. The browser does `object-fit: cover`; a measurement that
+does not is measuring its own resampling.
+
+The residual 4.35% sits almost entirely on the character and props (28% of
+those pixels, against a studio that matches to a quarter of a level). That is
+codec detail on hair and decals, not an offset, and a 220ms fade covers it.
+
+One small real drift, recorded rather than acted on: the wave clip settles at
+red-minus-green -1.1 to -1.4 where the still is +0.08, so the video is very
+slightly cyan against the poster. Kemal caught the pink cast by eye at +12.9.
+This is an order of magnitude under that, and below the threshold where it is
+worth spending a generation.
+
 ## Never crossfade two layers by fading both
 
 The first attempt at the player-side loop flashed on every wrap, and on every
@@ -370,10 +415,22 @@ walk clip and do almost nothing for the end frame.
 
 On 2026-09-16 Higgsfield refused generations with "You've reached the daily
 generation limit for your grace period." Credits were not the cause; the balance
-was about 1,304. The ledger shows subscription credits granted on 6 August and
-none in September, so the September renewal did not go through and the account
-is in a payment grace period with a daily cap of roughly five generation jobs.
-The cap does reset daily; it had cleared by the next morning.
+was about 1,304.
+
+**Still true on 2026-09-19, and the ledger says why.** `balance` reports
+`subscription_plan_type: "plus"` with 1,204 credits, which looks like an active
+plan and is not one. The transaction history shows subscription credits granted
+on 6 August and nothing since: no September renewal, so the account is still in
+the payment grace period with its daily cap of roughly five generation jobs.
+
+Read the ledger, not the plan field. `plan_type` is the plan on record and stays
+"plus" through a failed renewal; a grant is the only evidence that a renewal
+actually cleared.
+
+The cap counts submissions, not successes. On 19 September it was spent by
+15:54, 15:54, 16:17, 17:23 and 18:21 UTC, and one of those five was the Veo 3.1
+Lite job that was refused and refunded. A refund returns the credits and does
+not return the slot.
 
 Budget generations accordingly while this lasts, and prefer deterministic image
 work over generative retries where the two are interchangeable.
