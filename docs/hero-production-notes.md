@@ -102,6 +102,32 @@ the amplitude halved, every idle frame is close enough to the hub frame that a
 instead would mean up to a 10s delay between the click and anything happening,
 which is worse at every clip length and much worse at this one.
 
+## Never crossfade two layers by fading both
+
+The first attempt at the player-side loop flashed on every wrap, and on every
+clip change. The cause is compositing, not the clips.
+
+Two stacked layers each at opacity a do not sum to one. With the outgoing layer
+fading 1 -> 0 while the incoming one fades 0 -> 1, the midpoint is
+`0.5*new + 0.25*old + 0.25*page`, so about a quarter of the page background
+shows through the middle of every blend. The background is near-white and the
+clips sit around 222 against the page's 241, so each transition brightens. It
+reads as a flash.
+
+The fix is to keep the picture opaque the whole way through: raise the incoming
+layer above the current one, fade it 0 -> 1 while the outgoing one holds at
+full opacity, and drop the outgoing one only once it is completely covered. The
+blend is then exactly `a*new + (1-a)*old`, which sums to one and never touches
+the page beneath.
+
+That is why the stage layers carry no CSS transition. Opacity and z-order are
+driven from the script, because the order matters as much as the timing.
+
+One related trap: raise the incoming layer only once its first frame has
+decoded. The element has just played to its end, so raising it while the seek
+to frame 0 is still in flight shows its last frame for a beat, which is a
+glitch at every wrap.
+
 ## Closing the loop in the player, not in ffmpeg
 
 The 10s clip does not return to its own first frame: 3.88% of pixels differ, and

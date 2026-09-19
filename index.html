@@ -35,19 +35,17 @@ body{
 .hero{position:relative;min-height:100svh;width:100%;overflow:hidden;isolation:isolate}
 
 .stage{position:absolute;inset:0;z-index:0}
+/* Layers start transparent and are driven entirely from the script. There is
+   deliberately no transition here: fading two stacked layers at once lets the
+   page background show through the middle of the blend, which reads as a
+   flash on every swap. The script raises the incoming layer over an outgoing
+   one that stays fully opaque, so the two always sum to a solid picture. */
 .stage video,.stage img{
   position:absolute;inset:0;width:100%;height:100%;
   object-fit:cover;object-position:center bottom;
   filter:brightness(var(--clip-lift)) saturate(var(--clip-warm));
-  opacity:0;transition:opacity .22s linear;
+  opacity:0;z-index:1;
 }
-.stage video.is-live,.stage img.is-live{opacity:1}
-/* The idle does not return to its own first frame, so the wrap is crossfaded
-   in the player. This duration must match XF in the script. */
-.stage.looping video{transition:opacity .34s linear}
-/* The walk begins from whatever pose the idle happens to be in, so it gets
-   a little longer than a swap between two clips that share the hub frame. */
-.stage.handoff video{transition:opacity .32s linear}
 
 /* Shown only when the clips cannot be fetched, so the layout still reads. */
 .stage-missing{
@@ -210,17 +208,44 @@ h1{
     `<span style="transition-delay:${i * 90}ms">${w}</span></span>`
   ).join(' ');
 
-  function show(el){
-    [A, B, C].forEach(v => v.classList.toggle('is-live', v === el));
-    poster.classList.remove('is-live');
+  /* ---- layer compositing ----
+     A dissolve only looks right if the picture stays opaque all the way
+     through it. Fading the outgoing layer out while fading the incoming one
+     in does not do that: at the midpoint both sit near 0.5 and roughly a
+     quarter of the page background shows through, which brightens the frame
+     and reads as a flash. Instead the incoming layer is raised above the
+     current one and fades 0 -> 1 while that one holds at full opacity. The
+     blend is then exactly alpha*new + (1-alpha)*old, and the old layer is
+     only dropped once it is completely covered. */
+  let live = null;
+  function show(el, ms){
+    if (el === live) return;
+    const prev = live;
+    live = el;
+    el.style.transition = 'none';
+    el.style.opacity = '0';
+    el.style.zIndex = '3';
+    void el.offsetWidth;                       // commit before transitioning
+    el.style.transition = ms ? `opacity ${ms}ms linear` : 'none';
+    el.style.opacity = '1';
+    const settle = () => {
+      if (live !== el) return;                 // superseded mid-fade
+      el.style.zIndex = '2';
+      if (prev && prev !== el) {
+        prev.style.transition = 'none';
+        prev.style.opacity = '0';
+        prev.style.zIndex = '1';
+      }
+    };
+    ms ? setTimeout(settle, ms + 30) : settle();
   }
 
-  function playOnce(el, url, onEnd){
+  function playOnce(el, url, onEnd, fade){
     el.loop = false;
     el.onended = onEnd || null;
     el.src = url;
     el.currentTime = 0;
-    const go = () => show(el);
+    const go = () => show(el, fade);
     const p = el.play(); if (p && p.catch) p.catch(() => {});
     el.readyState >= 2 ? go() : (el.oncanplay = go);
   }
@@ -232,19 +257,31 @@ h1{
      help. Instead two elements hold the same clip and the wrap is crossfaded:
      the outgoing copy plays its tail while the incoming one restarts beneath
      it. Nothing is re-encoded and the full 10s is kept. */
+  // Run cb once v is parked on its first frame with that frame decoded.
+  function atStart(v, cb){
+    if (v.readyState < 2) { v.addEventListener('canplay', () => atStart(v, cb), {once:true}); return; }
+    if (v.currentTime < 0.05) { cb(); return; }
+    v.addEventListener('seeked', cb, {once:true});
+    v.currentTime = 0;
+  }
+
   let looping = false;
   function idleLoop(){
     const pair = [A, B];
     pair.forEach(v => { v.loop = false; v.onended = null; v.src = CLIPS.idle; });
     looping = true;
-    stage.classList.add('looping');
     let i = 0;
     const step = () => {
       if (!looping) return;
       const cur = pair[i];
-      cur.currentTime = 0;
-      const p = cur.play(); if (p && p.catch) p.catch(() => {});
-      show(cur);
+      // Raise the layer only once frame 0 is actually decoded. The element has
+      // just played to its end, so raising it while the seek is still in
+      // flight would show its last frame for a beat -- a glitch at every wrap.
+      atStart(cur, () => {
+        if (!looping) return;
+        const p = cur.play(); if (p && p.catch) p.catch(() => {});
+        show(cur, XF * 1000);
+      });
       const watch = () => {
         if (!looping) return;
         const d = cur.duration;
@@ -271,11 +308,11 @@ h1{
   poster.onerror = () => stage.classList.add('is-empty');
   A.onerror = B.onerror = C.onerror = () => stage.classList.add('is-empty');
   poster.src = POSTER;
-  poster.classList.add('is-live');
+  show(poster, 0);
   requestAnimationFrame(() => hero.classList.add('is-in'));
 
   if (!reduced && !mobile) {
-    if (CLIPS.wave) playOnce(C, CLIPS.wave, idleLoop);
+    if (CLIPS.wave) playOnce(C, CLIPS.wave, idleLoop, 220);
     else idleLoop();
     warm(CLIPS.walk);
   }
@@ -295,10 +332,8 @@ h1{
   function enter(){
     cta.disabled = true;
     looping = false;                    // stop the loop watcher
-    stage.classList.remove('looping');
-    stage.classList.add('handoff');
     if (!CLIPS.walk || reduced || mobile) { cover.style.opacity = 1; setTimeout(reveal, 180); return; }
-    playOnce(C, CLIPS.walk, reveal);
+    playOnce(C, CLIPS.walk, reveal, 320);
 
     // Hand over during the clip's final stretch, by which point the monitor has
     // powered on inside the shot and the frame is mostly white.
