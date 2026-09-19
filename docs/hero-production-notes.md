@@ -9,20 +9,48 @@ A stylized 3D cartoon version of Kemal stands in a white studio surrounded by
 static hobby props. The frame idles with small motion (breathing, blink, weight
 shift) and an opening wave. On clicking the call to action he walks right to a
 desk, sits, the cat jumps onto the PC, and the camera pushes past his shoulder
-into the monitor, which goes black. The site then boots on underneath.
+into the monitor, which powers on white. The site is underneath it.
 
 ## Clip plan
 
 | Clip | Start | End | Model | Status |
 |---|---|---|---|---|
-| Wave | hub | hub | Wan 3.0 | not started |
-| Idle loop | hub | hub | Wan 3.0 | **done**, media `1e31d7f1-7b9c-493c-875d-f6dc067deb59` |
-| Walk / sit / push-in | hub | black | Veo 3.1 | not started |
+| Wave | hub | hub | Wan 3.0 | **done**, media `ed3c524f-cea1-4b6c-8683-46edd68f159f`, 5s |
+| Idle loop | hub | hub | Wan 3.0 | **done**, media `1e31d7f1-7b9c-493c-875d-f6dc067deb59`, 3.5s |
+| Walk / sit / push-in | hub | end frame | Wan 3.0 | prompt ready, see `walk-clip-prompt.md` |
 
 The hub frame is the single still every clip starts or ends on. That is what
-makes the stitch invisible. The final clip ends on a monitor filling the frame
-with the screen off; the last frames are hard-faded to pure black in ffmpeg and
-the page background is the same black, so the handoff is black-to-black.
+makes the stitch invisible.
+
+In the wave clip the arm starts rising at 0.5s and is up from 1.5 to 3.4s, which
+puts the wave in the middle of the headline animation rather than before it.
+
+## The handoff, and why it is white
+
+The earlier plan was to end the clip on black and boot the site out of black.
+White is better, for two reasons.
+
+Black costs two transitions where white costs one. The site is white, so ending
+dark means fading down and then back up, and a beat of full black in the middle
+of a click reads as loading rather than as motion.
+
+The second reason is the one that actually decides it. Video encodes in limited
+range, so an encoded white arrives in a browser at roughly 235, not 255. Any
+plan that requires the video's colour to match the page's colour is the same
+class of bug as the pink cast: a value that looks right in the file and wrong on
+the screen. So the seam is drawn in CSS on both sides. A fixed `#fff` cover
+ramps from transparent to opaque over the clip's last 450ms and the page is
+revealed underneath it. Ramping toward white hides the 235/255 step because the
+picture is getting brighter the whole time; it never has to match anything.
+
+The power-on flicker lives inside the clip, which was Kemal's call and is the
+better one. A monitor waking up is a thing happening in the scene. The same
+flicker drawn in CSS over the top is an effect happening to the page. The clip
+carries it, so the cover stays plain.
+
+Timing uses `requestVideoFrameCallback`, which fires per decoded frame.
+`timeupdate` fires roughly four times a second and is loose enough to overshoot
+a 450ms window.
 
 ## Picking the video model
 
@@ -208,15 +236,31 @@ and FLUX 3 covers 5 to 20 seconds at 1080p.
 ## Open items
 
 1. Agency name and the tagline that sits under "Hi, I'm Kemal."
-2. Decide whether the motorcycle wobble in the idle loop is acceptable. The
-   props were told to stay rigid; the bike still shifts across 6.3% of its
+2. A real typeface. Inter is a placeholder; the Figma uses something tighter.
+3. Generate the end frame, then the walk clip. Prompts are written and ready in
+   `end-frame-prompt.md` and `walk-clip-prompt.md`; they are the next two
+   generations.
+4. Host the clips in `media/` rather than off the Higgsfield CDN, and repoint
+   `CLIPS` and `POSTER` at local paths. See `media/README.md`. Until then the
+   page cannot show its own video from a sandboxed preview, and degrades to a
+   dashed placeholder instead.
+5. Decide whether the motorcycle wobble in the idle loop is acceptable. The
+   props were told to stay rigid; the bike still shifts across 4.9% of its
    pixels between frames, against 1.4% for the guitar and amp. Fixing it means
    regenerating the loop.
-3. Generate the wave and walk clips, then extract each clip's real last frame
-   with ffmpeg for the poster images rather than trusting the still fed in.
-4. Build the page: the video stitcher, a skip control, reduced-motion handling,
-   a mobile path that shows the hub still instead of the walk, and the
-   black-screen boot handoff.
+
+## Desk photographs
+
+Kemal offered photographs of his real desk. They are worth having, for the same
+reason the motorcycle photograph was: the difference between his desk and a
+generic one.
+
+They are not blocking, though, and it is worth being precise about why. The end
+frame is 85 to 90 percent monitor screen, so the desk is barely in it; what is
+in it is the bezel, Nova and the glow, all of which are covered by photographs
+already uploaded. The desk is visible in the middle of the walk clip, which is
+driven by text rather than by a pinned frame. So the photographs improve the
+walk clip and do almost nothing for the end frame.
 
 ## Account state
 
