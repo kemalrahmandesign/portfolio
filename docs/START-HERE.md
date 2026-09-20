@@ -88,6 +88,13 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
   cleared and the grace period is still on. Check `transactions` for a grant
   before assuming the cap is gone. The cap counts submissions, so a refused and
   refunded job still costs a slot.
+- **Re-read the parts of the prompt you are not changing.** "Walks off to the
+  right" survived four rounds and is why he vanished from frame at 2.2s: it is
+  an instruction to exit. Each round edits one section and carries the rest
+  forward unexamined.
+- **A cut test cannot see a subject vanish against white.** It needs 55% of
+  pixels to change; a person leaving a white studio moves 10-15%. Track
+  dark-subject area per frame too.
 - **Negatives remove, they do not de-emphasise.** Three attempts to make the
   petting incidental used more and more prohibition and made it more prominent,
   because attention follows word count whichever way a clause is phrased. Name

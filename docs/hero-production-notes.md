@@ -967,3 +967,47 @@ problem by adding a clause. Past some point that makes everything worse at once,
 and the fix is subtraction.
 
 `walk clip, best version: 2179711b-e1f1-4ab7-8de2-1e22144996fd`
+
+## "Walks off to the right" made him walk out of the shot
+
+Kemal reported a weird cut where he simply disappeared. There was no cut. He
+left the frame.
+
+Measured as dark-subject area against the white studio, which is the right
+measure for this scene: the frame holds about 9% dark subject at the start, and
+between 2.2s and 3.4s it collapses to **3.1%**. In the left half of frame, where
+an over-the-shoulder follow should hold him, it goes from 15.1% to **2.94%** and
+climbs back only once the desk arrives.
+
+The cause was one phrase, carried unchanged through four prompts without being
+re-read: **"He turns away and walks off to the right."** *Walks off* means
+exits. It was an instruction to leave the shot, and nothing anywhere in the
+prompt said he should stay in it. The camera then had nothing to follow until
+the desk appeared.
+
+The "de-emphasise the petting" fix almost certainly compounded it. Naming the
+monitor as "THE CAMERA'S ONLY SUBJECT" and adding "never looks at the cat"
+removed him from the camera's attention along with the cat.
+
+The replacement states his presence positively and three times over — "visible
+in every single frame", "staying in the middle of the picture", "he is always in
+shot" — and rebuilds the ending as an over-the-shoulder framing that keeps his
+head and shoulder in the foreground rather than erasing him to clear the view.
+
+**Re-read the parts of the prompt that are not being changed.** Every round here
+edited one section and carried the rest forward untouched. A phrase that was
+wrong from the first draft survives indefinitely, because attention goes to
+whatever broke most recently.
+
+### A cut test cannot see a subject vanish against white
+
+The cut detector requires motion above 55% of pixels. In a white studio the
+character and props are a small dark fraction of the frame, so a person can
+vanish completely while only 10-15% of pixels change. It sails under the
+threshold and the test reports "NONE", which it did.
+
+**Track dark-subject area per frame as well.** A sustained collapse in it is a
+disappearance; the global motion measure will never show one. This is the fifth
+detector in this project to return a confident wrong answer, and the failure
+mode is always the same: it measures the whole frame when the thing that matters
+occupies a small, specific part of it.
