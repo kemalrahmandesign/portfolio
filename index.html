@@ -76,6 +76,26 @@ body{
   filter:brightness(1) saturate(var(--clip-warm));
 }
 
+/* Drive the monitor the rest of the way to full frame.
+
+   The take ends with the panel head on but only filling 70% of the width and
+   68% of the height, measured on the final frame, with the bezel and a band of
+   studio still around it. The camera cannot be pushed further inside the clip
+   without regenerating it, so the last bit of the move is done here.
+
+   Scale 1.5 clears the measured 1.47 needed to cover, with margin so no bezel
+   survives at any viewport aspect. The origin is the panel's centre in the
+   final frame -- 53.5% across, 45.8% down -- not the middle of the screen,
+   because the panel does not sit centred. */
+.stage video.zoom{
+  transition:transform 1400ms cubic-bezier(.33,0,.2,1);
+  transform:scale(1.5);
+  transform-origin:53.5% 45.8%;
+}
+.stage video.zoom.settle{
+  transition:transform 1400ms cubic-bezier(.33,0,.2,1),filter 450ms ease-in;
+}
+
 /* Shown only when the clips cannot be fetched, so the layout still reads. */
 .stage-missing{
   position:absolute;left:50%;bottom:8%;transform:translateX(-50%);
@@ -186,12 +206,30 @@ h1{
 @keyframes take{from{opacity:0} to{opacity:1}}
 #cover.clear{opacity:0;transition:opacity .5s ease}
 
-/* ---------- the site under the hero ---------- */
-.work{max-width:var(--stage-max);margin:0 auto;padding:clamp(60px,9vw,150px) var(--pad)}
-.work h2{font-size:clamp(28px,4.4vw,64px);letter-spacing:-.035em;margin:0 0 .5em}
-.grid{display:grid;gap:clamp(14px,1.8vw,26px);grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
-.card{aspect-ratio:4/3;border-radius:14px;background:#e4e3e0;display:grid;place-items:center;
-  color:#8d8b87;font-weight:500}
+/* ---------- inside the monitor ----------
+   The take ends by filling the screen with the monitor's white panel, so what
+   is underneath has to read as being on that screen rather than as a new page
+   arriving. That means no card grid and no section heading: the camera has
+   just landed, and a wall of chrome would undo the move. A held statement,
+   then a reason to keep going. */
+.work{
+  min-height:100svh;max-width:var(--stage-max);margin:0 auto;
+  padding:var(--pad);display:grid;grid-template-rows:1fr auto;
+}
+.intro{
+  align-self:center;max-width:22ch;
+  font-size:clamp(30px,5.2vw,78px);font-weight:800;
+  letter-spacing:-.04em;line-height:1.04;margin:0;
+}
+.intro .dim{color:rgba(10,10,10,.34)}
+.scroll{
+  justify-self:center;display:flex;flex-direction:column;align-items:center;gap:.7em;
+  padding-bottom:clamp(18px,3vh,40px);
+  font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(10,10,10,.42);
+}
+.scroll .chev{width:18px;height:18px;animation:nudge 1.8s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateY(0);opacity:.5} 50%{transform:translateY(5px);opacity:1}}
 
 @media (max-width:760px){
   h1{font-size:clamp(46px,15vw,104px)}
@@ -201,6 +239,8 @@ h1{
   }
 }
 @media (prefers-reduced-motion:reduce){
+  .scroll .chev{animation:none}
+  .stage video.zoom{transition:none;transform:none}
   .word > span{transition:none;transform:none}
   .cta{transition:none;opacity:1;transform:none}
   #cover.take{animation:none;opacity:1}
@@ -233,10 +273,17 @@ h1{
 </section>
 
 <main class="work" id="work" hidden>
-  <h2>Selected work</h2>
-  <div class="grid">
-    <div class="card">Case study</div><div class="card">Case study</div>
-    <div class="card">Case study</div><div class="card">Case study</div>
+  <p class="intro">
+    Product designer, four&nbsp;years in.
+    <span class="dim">Most of the work is deciding what not to build &mdash;
+    then making what&rsquo;s left feel obvious.</span>
+  </p>
+  <div class="scroll">
+    <span>Scroll</span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6 9l6 6 6-6"/>
+    </svg>
   </div>
 </main>
 
@@ -325,8 +372,26 @@ h1{
 
   // Seconds of crossfade over the idle's wrap. Must match .stage.looping in CSS.
   const XF = 0.34;
-  // Milliseconds of crossfade from the idle into the walk. See enter().
-  const WALK_XF = 500;
+  /* Milliseconds of crossfade from the idle into the walk.
+
+     This was 320, then 500, and is now 140. Lengthening it was a mistake and
+     it is the white flash Kemal saw at the press.
+
+     The reasoning that produced 500 was right for the wrong quantity. The walk
+     clip is a re-render, so it opens on a slightly different pose: the studio
+     matches the idle to 0.85% after --clip-lift, but his own pixels differ
+     across 47.7%. A longer dissolve is the correct treatment for a LEVEL
+     mismatch, where the two images agree on where everything is. For a POSE
+     mismatch it is the worst treatment available: for the whole length of the
+     blend both versions of him are on screen at partial opacity over a studio
+     that --clip-lift has already driven to pure 255, so he washes out toward
+     white and then resolves. Nothing on this page is brighter than that
+     studio, which is why the artefact reads as white specifically.
+
+     A short blend gives the eye no time to resolve the double exposure, and
+     87% of the frame is studio that matches, so there is almost nothing there
+     to see a cut in. */
+  const WALK_XF = 140;
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -478,6 +543,11 @@ h1{
 
   /* ---- the handoff into the monitor ---- */
   const TAKE = 0.45;                    // must match the `take` animation
+  /* Seconds before the end to start pushing the panel to full frame. The clip
+     has the monitor solid white from about 8.2s of 9.71s, so the push starts
+     once there is nothing left to see but the screen, and the 1400ms transition
+     lands as the cover takes over. */
+  const ZOOM = 1.5;
 
   /* Idempotent: the take ending, the watchdog below and the skip button can all
      reach this, and two of them can race on a slow machine. */
@@ -534,9 +604,13 @@ h1{
 
     // Hand over during the clip's final stretch, by which point the monitor has
     // powered on inside the shot and the frame is mostly white.
-    let armed = false;
+    let zoomed = false, armed = false;
     const at = () => {
       const end = C.duration || 10;
+      if (!zoomed && C.currentTime >= end - ZOOM) {
+        zoomed = true;
+        C.classList.add('zoom');        // push the panel to full frame
+      }
       if (!armed && C.currentTime >= end - TAKE) {
         armed = true;
         C.classList.add('settle');      // ease --clip-lift out, see the CSS
