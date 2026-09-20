@@ -808,3 +808,52 @@ adjectives and studio boilerplate go; "NO SIDEBURNS", "five-star castor base",
 because something went wrong without it. 5300 characters came down to 4302 with
 no constraint lost, checked by grepping the trimmed text for each load-bearing
 phrase before sending it.
+
+## Choppiness is duplicate frames, not framerate, and the prompt cannot fix it
+
+Kemal called the walk clip choppy and asked whether it should be 30fps. It
+already was: 1920x1080 at 30fps, 300 frames over 10 seconds. Raising the
+container framerate fixes nothing when the container is already right.
+
+What "choppy" and "aggy" actually measure as, on the clip he was watching:
+
+- **11.0% of consecutive frames were near-duplicates** (33 of 299). The model
+  animates at below 30fps in places and repeats frames. That is the judder.
+- **The camera lurched.** Per-frame motion surged and dropped: 19.6% to 5.2% to
+  9.7%, then 30.5%, 37.0%, 11.7%, 4.3%. Frame-to-frame change in motion averaged
+  3.13 with a peak of 20.8.
+
+**Telling the model not to repeat frames made it worse.** The next generation
+added "fluid animation, no judder, no stuttering, no repeated frames" and came
+back at **19.1%** duplicates, nearly double, with pacing jerk up from 3.13 to
+4.00. Temporal density is not something Wan takes direction on. It is a property
+of what it renders.
+
+The same prompt did fix the camera, though: pan bias went from 3.5%, which is
+jitter that cancels, to 33.8% directional, and cumulative pan from -69px to
+-98px. So "slow, steady, constant speed, never lurch" works on the *path* of the
+camera. It does not work on the *rate* of the animation. Two different problems
+that both feel like "not smooth".
+
+**Fix the rate in post.** Motion-compensated interpolation to 60fps:
+
+```
+ffmpeg -i in.mp4 -vf "minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1" \
+       -c:v libx264 -preset veryfast -crf 19 -pix_fmt yuv420p out.mp4
+```
+
+Pacing jerk fell from **4.00 to 1.76** mean, peak 39.0 to 34.0, at the same
+1920x1080. Free, deterministic, no generation spent.
+
+Do not compare duplicate-frame counts across framerates. The interpolated clip
+reports 22.8% against the source's 19.1%, which looks like a regression and is
+not: at double the rate, adjacent frames are naturally more alike. Pacing jerk
+is the measure that survives a framerate change.
+
+### sandbox_exec is capped at 60s by the client
+
+`timeout_seconds` accepts up to 120 but the MCP client cuts the call at 60
+regardless. Interpolating 10s of 1080p takes about six minutes. Run it with
+`background: true`, write a sentinel file at the end, and poll with
+`sleep 45` calls. Chain the upload PUT into the same background command, since
+the sandbox is discarded shortly after the call that created the file returns.

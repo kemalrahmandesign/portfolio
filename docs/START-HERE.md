@@ -88,6 +88,14 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
   cleared and the grace period is still on. Check `transactions` for a grant
   before assuming the cap is gone. The cap counts submissions, so a refused and
   refunded job still costs a slot.
+- **Choppiness is duplicate frames, not framerate.** The clips are already
+  1080p30. Wan repeats frames (11-19% of them), and telling it not to in the
+  prompt makes it worse. Fix it in post with ffmpeg `minterpolate` to 60fps,
+  which halved the pacing jerk for free. Camera *path* does respond to prompting;
+  animation *rate* does not.
+- **`sandbox_exec` is capped at 60s by the client** whatever `timeout_seconds`
+  says. Long renders need `background: true` plus a sentinel file and `sleep 45`
+  polls, with the upload chained into the same background command.
 - **Wan 3.0 caps prompts at 5000 characters**, undeclared until a submission is
   rejected. The walk prompt is near the ceiling because every fix so far has
   been an added clause. Count before sending, and when trimming cut description,
