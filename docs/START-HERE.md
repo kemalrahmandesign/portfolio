@@ -88,6 +88,10 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
   cleared and the grace period is still on. Check `transactions` for a grant
   before assuming the cap is gone. The cap counts submissions, so a refused and
   refunded job still costs a slot.
+- **Place objects where the camera actually looks.** The easel was put at the
+  desk's far left; the camera swings right, so the lens never went there and it
+  simply did not render. Describing an object is not enough, check the move
+  passes over it. Third instance of this one mistake.
 - **Choppiness is duplicate frames, not framerate.** The clips are already
   1080p30. Wan repeats frames (11-19% of them), and telling it not to in the
   prompt makes it worse. Fix it in post with ffmpeg `minterpolate` to 60fps,

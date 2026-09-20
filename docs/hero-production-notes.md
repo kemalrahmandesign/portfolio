@@ -857,3 +857,43 @@ regardless. Interpolating 10s of 1080p takes about six minutes. Run it with
 `background: true`, write a sentinel file at the end, and poll with
 `sleep 45` calls. Chain the upload PUT into the same background command, since
 the sandbox is discarded shortly after the call that created the file returns.
+
+## Place objects where the camera actually looks
+
+The sunset canvas did not appear in the clip at all, and the reason was
+placement, not wording. The prompt put it "at the LEFT end of the desk". The
+camera swings *right* and pushes in on the monitor, so by the time the desk is
+framed, the desk's left end is already behind the camera. The object was
+specified outside the shot's own path and then asked for.
+
+This is the third instance of one mistake: a chair that was referenced but never
+described, a monitor with no arm because only exclusions were listed, and now an
+easel placed where the lens never points. **Describing an object is not enough.
+Check the camera move will pass over the place you put it.**
+
+The fix keeps it on the left, as asked, but moves it against the monitor's left
+edge so it shares the frame the monitor occupies for the whole push-in.
+
+### How to tell "not rendered" from "rendered but missed"
+
+Do not guess. The scene is white, black and blue, so the sunset canvas was the
+only warm saturated object in it. Scanning every frame for pixels with
+`R > B + 40`, `R > 90` and `R - min(G,B) > 45` found a large warm mass at 6.0 to
+7.2 seconds, peaking at 14.9% of the frame.
+
+That was **not** the painting. Its mean colour was R190 G133 B102, a skin tone,
+and its behaviour — swelling into the near foreground and vanishing — is the arm
+crossing the lens during the petting beat, exactly as scripted. A sunset canvas
+would read as saturated orange, nothing near a neutral tan.
+
+Check the *colour* of what a detector finds, not just that it found something.
+The warm pixels in the first 1.7 seconds are the red motorcycle, which is also
+correct and also not the painting.
+
+### An instruction that made things worse, removed
+
+"Fluid animation, no judder, no stuttering, no repeated frames" took duplicate
+frames from 11.0% to 19.1% and pacing jerk from 3.13 to 4.00. It is dropped from
+the prompt rather than carried forward: a clause with measured negative effect is
+worse than no clause. The camera-path language stays, because that one is
+measured to work.
