@@ -1448,3 +1448,40 @@ from the start and passed every time, because it asserted the behaviour that
 existed rather than the behaviour that was wanted. A test written against a
 placeholder pins the placeholder. When the intent changes, the assertion is the
 thing to change first.
+
+## The fourth flash: animating opacity on a full-viewport layer
+
+Fading the headline and the call to action when the take starts was done the
+obvious way, by animating opacity on `.overlay`, their common parent. Kemal saw
+a flash at the moment of the press immediately afterwards.
+
+The compositing was not at fault, and that was worth establishing before
+touching anything. The idle-to-walk swap was driven in a headless browser with
+synthetic clips dark enough (100 and 110 against a page at 241) that any
+background bleed would be unmissable, and the composite was sampled every
+~35ms across the transition:
+
+| | result |
+|---|---|
+| fast local clip | 109 -> 120, monotonic, no spike |
+| walk delayed 1.5s | holds 109 with A at opacity 1, no gap |
+
+In both cases the outgoing layer sat at opacity 1 under the incoming one and
+only dropped once it was fully covered, exactly as designed. So the layer logic
+is sound in both timing regimes.
+
+What was left was the thing that had just changed. `.overlay` is
+`min-height:100svh` and stacked over a playing video. Animating opacity on an
+element that size makes the compositor promote it to its own layer for the
+duration and re-rasterise, and a re-raster over a decoding video shows as a
+single-frame flash. The elements that actually needed to fade -- the headline,
+the button, the skip link -- are small, so promoting them costs nothing.
+
+**Fade the pieces, not the container.** The container is the convenient handle
+and the wrong one, because its size is what makes the promotion expensive.
+
+The measurement lesson is separate and worth keeping: **a screenshot-sampling
+test forces a fresh raster, so it cannot see a compositor glitch.** Both runs
+above came back clean and the flash was real. What they were good for was
+ruling out the blend, which is what made the remaining cause obvious by
+elimination rather than by guessing at it.
