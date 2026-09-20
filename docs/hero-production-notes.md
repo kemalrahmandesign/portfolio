@@ -1719,3 +1719,43 @@ revives a take the user has already skipped past.
 **A control that cannot be used yet should look busy, not absent.** Hiding it
 removes the affordance; disabling it refuses the input; banking it keeps the
 promise and just defers the payoff.
+
+## The hero layout, measured off the Figma frame
+
+Kemal supplied a 2000x1102 reference. Rather than eyeballing it, every value
+was read off the frame and then verified in the browser:
+
+| | reference | rendered |
+|---|---|---|
+| headline cap height | 165px, so 227px at Inter's 0.727 cap ratio = **11.35vw** | 227px |
+| headline text width | 76.0% of frame | 75.2% |
+| headline top inset | 12.3% of height | 12.0% |
+| tagline size | 28px = **1.38vw** | 28px |
+| tagline centres | 35.8% and 64.3% | 36.3% / 63.6% |
+| pill right inset | 11.0% | 11.0% |
+| pill vertical centre | 50.8% | 50.8% |
+
+Two things that only fell out of measuring.
+
+**The tagline is one line broken around him.** "A seriously good" left, "Product
+designer" right, same baseline, symmetric about 50%. What makes it work is the
+gap, 16.2% of the width, which is what clears his head. A flex row with that
+gap keeps the two halves symmetric at any width, which matters because he is
+centred in the video. On a phone there is no width for both phrases plus a gap
+that wide, so they stack.
+
+**The pill has to be positioned against the frame, not the text column.** It
+was inside `.overlay`, which is capped at `--stage-max` and centred, so at a
+2000px viewport an 11% inset measured inside that container put the pill 16%
+in from the real edge. He is centred in the video, which is full bleed, so the
+pill moved into `.hero` and is measured against the same box the video fills.
+Now 11% holds at every width.
+
+The pill itself: no fill at any time, including hover, which thickens the
+outline instead, because a solid fill at this size covers a real part of the
+shot. The dashes are `2 2` against `pathLength="100"`, so a dash is 2% of the
+perimeter whatever the button's size and the density matches the reference at
+every breakpoint. They travel clockwise because an SVG rect is drawn clockwise
+from its top-left and a negative `stroke-dashoffset` advances along that
+direction; the offset shifts exactly one period (-4) per cycle so the loop is
+seamless, at 2s per period, which is a full lap every 50 seconds.

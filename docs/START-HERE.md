@@ -158,14 +158,14 @@ amp                   7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
 ## Open questions for Kemal
 
 1. Scope of the rest of the site. Deferred until the hero is confirmed live.
-2. The call to action: Kemal is sending Figma screenshots for design
-   direction. Its look and its placement, currently floating mid-right, are
-   both open.
-3. Agency name, and the tagline under "Hi, I'm Kemal".
-4. A real typeface. Inter is a placeholder; his Figma uses something tighter.
-5. Whether to warm `--bg` past `#f1f0ee`. Worth re-judging now the lift taper
+2. Agency name, if one is wanted anywhere.
+3. A real typeface. Inter is still the placeholder. The reference frame's
+   headline looks like a tighter grotesque than Inter, and the layout is
+   pinned to measured percentages rather than to text widths, so swapping the
+   face will shift the headline's width without breaking the composition.
+4. Whether to warm `--bg` past `#f1f0ee`. Worth re-judging now the lift taper
    stops the handoff blowing out to pure white.
-6. The 9:16 regeneration. Mobile now plays the full sequence, but letterboxed:
+5. The 9:16 regeneration. Mobile now plays the full sequence, but letterboxed:
    the 16:9 clips are shown with `object-fit: contain` on portrait, because
    covering a phone viewport shows only ~26% of the frame width and the walk
    pans right out of that slice. Regenerating at 9:16 is the real fix and

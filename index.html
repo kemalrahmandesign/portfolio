@@ -35,7 +35,10 @@
   --clip-warm:1.02;
 
   --pad:clamp(20px,3.4vw,64px);
-  --head:clamp(62px,14.4vw,250px);
+  /* Measured off the Figma frame (2000x1102): the headline cap height is
+     165px, which at Inter's 0.727 cap ratio is a 227px face, or 11.35vw. */
+  --head:clamp(40px,11.35vw,232px);
+  --tag:clamp(13px,1.38vw,29px);
   --stage-max:1800px;
 }
 
@@ -156,17 +159,40 @@ body{
 
 .overlay{
   position:relative;z-index:2;min-height:100svh;
-  max-width:var(--stage-max);margin:0 auto;padding:var(--pad);
+  max-width:var(--stage-max);margin:0 auto;
+  /* The reference sets the headline 12.3% of the frame height down, which is
+     well below the page gutter, so the top inset is its own value. */
+  padding:clamp(28px,12vh,132px) var(--pad) var(--pad);
   display:grid;grid-template-rows:auto 1fr;pointer-events:none;
 }
 
 /* ---------- headline ---------- */
 h1{
-  margin:0;font-weight:800;letter-spacing:-.045em;line-height:.92;
+  margin:0;font-weight:800;letter-spacing:-.05em;line-height:.9;
   font-size:var(--head);
   /* Centred on the frame, which is where he stands, rather than flush left. */
   text-align:center;
 }
+
+/* The tagline reads as one line broken around him: "A seriously good" to his
+   left, "Product designer" to his right, both on the same baseline and
+   symmetric about the centre. In the reference their centres sit at 35.8% and
+   64.3%, so the gap between them is 16.2% of the width. A flex row with that
+   gap keeps them symmetric at any width, which matters because he is centred
+   in the frame and the gap is what clears his head. */
+.tagline{
+  margin:clamp(10px,1.7vh,30px) 0 0;
+  display:flex;justify-content:center;align-items:baseline;
+  gap:clamp(64px,16.2vw,330px);
+  font-size:var(--tag);font-weight:700;letter-spacing:-.005em;
+  white-space:nowrap;
+}
+.tagline span{
+  display:inline-block;opacity:0;transform:translateY(14px);
+  transition:opacity .6s ease .26s,transform .6s cubic-bezier(.16,1,.3,1) .26s;
+}
+.tagline .t-right{transition-delay:.35s}
+.is-in .tagline span{opacity:1;transform:none}
 .word{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.08em}
 .word > span{
   display:inline-block;transform:translateY(110%);
@@ -177,21 +203,31 @@ h1{
 /* ---------- call to action ---------- */
 /* Pulled out of the grid flow so it sits at the middle of the screen rather
    than the middle of whatever space the headline leaves behind. */
+/* Reference puts the pill's right edge 11% in from the frame edge and its
+   centre at 50.8% of the height, which lands it beside his shoulder rather
+   than hard against the margin.
+
+   It sits in .hero rather than in .overlay deliberately. .overlay is capped at
+   --stage-max and centred, so an inset measured inside it is relative to the
+   text column, not the frame: at a 2000px viewport that put the pill 16% in
+   instead of 11%. He is centred in the video, which is full bleed, so the
+   pill has to be positioned against the same box the video fills. */
 .cta-wrap{
-  position:absolute;top:50%;transform:translateY(-50%);
-  right:clamp(14px,2.2vw,44px);
+  position:absolute;z-index:2;top:50.8%;transform:translateY(-50%);
+  right:clamp(16px,11vw,260px);
   display:flex;align-items:center;justify-content:flex-end;
+  pointer-events:none;
 }
 .cta{
   position:relative;
   pointer-events:auto;appearance:none;cursor:pointer;
-  font:inherit;font-weight:700;font-size:clamp(21px,2.15vw,36px);
-  letter-spacing:-.015em;color:var(--ink);background:transparent;
+  font:inherit;font-weight:700;font-size:clamp(15px,1.5vw,31px);
+  letter-spacing:-.01em;color:var(--ink);background:transparent;
   border:0;border-radius:999px;
-  padding:.72em 1.5em;display:inline-flex;align-items:center;gap:.65em;
+  padding:.7em 1.5em;display:inline-flex;align-items:center;gap:.6em;
   opacity:0;transform:translateY(14px);
-  transition:opacity .55s ease,transform .55s cubic-bezier(.16,1,.3,1),
-             background-color .18s ease,color .18s ease;
+  transition:opacity .55s ease .45s,transform .55s cubic-bezier(.16,1,.3,1) .45s,
+             color .18s ease;
 }
 
 /* The dashes travel around the pill.
@@ -205,10 +241,17 @@ h1{
   pointer-events:none;color:inherit}
 .cta .ring rect{
   fill:none;stroke:currentColor;stroke-width:2;
-  stroke-dasharray:6 6;
-  animation:ants 2.4s linear infinite;
+  /* ~25 dashes around the pill, matching the reference's density. With
+     pathLength="100" a dash is 2% of the perimeter whatever the button's real
+     size, so the density holds at every breakpoint. */
+  stroke-dasharray:2 2;
+  animation:ants 2s linear infinite;
 }
-@keyframes ants{ to{stroke-dashoffset:-12} }
+/* Clockwise: an SVG rect is drawn clockwise from its top-left, and a negative
+   dashoffset advances the dashes along that direction. One period is 4 units,
+   so shifting by exactly -4 per cycle makes the loop seamless; a full lap
+   takes 50s, which is the slow drift asked for rather than a chase. */
+@keyframes ants{ to{stroke-dashoffset:-4} }
 
 .is-in .cta{opacity:1;transform:translateY(0)}
 
@@ -217,7 +260,12 @@ h1{
    starts the moment he finishes waving. */
 .hero.armed .cta{cursor:default}
 .hero.armed .cta .ring rect{animation-duration:.55s}
-.cta:hover,.cta:focus-visible{background:var(--ink);color:var(--bg)}
+/* The pill stays unfilled. Hover thickens and darkens the outline rather
+   than flooding it, because a solid fill at this size covers a good part of
+   the shot behind it. */
+.cta:hover,.cta:focus-visible{color:var(--ink)}
+.cta:hover .ring rect,.cta:focus-visible .ring rect{stroke-width:3}
+.cta:focus-visible{outline:none}
 .cta .arw{transition:transform .18s ease}
 .cta:hover .arw{transform:translateX(4px)}
 
@@ -243,8 +291,9 @@ h1{
    The headline, the button and the skip link are small, so promoting them
    costs nothing. They share a duration and easing and start in the same frame,
    so they still leave together. */
-#headline,.cta,.skip{transition:opacity 420ms ease}
+#headline,.tagline,.cta,.skip{transition:opacity 420ms ease}
 .hero.is-leaving #headline,
+.hero.is-leaving .tagline,
 .hero.is-leaving .skip{opacity:0}
 /* .cta carries a 550ms entry delay from .is-in; restate the transition so
    leaving is not held back by it. */
@@ -319,17 +368,23 @@ h1{
 @keyframes nudge{0%,100%{transform:translateY(0);opacity:.5} 50%{transform:translateY(5px);opacity:1}}
 
 @media (max-width:760px){
-  h1{font-size:clamp(46px,15vw,104px)}
+  h1{font-size:clamp(34px,12.5vw,86px)}
+  /* The gap exists to clear him, and on a phone there is not enough width for
+     both phrases plus a gap that wide. They stack and centre instead. */
+  .tagline{
+    flex-direction:column;align-items:center;gap:.25em;
+    font-size:clamp(12px,3.4vw,18px);
+  }
   .cta-wrap{
-    position:static;transform:none;
-    justify-content:center;align-items:flex-end;padding:0 0 16vh;
+    top:auto;bottom:14vh;transform:none;
+    left:0;right:0;justify-content:center;
   }
 }
 @media (prefers-reduced-motion:reduce){
   .scroll .chev{animation:none}
   .cta .ring rect{animation:none}
   .stage video.zoom{animation:none}
-  .intro .line,.scroll{transition:none;opacity:1;transform:none}
+  .intro .line,.scroll,.tagline span{transition:none;opacity:1;transform:none}
   .word > span{transition:none;transform:none}
   .cta{transition:none;opacity:1;transform:none}
   #cover.take{animation:none;opacity:1}
@@ -352,15 +407,20 @@ h1{
   </div>
 
   <div class="overlay">
-    <h1 id="headline">Hi, I&rsquo;m Kemal</h1>
-    <div class="cta-wrap">
+    <h1 id="headline">Kemal Rahman</h1>
+    <p class="tagline">
+      <span class="t-left">A seriously good</span>
+      <span class="t-right">Product designer</span>
+    </p>
+  </div>
+
+  <div class="cta-wrap">
       <button class="cta" id="cta">
         <svg class="ring" aria-hidden="true" focusable="false">
           <rect width="100%" height="100%" rx="999" ry="999" pathLength="100"/>
         </svg>
         Cool Sh*t <span class="arw">&rarr;</span>
       </button>
-    </div>
   </div>
 
   <button class="skip" id="skip">Skip intro</button>
