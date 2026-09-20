@@ -1759,3 +1759,74 @@ every breakpoint. They travel clockwise because an SVG rect is drawn clockwise
 from its top-left and a negative `stroke-dashoffset` advances along that
 direction; the offset shifts exactly one period (-4) per cycle so the loop is
 seamless, at 2s per period, which is a full lap every 50 seconds.
+
+## An SVG rect with rx="999" is an ellipse, not a pill
+
+The call to action rendered as an oval. `border-radius:999px` on a CSS box
+gives a pill because the radius is clamped proportionally, but an SVG rect
+does not work that way: **rx is clamped to half the width and ry to half the
+height, independently.** On a 290x78 button that is a 145px horizontal radius
+against a 39px vertical one, which is an ellipse.
+
+Measured across every way of writing it, on that box:
+
+| form | rx | ry | flat top edge |
+|---|---|---|---|
+| `rx="999" ry="999"` | 999px | 999px | 8.3% |
+| `ry="999"` alone | auto | 999px | 8.3% |
+| `rx="999"` alone | 999px | auto | 8.3% |
+| CSS `rx:999px;ry:999px` | 999px | 999px | 8.3% |
+| **CSS `rx:39px;ry:39px`** | 39px | 39px | **33.8%** |
+
+8.3% is just the apex of a curve. A real pill has a third of its outline flat
+along the top. Note that `ry` alone does not rescue it: `rx:auto` resolves to
+ry's *specified* value and is then clamped to half the width all the same.
+
+A pill needs `rx = ry = height/2`, and CSS has no length that means "half the
+height of this element". So the script measures the button and writes the
+radius into a custom property, re-measuring on resize, which also covers the
+webfont arriving late and the font-size clamp changing with the viewport. The
+`em` fallback in the stylesheet is correct at today's metrics and covers the
+frame before the script runs; the measured value is what keeps it correct when
+the face or the padding changes.
+
+**The general trap: CSS and SVG do not share rounding semantics.** A value
+that is idiomatic in one is wrong in the other, and the failure is visual
+rather than an error.
+
+## Letter-spacing, measured against the reference rather than judged
+
+The reference sets "Kemal Rahman" 1520px wide at a 227px face. Rather than
+nudging the value by eye, Inter's latin subset was fetched and the string
+measured at every plausible combination:
+
+| | -.045em | -.05em | -.055em | -.06em |
+|---|---|---|---|---|
+| Inter 700 | 1522 | 1509 | 1495 | 1482 |
+| **Inter 800** | 1545 | 1532 | **1518** | 1505 |
+| Inter 900 | 1568 | 1555 | 1541 | 1528 |
+
+Inter 800 at -.055em lands 1.8px off 1520, which is 0.1%. Inter 700 at
+-.045em is equally close on width but is a lighter face than the reference.
+
+Worth recording how this was measurable at all: Chromium in this container
+cannot load Google Fonts, so every earlier measurement of the headline's width
+was taken in a fallback face and was meaningless. `curl` **can** reach
+fonts.googleapis.com when pointed at the proxy's CA bundle at
+`/root/.ccr/ca-bundle.crt`. Fetching the woff2 and loading it with `FontFace`
+makes type metrics measurable locally.
+
+## The reference frame's aspect is not the browser's
+
+The reference put the headline 12.3% down the frame. Transplanted faithfully,
+the tagline sat on his head.
+
+The frame is 2000x1102, an aspect of 1.815. The clips are 16:9 and the stage
+uses `object-fit: cover`, so at a 16:10 window the video is scaled to fill the
+height and cropped horizontally, and he rides higher in the viewport than he
+does in the Figma. The masthead moved to 7.5vh.
+
+**A measured proportion transfers only within the aspect it was measured at.**
+The horizontal figures here all held exactly, because cover cropping at these
+viewports is horizontal and the composition is centred. The vertical one did
+not, for the same reason.
