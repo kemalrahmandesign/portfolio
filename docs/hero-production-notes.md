@@ -148,8 +148,22 @@ pixels (luminance above 200, which is 86.7% of the frame):
 | Hub PNG, cover-cropped to 16:9 | 235.55 | +0.08 |
 | Wave at its head, frame 3 | 235.31 | -1.10 |
 
-**0.24 levels apart**, inside the 0.3-level tolerance that defines `head` in the
-first place. And `--clip-lift` is applied to `.stage img` as well as
+**Correction, measured again later.** The hub figure reproduces exactly: the
+original PNG, centre-cropped to 16:9 and scaled to 1920x1080, measures 235.553
+over a mask covering 86.6% of the frame, against the 86.7% recorded here. The
+wave figure does not. Frame 3 of the wave clip measures **237.03** over that
+same mask, not 235.31 — and 235.31 does not agree with this document's own
+per-frame table above either, which puts wave frame 3 at 236.56.
+
+So the real gap is **1.5 levels, not 0.24**, and it is outside the 0.3-level
+tolerance rather than inside it.
+
+**The conclusion still stands, on the other argument given below.** Both layers
+carry `--clip-lift` 1.085. The studio is near 235 on the poster and near 237 on
+the clip, and 235 x 1.085 = 255.6 while 237 x 1.085 = 257.1, so both clip to 255
+and the difference is gone before it reaches the screen. The suspect is cleared
+because of the clipping, not because the two values were close. Keep the reason;
+discard the number. And `--clip-lift` is applied to `.stage img` as well as
 `.stage video`, so both layers are multiplied by 1.085 and both clip to 255 on
 the studio. There is nothing for the boot fade to expose. The suspect is
 cleared; no code change follows from it.
@@ -1095,3 +1109,183 @@ question of shape, which is what they are good for.
 If it misses again, the guaranteed fix is an armless task chair: a chair with no
 arms cannot have one missing. That trades the look Kemal asked for against
 certainty, so it is the fallback rather than the first move.
+
+
+## Serving the clips from the repo, and proving the encode is transparent
+
+The page streamed its clips from the Higgsfield result CDN, and those URLs do
+not survive deletion of the generation. `f76bd25c` went first. Then the walk
+clip wired into `index.html`, `4d06b164`, started returning **403** — so the
+call to action was already broken before anyone moved the files.
+
+Everything now loads from `media/` by relative path. `index.html` contains no
+CDN reference at all, which is worth asserting on rather than eyeballing.
+
+### The sizes were not survivable as-is
+
+The raw generations run 4.8 to 20 Mbps: 47 MB across four files, on a page that
+fetches them on every visit and needs the walk clip ready the instant the button
+is clicked. Re-encoded at CRF 21, preset slow, `+faststart`:
+
+| | raw | CRF 21 | |
+|---|---|---|---|
+| wave | 3.00 MB | 1.65 MB | |
+| idle | 16.42 MB | 2.63 MB | |
+| walk (candidate A) | 24.96 MB | 5.56 MB | 6.5s to encode |
+| hub | 2.81 MB PNG | 0.21 MB JPEG | cropped to 16:9 first |
+
+### Two properties had to be measured, not assumed
+
+**No re-timing.** The idle's loop is closed by a crossfade in the player, not
+baked into the file, so a dropped or retimed frame would reopen a seam that
+nothing in the file itself protects. Frame counts and durations came through
+identical: wave 150/150 at 5.000s, idle 300/300 at 10.000s.
+
+**No luminance shift.** The whole `head` mechanism is calibrated in fractions of
+a luminance level, so an encode that brightened the picture by a level would
+quietly invalidate every `head` in the player. Measured against the originals,
+same mask, same frame numbers:
+
+| | original | re-encoded | delta |
+|---|---|---|---|
+| wave frame 3 | 237.029 | 237.061 | **+0.032** |
+| idle frame 4 | 237.786 | 237.828 | **+0.042** |
+
+And the opening ramps survive: wave -2.17, idle -2.73, against the -2.8 the
+originals were measured at. So 0.11 and 0.14 still hold.
+
+The hub frame is cropped 2752x1536 -> 2730x1536 -> 1920x1080 before encoding, a
+centre crop to exactly 16:9. The browser was already doing that crop at paint
+time through `object-fit: cover`; doing it in advance means the poster and the
+clips are the same shape before compositing, and removes the resampling error
+that this document records as having accounted for nearly half of an apparent
+poster-to-clip mismatch. Against the original PNG put through the identical crop
+and scale, the JPEG measures **+0.033** levels.
+
+**The general point.** A lossy re-encode in the middle of a pipeline calibrated
+in tenths of a level is a change to the measurement, not just to the file size.
+Two comparisons against the original — frame count and masked luminance — cost
+one sandbox call and turn "CRF 21 is visually lossless" from a claim into a
+number.
+
+## `head` does not carry over between generations of the same prompt
+
+`index.html` carried a comment asserting the walk clip had no opening ramp,
+measured at +0.02 levels, and therefore `head: 0`. That was true of the
+generation it was written for. It is not true of the ones that replaced it:
+
+| | frame 0 vs settled | head |
+|---|---|---|
+| candidate A | -0.73 | frame 2, 0.067s |
+| candidate B | -0.33 | frame 1, 0.033s |
+| candidate C | -0.24 | frame 0 |
+| armrest re-run, pair | -0.62 | frame 2, 0.067s |
+| armrest re-run, armless | -0.32 | frame 1, 0.033s |
+
+Same model, same prompt to within one paragraph, same keyframes, and the ramp
+still moves by half a level between runs. None of these are the -2.8 the wave
+and idle open with, so the walk clip's ramp is genuinely shallow — but "shallow"
+is not "zero", and the value is per generation, not per model and not per clip
+slot. Inheriting it from the clip being replaced is the specific mistake.
+
+## The armrest re-run: one paragraph changed, something else moved anyway
+
+Candidate A was "99 percent there" with one defect, a chair missing its left
+armrest. The recorded fix from the generation that solved it and was then
+deleted: name the failure mode as asymmetry rather than naming the object.
+
+Two variants went out together, both derived from A's exact prompt by
+programmatic replacement of the chair paragraph only, with the remainder proven
+byte-identical in both directions before submission. A's prompt is 3,399
+characters, which matches this document's own record of the rebalanced prompt
+and is a useful checksum on the transcription.
+
+- **pair**: "TWO ARMRESTS, A MATCHING PAIR, ONE ON THE LEFT SIDE AND ONE ON THE
+  RIGHT SIDE, both fully present and the same shape as each other", plus "NOT
+  MISSING AN ARMREST" in the negatives. 3,541 characters.
+- **armless**: an armless task chair. A chair with no arms cannot have one
+  missing. 3,476 characters.
+
+Both drew the "DROWN IN MUSIC" preset recommendation and needed
+`declined_preset_id`, exactly as this document predicts for this prompt text.
+
+### Both re-runs broke something at 0.85s that A does not have
+
+Measured over the first 40 frames, dark-pixel count and mean luminance:
+
+| frame | A | pair | armless |
+|---|---|---|---|
+| 22 | 12,303 dark | 11,711 dark | 11,931 dark |
+| 25 | 12,320 dark | **1,221 dark** | **4,139 dark** |
+| 27 | 12,361 dark | 1,347 dark | 4,850 dark |
+| 31 | 12,623 dark | 12,016 dark | 5,749 dark |
+
+A is monotonic across the whole window. In **pair** the darkest pixel anywhere
+in the frame goes from 0 to 8 for five frames — nothing truly black is on screen
+at all — and then recovers. In **armless** a third of the dark content leaves at
+frame 25 and does not come back; mean luminance steps from 216 to 227 and stays
+there.
+
+The cut detector reported no cut in either, because it requires >55% of pixels
+to move and this does not reach that. **A local discontinuity is not a cut and
+will not be caught by a cut test.** The dark-area profile caught it; the cut
+test would have passed both clips.
+
+This is the fourth round in a row where fixing one beat moved another, and it
+happened despite the edit being provably confined to one paragraph. Confining
+the *edit* does not confine the *effect*: attention is conserved across the
+whole prompt, so adding 142 characters to the chair takes them from wherever the
+model was spending them, which this time was the first second.
+
+### What is not known
+
+Whether the armrest is actually fixed in either clip, and whether the 0.85s
+event reads as a defect at speed. Both are eye judgements. The armrest is a
+small-prop shape question, which is the category this document already records
+as having been wrong five times. Contact sheets were rendered and handed over
+rather than guessed at.
+
+## The intro had no exit when the take failed to load
+
+Found by running the page in headless Chromium with the media absent, which is
+exactly the state the repo is in between repointing `index.html` at `media/` and
+committing the files.
+
+Clicking the call to action did nothing. `#work` stayed hidden, the hero stayed
+on screen, and `cta.disabled = true` had already fired, so there was no second
+chance. The only way out was the skip link.
+
+The mechanism is in the handoff. `playOnce` does not start anything directly:
+
+```js
+el.src = clip.src;
+atTime(el, clip.head, () => { el.play(); show(el, fade); });
+```
+
+and `atTime` waits on `readyState >= 2`, via a `canplay` listener if it is not
+there yet. A clip that 404s, is blocked by a network policy, or stalls on a cold
+cache never reaches `readyState 2`, so `canplay` never fires, so the callback
+never runs, so `reveal` — which is wired to `onended` inside that callback's
+clip — is never reached. The shared `onerror` on the video elements only adds
+`is-empty`, which draws a dashed placeholder. Nothing advances the page.
+
+**This was live, not hypothetical.** The walk clip's CDN URL had already started
+returning 403, so the deployed hero's call to action was a dead end for anyone
+who clicked it.
+
+The fix gives the click somewhere to go in every case: a `playing` listener
+marks the take as actually running, an `error` listener and a four-second
+watchdog both fall through to the same instant cut the skip button uses, and
+`reveal` is made idempotent because the take ending, the watchdog and the skip
+button can now all reach it and two of them can race.
+
+**The lesson is about the shape of the code, not the clip.** Any promise-like
+handoff that hangs on an event which may never fire needs a failure path, and
+media events are exactly that. The page already had careful error handling for
+*display* — the `is-empty` fallback, the missing-clips message — and none at all
+for *progress*. Degrading the picture is not the same as degrading the flow.
+
+It is also an argument for running the page rather than reading it. Every
+measurement in this document is about pixels; this was a control-flow bug that
+no amount of luminance analysis would have surfaced, and it took one headless
+browser run with the files deliberately missing.

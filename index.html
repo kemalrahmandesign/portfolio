@@ -205,31 +205,34 @@ h1{
      as a flash at each loop wrap. Skipping the ramp removes it, and also takes
      the idle's wrap mismatch from 3.88% of pixels to 1.15%.
 
-     The walk clip does not have the ramp, which is worth knowing rather than
-     assuming: it came from the same model and was expected to behave the same
-     way, but measures +0.02 levels against its settled value at frame 0. So its
-     head is 0. Measure this per clip; do not infer it from the model. */
+     The walk clip has a much shallower ramp than the other two, but it is not
+     zero: -0.73 levels at frame 0 against its settled value, reaching tolerance
+     at frame 2. An earlier note here claimed +0.02 and head 0; that was measured
+     on a different generation and does not carry over. Measure this per clip and
+     per generation; do not infer it from the model, and do not inherit it from
+     the clip you are replacing. */
   const CLIPS = {
     // Wave plays once on load, then hands to the idle loop. The arm starts
     // rising at 0.5s and peaks 1.5-3.4s, which lands it mid-headline.
-    wave: { src: 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
-               + 'ed3c524f-cea1-4b6c-8683-46edd68f159f.mp4', head: 0.11 },
+    wave: { src: 'media/wave.mp4', head: 0.11 },
     // 10s, locked-off, breathing and blinks only. Measured: his own pixels
     // move across 0.19% of frames on average against 0.38% for the 3.5s clip,
     // and the motorcycle is static rather than drifting across 4.9%.
-    idle: { src: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
-               + 'hf_20260919_182126_adac86ab-3d37-41ff-860a-4c713b405a9c.mp4', head: 0.14 },
+    idle: { src: 'media/idle.mp4', head: 0.14 },
     // 10s, one continuous take: turn, walk, camera swings right, Nova crosses
-    // and settles on the tower, he sits, the monitor powers on. Measured: no
-    // cut (peak frame-to-frame motion sits inside a smooth ramp, not a spike),
-    // the power-on runs 8.6s to 9.1s, and the last frame matches the pinned end
-    // frame to within 6% of pixels. head is 0: unlike the other two clips this
-    // one has no dark opening ramp, measured at +0.02 levels against settled.
-    walk: { src: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
-               + 'hf_20260919_231638_4d06b164-e302-407c-8efc-ba043f01df0e.mp4', head: 0 },
+    // and settles on the tower, he sits, the monitor powers on. Measured on the
+    // surviving candidates: no cut, the monitor blooms from 8.3s and the panel
+    // is solid white by 8.9s, holding to 10.0s, and the last frame matches the
+    // pinned end frame to within 4% of pixels. That white hold is what the 450ms
+    // cover handoff lands in, so TAKE does not change with the candidate.
+    walk: { src: 'media/walk.mp4', head: 0.067 },
   };
-  const POSTER = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
-               + 'hf_20260918_131857_3f470988-9df8-4d61-98f6-e316d6f6ad9e.png';
+  /* The hub frame, pre-cropped to 16:9 and re-encoded as JPEG (2.81MB -> 0.21MB).
+     The source PNG is 2752x1536, which is 1.7917 rather than 16:9's 1.7778, so
+     the browser was cover-cropping it at paint time. Cropping it in advance
+     means the poster and the clips are the same shape before compositing, and
+     measured against the original processed the same way it is +0.03 levels. */
+  const POSTER = 'media/hub.jpg';
 
   // Seconds of crossfade over the idle's wrap. Must match .stage.looping in CSS.
   const XF = 0.34;
@@ -369,7 +372,12 @@ h1{
   /* ---- the handoff into the monitor ---- */
   const TAKE = 0.45;                    // must match the `take` animation
 
+  /* Idempotent: the take ending, the watchdog below and the skip button can all
+     reach this, and two of them can race on a slow machine. */
+  let revealed = false;
   function reveal(){
+    if (revealed) return;
+    revealed = true;
     work.hidden = false;
     document.body.style.overflow = '';
     hero.style.display = 'none';
@@ -378,10 +386,35 @@ h1{
     window.scrollTo(0, 0);
   }
 
+  // No take available, or one that never arrived: cut straight to the site.
+  function hardCut(){ cover.style.opacity = 1; setTimeout(reveal, 180); }
+
   function enter(){
     cta.disabled = true;
     looping = false;                    // stop the loop watcher
-    if (!CLIPS.walk || reduced || mobile) { cover.style.opacity = 1; setTimeout(reveal, 180); return; }
+    if (!CLIPS.walk || reduced || mobile) { hardCut(); return; }
+
+    /* The click has to go somewhere even if the take does not play.
+       playOnce waits for the clip to reach readyState 2 before it starts
+       anything, so a clip that 404s, is blocked, or stalls on a cold cache
+       simply never fires the callback that calls reveal. The button is already
+       disabled at that point, which leaves the intro with no exit at all. This
+       was not hypothetical: the walk clip's CDN URL started returning 403 and
+       the deployed hero's call to action became a dead end.
+
+       So: a load error, or four seconds without playback actually starting,
+       falls through to the same instant cut the skip button uses. */
+    let running = false, watchdog = 0;
+    const bail = () => {
+      if (running) return;
+      running = true;
+      clearTimeout(watchdog);
+      hardCut();
+    };
+    C.addEventListener('playing', () => { running = true; clearTimeout(watchdog); }, { once: true });
+    C.addEventListener('error', bail, { once: true });
+    watchdog = setTimeout(bail, 4000);
+
     playOnce(C, CLIPS.walk, reveal, 320);
 
     // Hand over during the clip's final stretch, by which point the monitor has
@@ -404,10 +437,7 @@ h1{
   }
 
   cta.addEventListener('click', enter);
-  skip.addEventListener('click', () => {
-    looping = false;
-    cover.style.opacity = 1; setTimeout(reveal, 160);
-  });
+  skip.addEventListener('click', () => { looping = false; hardCut(); });
 })();
 </script>
 </body>

@@ -1,5 +1,13 @@
 # The walk, as two clips
 
+> **Superseded, kept for the reasoning.** The two-clip split described here was
+> not what shipped. Wan 3.0 produced an acceptable single 10s take pinned hub
+> frame to end frame, and the surviving candidates and their measurements are in
+> `START-HERE.md`. The prompt analysis below is still the record of *why* each
+> clause exists, and the chair, cat and petting notes were all carried into the
+> single-clip prompt. Do not generate from the two-clip plan below without
+> reading `START-HERE.md` first.
+
 Superseded the single 10s clip. The reason is accuracy, not length.
 
 Wan 3.0 will not take `start_image`/`end_image` together with

@@ -27,10 +27,10 @@ default branch. Work has been landing on `claude/eager-bardeen-yde4ng` and
 | Wave clip, 5s | done and wired, but see the CDN warning below |
 | Idle loop, 10s | done and wired, `adac86ab-3d37-41ff-860a-4c713b405a9c` |
 | End frame (monitor on its arm) | done, media `f9a03660-1c4b-47b0-8323-95918531479d` |
-| **Walk clip** | **generated, three candidates, Kemal to pick one** |
+| **Walk clip** | **two armrest re-runs done, Kemal to judge** |
 | Hero page, handoff, flash fixes | done, measured, pushed |
-| Hosting the clips in the repo | **not done, and now urgent** |
-| The rest of the site | not started |
+| Hosting the clips in the repo | page repointed at `media/`; **three files ready to download, walk pending** |
+| The rest of the site | not started, scope not yet agreed |
 
 ## The three walk candidates
 
@@ -60,40 +60,84 @@ Measured on A, which is the best of the three on every number:
 **B is the one where he disappears** between 2.2s and 3.4s. It scores well on the
 other measures; do not let that mislead you.
 
-## Do this first: get the media into the repo
+## Do this first: download three files
 
-`index.html` streams the clips and the poster straight off the Higgsfield CDN.
-**Those URLs are not durable.** Generation `f76bd25c`, deleted from the gallery,
-now returns HTTP 403. The wave clip currently wired into the page
-(`ed3c524f-...`) is already absent from the generation list and still returns
-200, so it is living on borrowed time. One cleanup and the hero breaks.
+`index.html` no longer references a CDN anywhere. It loads `media/hub.jpg`,
+`media/wave.mp4`, `media/idle.mp4` and `media/walk.mp4` by relative path. Three
+of those four are re-encoded and waiting; the page is broken until they land.
 
-The agent cannot do this: the result CDN is blocked from the agent container, so
-it cannot download the files, and `sandbox_exec` can reach them but cannot write
-into the repo. **Kemal has to download these four and commit them to `media/`**,
-then the clip URLs in `index.html` get repointed at local paths:
+This was urgent for a reason that has already come true: the walk clip the page
+pointed at, `4d06b164`, now returns **403**. The call to action was dead before
+anyone touched it.
+
+The agent cannot download them. The result CDN is blocked from its container,
+and the sandbox that can reach it cannot write to the repo.
+
+**Save these three into `media/` under exactly these names** (links good 24h
+from 2026-09-20 15:58 UTC; ask for fresh ones after that):
 
 ```
-the chosen walk clip
-the wave clip     ed3c524f-cea1-4b6c-8683-46edd68f159f.mp4
-the idle clip     hf_20260919_182126_adac86ab-3d37-41ff-860a-4c713b405a9c.mp4
-the poster        hf_20260918_131857_3f470988-9df8-4d61-98f6-e316d6f6ad9e.png
+media/hub.jpg    .../f215c1e8-2364-4cf0-a950-cb1851e8c8b4.jpg    0.21 MB
+media/wave.mp4   .../71520f4b-933c-4ed5-b321-b46e065e0535.mp4    1.65 MB
+media/idle.mp4   .../9b16a3ef-b3fe-441f-99e6-414ffac6f442.mp4    2.63 MB
 ```
 
-A surviving wave generation also exists at `6d4ffc81-5326-46e9-aabf-671143174afb`
-if the wired one ever 403s before it is downloaded.
+all on `https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/`.
+Full URLs and the reasoning are in `media/README.md`.
+
+`media/walk.mp4` follows once the candidate is chosen.
+
+These are re-encoded, not raw: CRF 21, preset slow, `+faststart`, no re-timing.
+47 MB of raw generation becomes about 9 MB. Frame counts are identical and the
+luminance shift is +0.03 levels, so every `head` in the player still holds. The
+measurements are in `media/README.md` and the production notes.
+
+## The walk clip: two re-runs are waiting on your eyes
+
+Kemal asked for candidate A to be re-run to fix the missing left armrest, and
+allowed a chair swap. Both went out, each derived from A's exact prompt by
+replacing the chair paragraph only, with the remainder proven byte-identical.
+
+```
+pair      59a0a114-743b-40e6-9dd0-407e14297ac7   two armrests, named as a symmetry
+armless   1f05732a-8252-450f-ae6b-4cdfddd0f249   armless chair, the guaranteed fix
+```
+
+**Measured against A as the control:**
+
+| | A | pair | armless |
+|---|---|---|---|
+| Cuts | none | none | none |
+| Duplicate frames | 5.4% | 11.7% | 8.0% |
+| Last frame vs end frame | 3.6% | 4.0% | 3.7% |
+| head | 0.067s | 0.067s | 0.033s |
+| Discontinuity at 0.85s | **no** | **yes, 5 frames** | **yes, persistent** |
+
+Both re-runs picked up a discontinuity at ~0.85s that A does not have. In pair
+nothing black is on screen for five frames; in armless a third of the dark
+content leaves and stays gone. The cut test passes both — it needs >55% of
+pixels moving and this does not reach that.
+
+**Two things need eyes, not numbers.** Whether the armrest is fixed, and
+whether the 0.85s event shows at speed. The armrest is a small-prop shape
+question, the category this project has been wrong about five times.
+
+If both re-runs are worse than A overall, A is still there
+(`82780415-38f5-4ac8-8eb7-42119d3c3ac2`) and shipping it with one missing
+armrest is a legitimate call.
 
 ## Then: wire the walk clip in
 
-1. **Measure its `head`** in `sandbox_exec` before wiring it. Do not assume.
-   The other two clips open about 2.8 luminance levels dark and need 0.11s and
-   0.14s skipped; the 10s walk measured +0.02 and needs none. It is per clip.
-2. Set `CLIPS.walk` in `index.html` to `{ src, head }`.
-3. That is the whole change. The cover fix and the `--clip-lift` taper are
-   already in place.
+1. Re-encode the chosen clip at CRF 21 and upload it, same as the other three.
+2. Save it as `media/walk.mp4`.
+3. `CLIPS.walk.head` is already 0.067, which is correct for A and for pair. Set
+   it to 0.033 if armless wins.
+4. The cover handoff does not change: all candidates bloom the monitor from
+   8.3s and hold solid white from 8.9s to 10.0s, and `TAKE` is 0.45s.
 
 Optional, free, and worth trying if the motion reads choppy: interpolate to
-60fps. It halved the pacing jerk on an earlier clip.
+60fps. It halved the pacing jerk on an earlier clip. Note duplicate frames are
+*up* on both re-runs against A, which is what choppiness actually is.
 
 ```
 ffmpeg -i in.mp4 -vf "minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1" \
@@ -125,10 +169,12 @@ amp                   7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
 
 ## Open questions for Kemal
 
-1. Which walk clip: A, B or C.
-2. Agency name, and the tagline under "Hi, I'm Kemal".
-3. A real typeface. Inter is a placeholder; his Figma uses something tighter.
-4. Whether to warm `--bg` past `#f1f0ee`. Worth re-judging now the lift taper
+1. Walk clip: is the armrest fixed in `pair` or `armless`, and does the 0.85s
+   event show? Falling back to A with one missing armrest is a valid answer.
+2. Scope of the rest of the site. Deferred until the hero is confirmed live.
+3. Agency name, and the tagline under "Hi, I'm Kemal".
+4. A real typeface. Inter is a placeholder; his Figma uses something tighter.
+5. Whether to warm `--bg` past `#f1f0ee`. Worth re-judging now the lift taper
    stops the handoff blowing out to pure white.
 
 ## Environment traps
@@ -176,6 +222,14 @@ Full reasoning for each is in `hero-production-notes.md`.
    asking 39% returned 76%. Fix framing in code instead.
 8. **Place objects where the camera actually looks**, and check the move passes
    over them.
+9. **Confining the edit does not confine the effect.** Two re-runs changed one
+   paragraph each, proven byte-identical elsewhere, and both broke the first
+   second of the clip. Attention is conserved across the whole prompt, so the
+   discipline buys you a clean diff, not a clean result. Re-measure everything
+   after every round, including the beats you did not touch.
+10. **`head` is per generation.** Not per model, not per clip slot. Do not
+   inherit it from the clip you are replacing; the page had `head: 0` on a
+   comment written for a generation that no longer exists.
 
 ## Measurement, and its limits
 
