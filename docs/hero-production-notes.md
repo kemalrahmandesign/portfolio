@@ -1686,3 +1686,36 @@ Verified on the computed matrix: `matrix(1.5, 0, 0, 1.5, -75.6, 56.7)` in a
 
 **`transform-origin` holds a point still; it does not aim a move.** To push
 toward something off-centre, translate it to the middle as it grows.
+
+## Bank the press instead of hiding the button
+
+Holding the call to action back until the wave finished fixed a real problem
+and created a worse one: for the first seconds of the page the only
+interactive element simply was not there.
+
+The press is banked instead. `enter()` checks whether the greeting has
+finished; if not it sets a flag, marks the button as working, and returns
+without touching anything else. The wave's end handler either starts the take
+or falls through to the idle loop:
+
+```js
+const waveOver = () => {
+  if (waveEnded) return;
+  waveEnded = true;
+  if (queued) enter(); else idleLoop();
+};
+```
+
+So the greeting is never cut short, the button is never missing, and a press
+during the wave costs the user nothing but the remainder of the wave. It also
+exercises the live-layer fix properly: when a banked press fires, C is the
+layer showing the wave, so the take correctly loads into A instead.
+
+Three states worth keeping tested, because they interact: press during the
+wave, press during the idle, and skip while a press is banked. The last one
+needs the banked press dropped *and* the latch set, or the wave's end handler
+revives a take the user has already skipped past.
+
+**A control that cannot be used yet should look busy, not absent.** Hiding it
+removes the affordance; disabling it refuses the input; banking it keeps the
+promise and just defers the payoff.

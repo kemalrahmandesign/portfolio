@@ -210,12 +210,13 @@ h1{
 }
 @keyframes ants{ to{stroke-dashoffset:-12} }
 
-/* Held back until the wave finishes; see the boot comment in the script.
-   It ships `disabled` and is enabled in the same step, so while it is
-   invisible it is also unclickable and out of the tab order rather than being
-   an invisible hit target sitting over the video. */
-.cta[disabled]{pointer-events:none}
-.hero.ready .cta{opacity:1;transform:translateY(0)}
+.is-in .cta{opacity:1;transform:translateY(0)}
+
+/* Pressed during the greeting: the press is banked, not refused. The dashes
+   speed up so the button reads as working rather than broken, and the take
+   starts the moment he finishes waving. */
+.hero.armed .cta{cursor:default}
+.hero.armed .cta .ring rect{animation-duration:.55s}
 .cta:hover,.cta:focus-visible{background:var(--ink);color:var(--bg)}
 .cta .arw{transition:transform .18s ease}
 .cta:hover .arw{transform:translateX(4px)}
@@ -353,7 +354,7 @@ h1{
   <div class="overlay">
     <h1 id="headline">Hi, I&rsquo;m Kemal</h1>
     <div class="cta-wrap">
-      <button class="cta" id="cta" disabled>
+      <button class="cta" id="cta">
         <svg class="ring" aria-hidden="true" focusable="false">
           <rect width="100%" height="100%" rx="999" ry="999" pathLength="100"/>
         </svg>
@@ -397,9 +398,11 @@ h1{
      this comment itself previously claimed the walk clip had no ramp at all,
      on a measurement taken from a generation that no longer exists. */
   const CLIPS = {
-    // Wave plays once on load, then hands to the idle loop. The arm starts
-    // rising at 0.5s and peaks 1.5-3.4s, which lands it mid-headline.
-    wave: { src: 'media/wave.mp4', head: 0.11 },
+    /* 3s. Plays once on load, then hands to the idle loop. Measured: the hand
+       comes up around 0.7s, the wave peaks at 1.8-2.1s and he has settled by
+       2.4s, against the 5s version that did not peak until 1.8s and was still
+       moving at 4s. Lands back on the hub pose within 3.5% of pixels. */
+    wave: { src: 'media/wave.mp4', head: 0.067 },
     // 10s, locked-off, breathing and blinks only. Measured: his own pixels
     // move across 0.19% of frames on average against 0.38% for the 3.5s clip,
     // and the motorcycle is static rather than drifting across 4.9%.
@@ -456,7 +459,7 @@ h1{
   const CDN = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/';
   const FALLBACK = {
     'media/hub.jpg':  CDN + 'f215c1e8-2364-4cf0-a950-cb1851e8c8b4.jpg',
-    'media/wave.mp4': CDN + '71520f4b-933c-4ed5-b321-b46e065e0535.mp4',
+    'media/wave.mp4': CDN + '2229135a-3e3c-4651-a827-66c8a7af5f4c.mp4',
     'media/idle.mp4': CDN + '9b16a3ef-b3fe-441f-99e6-414ffac6f442.mp4',
     'media/walk.mp4': CDN + 'f8373f35-e3dc-4469-9533-66738f840f3c.mp4',
   };
@@ -621,26 +624,32 @@ h1{
      `playsinline`; if a browser refuses anyway, play() rejects, the poster
      stays up and the button still works, because that click is a user
      gesture. */
-    /* The button arrives with the idle, not with the headline.
+    /* The button is live from the start, but the greeting is never cut short.
 
-       Pressing it during the wave was what exposed the layer bug above, but it
-       is also just wrong to offer: the wave is the greeting, and interrupting
-       it mid-gesture to start walking reads as a glitch even when the
-       compositing is correct. Holding the button until he has finished waving
-       makes the invitation land when the scene is actually idle and waiting.
+       Interrupting the wave mid-gesture to start walking reads as a glitch,
+       and it was also what exposed the live-layer bug in enter(). Hiding the
+       button until the wave ended solved both and cost more than it was
+       worth: it left several seconds where the only interactive thing on the
+       page was missing. So the press is banked instead. Click during the
+       greeting and the take starts the instant he finishes waving; click
+       after it and nothing waits.
 
-       `ready` is latched, never unlatched, and a timer guarantees it: if the
-       wave stalls or 404s the button still appears, because an intro whose
-       only exit never arrives is the dead end this file already fixed once. */
-    const ready = () => { hero.classList.add('ready'); cta.disabled = false; };
+       waveOver is latched and also fires on a timer, because a wave that
+       stalls or 404s must not swallow a press. */
+    const waveOver = () => {
+      if (waveEnded) return;
+      waveEnded = true;
+      if (queued) enter();            // banked press: straight into the take
+      else idleLoop();
+    };
     if (!reduced) {
       if (CLIPS.wave) {
-        playOnce(C, CLIPS.wave, () => { ready(); idleLoop(); }, 220);
-        setTimeout(ready, 8000);
-      } else { ready(); idleLoop(); }
+        playOnce(C, CLIPS.wave, waveOver, 220);
+        setTimeout(waveOver, 8000);
+      } else { waveEnded = true; idleLoop(); }
       warm(CLIPS.walk);
     } else {
-      ready();
+      waveEnded = true;
     }
   }
 
@@ -648,6 +657,10 @@ h1{
   probe.onload  = boot;
   probe.onerror = () => { useFallback = true; boot(); };
   probe.src = POSTER;
+
+  /* Set once the greeting is done, so enter() knows whether to run now or
+     bank the press until it is. */
+  let waveEnded = false, queued = false, entered = false;
 
   /* ---- the handoff into the monitor ---- */
   const TAKE = 0.45;                    // must match the `take` animation
@@ -680,6 +693,12 @@ h1{
   function hardCut(){ cover.style.opacity = 1; setTimeout(reveal, 180); }
 
   function enter(){
+    /* Pressed mid-greeting: bank it and let him finish waving. waveOver calls
+       back in. Nothing else happens yet, so the headline stays up and the
+       scene is undisturbed. */
+    if (!waveEnded) { queued = true; hero.classList.add('armed'); return; }
+    if (entered) return;
+    entered = true;
     cta.disabled = true;
     hero.classList.add('is-leaving');   // fade the headline, the CTA and skip
     looping = false;                    // stop the loop watcher
@@ -748,7 +767,12 @@ h1{
   }
 
   cta.addEventListener('click', enter);
-  skip.addEventListener('click', () => { looping = false; hardCut(); });
+  skip.addEventListener('click', () => {
+    queued = false;                     // drop any banked press
+    entered = true;                     // and stop waveOver reviving it
+    looping = false;
+    hardCut();
+  });
 })();
 </script>
 </body>
