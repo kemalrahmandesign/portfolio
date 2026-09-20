@@ -267,6 +267,31 @@ h1{
      measured against the original processed the same way it is +0.03 levels. */
   const POSTER = 'media/hub.jpg';
 
+  /* Fallback source, used only when media/ is empty.
+
+     The files in media/ are the real source and the reason the CDN references
+     were removed: Higgsfield result URLs die when a generation is deleted, and
+     one already did, which broke the call to action on the deployed page.
+
+     But the files have to be downloaded and committed by hand, and until that
+     happens this page renders as bare text. So each asset carries a fallback
+     on the Higgsfield CDN, and the page probes for the local poster once at
+     boot to decide which set to use. With media/ populated the fallback is
+     never requested; with media/ empty the hero still runs.
+
+     These are uploaded media rather than generation results, so they are not
+     garbage-collected with a deleted generation. They are still a convenience,
+     not a plan. Commit the files. */
+  const CDN = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/';
+  const FALLBACK = {
+    'media/hub.jpg':  CDN + 'f215c1e8-2364-4cf0-a950-cb1851e8c8b4.jpg',
+    'media/wave.mp4': CDN + '71520f4b-933c-4ed5-b321-b46e065e0535.mp4',
+    'media/idle.mp4': CDN + '9b16a3ef-b3fe-441f-99e6-414ffac6f442.mp4',
+    'media/walk.mp4': CDN + 'f8373f35-e3dc-4469-9533-66738f840f3c.mp4',
+  };
+  let useFallback = false;
+  const src = p => (useFallback && FALLBACK[p]) || p;
+
   // Seconds of crossfade over the idle's wrap. Must match .stage.looping in CSS.
   const XF = 0.34;
   // Milliseconds of crossfade from the idle into the walk. See enter().
@@ -327,7 +352,7 @@ h1{
   function playOnce(el, clip, onEnd, fade){
     el.loop = false;
     el.onended = onEnd || null;
-    el.src = clip.src;
+    el.src = src(clip.src);
     atTime(el, clip.head, () => {
       const p = el.play(); if (p && p.catch) p.catch(() => {});
       show(el, fade);
@@ -353,7 +378,7 @@ h1{
   function idleLoop(){
     const pair = [A, B];
     const clip = CLIPS.idle;
-    pair.forEach(v => { v.loop = false; v.onended = null; v.src = clip.src; });
+    pair.forEach(v => { v.loop = false; v.onended = null; v.src = src(clip.src); });
     looping = true;
     let i = 0;
     const step = () => {
@@ -385,16 +410,20 @@ h1{
   function warm(clip){
     if (!clip) return;
     const v = document.createElement('video');
-    v.preload = 'auto'; v.muted = true; v.src = clip.src;
+    v.preload = 'auto'; v.muted = true; v.src = src(clip.src);
     warm.held = v;
   }
 
-  /* ---- boot ---- */
-  poster.onerror = () => stage.classList.add('is-empty');
-  A.onerror = B.onerror = C.onerror = () => stage.classList.add('is-empty');
-  poster.src = POSTER;
-  show(poster, 0);
-  requestAnimationFrame(() => hero.classList.add('is-in'));
+  /* ---- boot ----
+     Probe for the local poster before anything loads. A missing file 404s
+     immediately, so this costs one round trip and decides the source for every
+     asset at once, rather than leaving each element to fail on its own. */
+  function boot(){
+    poster.onerror = () => stage.classList.add('is-empty');
+    A.onerror = B.onerror = C.onerror = () => stage.classList.add('is-empty');
+    poster.src = src(POSTER);
+    show(poster, 0);
+    requestAnimationFrame(() => hero.classList.add('is-in'));
 
   /* Mobile plays the full sequence too. It used to be excluded along with
      reduced motion, which left phones on a bare poster and made the call to
@@ -403,12 +432,18 @@ h1{
      `playsinline`; if a browser refuses anyway, play() rejects, the poster
      stays up and the button still works, because that click is a user
      gesture. */
-  if (!reduced) {
-    if (CLIPS.wave) playOnce(C, CLIPS.wave, idleLoop, 220);
-    // (wave hands to idleLoop on `ended`)
-    else idleLoop();
-    warm(CLIPS.walk);
+    if (!reduced) {
+      if (CLIPS.wave) playOnce(C, CLIPS.wave, idleLoop, 220);
+      // (wave hands to idleLoop on `ended`)
+      else idleLoop();
+      warm(CLIPS.walk);
+    }
   }
+
+  const probe = new Image();
+  probe.onload  = boot;
+  probe.onerror = () => { useFallback = true; boot(); };
+  probe.src = POSTER;
 
   /* ---- the handoff into the monitor ---- */
   const TAKE = 0.45;                    // must match the `take` animation

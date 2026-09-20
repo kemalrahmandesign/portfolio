@@ -112,3 +112,20 @@ Two things follow, both in `index.html`:
   dark and opens on a pose, the pose wins.**
 - The idle-to-walk crossfade is **500ms**, not the 320ms used elsewhere, spent
   over the half second where he is turning away.
+
+## There is a fallback, and it is not a substitute
+
+`index.html` probes for `media/hub.jpg` once at boot. If it is missing, every
+asset loads from the Higgsfield CDN instead, so the hero still runs against an
+empty `media/`. Once the files are committed the fallback is never requested.
+
+This exists because the files have to be downloaded and committed by hand, and
+until that happens the page renders as bare text. It is a convenience for
+previewing, not the plan. The whole reason the CDN references were removed is
+that those URLs die: a deleted generation already took the walk clip down with
+a 403 and broke the call to action on the deployed page.
+
+The fallback URLs point at *uploaded* media rather than generation results, so
+they are not garbage-collected along with a deleted generation, which makes
+them steadier than what they replaced. Steadier is not durable. Commit the
+files.
