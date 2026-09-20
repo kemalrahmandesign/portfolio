@@ -219,12 +219,11 @@ h1{
      as a flash at each loop wrap. Skipping the ramp removes it, and also takes
      the idle's wrap mismatch from 3.88% of pixels to 1.15%.
 
-     The walk clip has a much shallower ramp than the other two, but it is not
-     zero: -0.73 levels at frame 0 against its settled value, reaching tolerance
-     at frame 2. An earlier note here claimed +0.02 and head 0; that was measured
-     on a different generation and does not carry over. Measure this per clip and
-     per generation; do not infer it from the model, and do not inherit it from
-     the clip you are replacing. */
+     The walk clip is the exception, and for a different reason: see its entry
+     below. Measure `head` per clip AND per generation. Every number here has
+     been wrong at least once by being inherited from the clip it replaced --
+     this comment itself previously claimed the walk clip had no ramp at all,
+     on a measurement taken from a generation that no longer exists. */
   const CLIPS = {
     // Wave plays once on load, then hands to the idle loop. The arm starts
     // rising at 0.5s and peaks 1.5-3.4s, which lands it mid-headline.
