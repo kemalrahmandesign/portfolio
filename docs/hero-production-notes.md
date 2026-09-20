@@ -790,3 +790,21 @@ fix a likeness problem.
 A rejected submission is free, so test the combination rather than inferring it
 from the model description — and do not use `get_cost`, which prices a request
 without validating it.
+
+## Wan 3.0 caps the prompt at 5000 characters
+
+`{"type":"string_too_long","loc":["prompt"],"msg":"String should have at most
+5000 characters"}`. It is not in the model's declared parameters and it is not
+mentioned anywhere until a submission is rejected. The rejection is free.
+
+This matters because every fix in this project has been made by *adding*
+clauses: camera negatives, vignette negatives, an inclusion list to go with the
+exclusion list, the cat's colour fenced in three ways. The prompt only grows,
+and it now runs close to the ceiling. **Count the characters before submitting.**
+
+The trimming rule that worked: cut description, never constraint. Sneakers,
+adjectives and studio boilerplate go; "NO SIDEBURNS", "five-star castor base",
+"does NOT centre it" and "HER FUR IS GREY" stay, because each one exists
+because something went wrong without it. 5300 characters came down to 4302 with
+no constraint lost, checked by grepping the trimmed text for each load-bearing
+phrase before sending it.

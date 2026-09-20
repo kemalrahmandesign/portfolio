@@ -88,6 +88,10 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
   cleared and the grace period is still on. Check `transactions` for a grant
   before assuming the cap is gone. The cap counts submissions, so a refused and
   refunded job still costs a slot.
+- **Wan 3.0 caps prompts at 5000 characters**, undeclared until a submission is
+  rejected. The walk prompt is near the ceiling because every fix so far has
+  been an added clause. Count before sending, and when trimming cut description,
+  never constraint.
 - **Preset recommendations block video submission.** Retry with
   `declined_preset_id` set to the offered preset. The walk prompt drew
   "IN THE DARK".
