@@ -160,15 +160,25 @@ body{
 .overlay{
   position:relative;z-index:2;min-height:100svh;
   max-width:var(--stage-max);margin:0 auto;
-  /* The reference sets the headline 12.3% of the frame height down, which is
-     well below the page gutter, so the top inset is its own value. */
-  padding:clamp(28px,12vh,132px) var(--pad) var(--pad);
-  display:grid;grid-template-rows:auto 1fr;pointer-events:none;
+  /* The reference sets the headline 12.3% of the frame height down. In the
+     browser that sat the tagline on his head, because the reference frame is
+     1.815 and the clips are 16:9 cover-cropped, so he rides higher here than
+     he does in the Figma. Pulled up to 7.5vh, which clears him. */
+  padding:clamp(20px,7.5vh,96px) var(--pad) var(--pad);
+  /* auto auto 1fr, not auto 1fr: with two children the second would take the
+     1fr row and stretch to the bottom of the viewport. Harmless to look at,
+     since its contents sit at the top of that box, but it makes every
+     measurement of the tagline wrong. The empty third row absorbs the slack
+     instead. */
+  display:grid;grid-template-rows:auto auto 1fr;pointer-events:none;
 }
 
 /* ---------- headline ---------- */
+/* -.055em is measured, not judged. The reference sets "Kemal Rahman" 1520px
+   wide at a 227px face. Inter 800 at -.055em renders it 1518.2px; -.05em was
+   12px wide and -.06em 15px narrow. */
 h1{
-  margin:0;font-weight:800;letter-spacing:-.05em;line-height:.9;
+  margin:0;font-weight:800;letter-spacing:-.055em;line-height:.9;
   font-size:var(--head);
   /* Centred on the frame, which is where he stands, rather than flush left. */
   text-align:center;
@@ -241,6 +251,19 @@ h1{
   pointer-events:none;color:inherit}
 .cta .ring rect{
   fill:none;stroke:currentColor;stroke-width:2;
+  /* An SVG rect clamps rx to half its WIDTH and ry to half its HEIGHT,
+     independently. So rx="999" on a wide short box gives a 145px horizontal
+     radius against a 39px vertical one: an ellipse, not a pill. Measured, a
+     999 radius in any form leaves only 8.3% of the outline flat along the
+     top; a real pill leaves 33.8%.
+
+     A pill needs rx = ry = height/2, and CSS cannot express "half the
+     height", so the script measures the button and writes it here. The em
+     fallback covers the frame before that runs and is right at the current
+     metrics; the measured value is what keeps it right when the face, the
+     padding or the clamp changes. */
+  rx:var(--ring-r,1.27em);
+  ry:var(--ring-r,1.27em);
   /* ~25 dashes around the pill, matching the reference's density. With
      pathLength="100" a dash is 2% of the perimeter whatever the button's real
      size, so the density holds at every breakpoint. */
@@ -417,7 +440,7 @@ h1{
   <div class="cta-wrap">
       <button class="cta" id="cta">
         <svg class="ring" aria-hidden="true" focusable="false">
-          <rect width="100%" height="100%" rx="999" ry="999" pathLength="100"/>
+          <rect width="100%" height="100%" pathLength="100"/>
         </svg>
         Cool Sh*t <span class="arw">&rarr;</span>
       </button>
@@ -561,6 +584,23 @@ h1{
   const A = document.getElementById('vidA');
   const B = document.getElementById('vidB');
   const C = document.getElementById('vidC');
+
+  /* ---- the pill's corner radius ----
+     See the .ring rect comment in the CSS: a pill needs rx = ry = half the
+     height, which no CSS length expresses, so it is measured. Re-measured on
+     resize, which also covers the font arriving late and the font-size clamp
+     changing with the viewport. */
+  const ringRect = cta.querySelector('.ring rect');
+  function sizeRing(){
+    const h = cta.getBoundingClientRect().height;
+    if (h) cta.style.setProperty('--ring-r', (h / 2) + 'px');
+  }
+  if (ringRect) {
+    sizeRing();
+    if (window.ResizeObserver) new ResizeObserver(sizeRing).observe(cta);
+    else addEventListener('resize', sizeRing);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeRing);
+  }
 
   /* ---- headline: split to words, rise from below, stagger left to right ---- */
   const h1 = document.getElementById('headline');
