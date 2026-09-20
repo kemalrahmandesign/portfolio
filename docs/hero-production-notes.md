@@ -942,3 +942,28 @@ large, frame-filling properties** — luminance, evenness, whether a cut exists,
 whether the last frame matches the pinned one — **and unreliable for small props
 and anything defined by hue.** Do not report on a small object's presence from a
 colour test. Ask.
+
+### The result: shortening the prompt improved everything measurable
+
+Cutting the petting beat from about sixty words to sixteen, and its four
+negatives to one, moved every frame-filling measure at once:
+
+| | before | after |
+|---|---|---|
+| Duplicate frames | 4.7% | **2.7%** |
+| Pacing jerk | 3.82 | **2.50** |
+| Last frame vs pinned end frame | 6.8% | **5.3%** |
+| Cuts | none | none |
+
+And the camera held its subject. Tracking the horizontal centre of the large
+dark mass through the final third: 53.9%, 54.3%, 55.4%, 58.2%, 55.9%, 53.6%,
+51.8%, then 50.2% and holding. It drifts eight points off centre at worst and
+returns to dead centre for the push-in, instead of wandering to the cat.
+
+That is four different metrics improving from **removing text**, which is the
+clearest evidence yet that this prompt was over budget rather than
+under-specified. The instinct through this whole project has been to fix each
+problem by adding a clause. Past some point that makes everything worse at once,
+and the fix is subtraction.
+
+`walk clip, best version: 2179711b-e1f1-4ab7-8de2-1e22144996fd`
