@@ -1485,3 +1485,69 @@ test forces a fresh raster, so it cannot see a compositor glitch.** Both runs
 above came back clean and the flash was real. What they were good for was
 ruling out the blend, which is what made the remaining cause obvious by
 elimination rather than by guessing at it.
+
+## The white flash was the dissolve, and lengthening it was the cause
+
+Kemal reported a white flash at the press. The blend was instrumented three
+ways before anything was changed:
+
+| instrument | result |
+|---|---|
+| screenshot sampling, fast local clip | 109 -> 120 monotonic, no spike |
+| screenshot sampling, walk delayed 1.5s | holds at 109, outgoing layer opaque |
+| **Playwright video recording**, real compositor output | flat 103.5 across the press, 0% bright pixels |
+
+The recording matters because the earlier note here is right that screenshots
+force a fresh raster and cannot see a compositor glitch. `recordVideo` captures
+what the compositor actually produced, and it was clean. So the swap was not
+the problem.
+
+**What narrowed it was asking what on this page is white.** Nothing is whiter
+than the clips: `--clip-lift` 1.085 drives the studio at 237 to 257, which
+clips to pure 255, while the page and the cover are both 241 and therefore
+darker. A white flash cannot be page background showing through, because that
+would read as a *darkening*. The only way to get whiter is for something dark
+to stop being there -- and the only dark thing is him.
+
+That is exactly what a dissolve between two clips with a pose mismatch does.
+The walk clip is a re-render whose opening pose differs from the idle across
+47.7% of his pixels. For the length of the blend both versions of him are on
+screen at partial opacity over a studio already at 255, so he washes out toward
+white and then resolves.
+
+**The crossfade had been lengthened from 320ms to 500ms specifically because
+the pose mismatch was bad, which is backwards.** A longer dissolve is the right
+treatment for a *level* mismatch, where the two images agree about where
+everything is and only differ in brightness. For a *position* mismatch it is
+the worst available treatment, because it gives the eye time to resolve the
+double exposure. The fix is the opposite: 140ms, short enough that the change
+reads as a cut, against 87% of frame that matches to 0.85% and so has nothing
+to show a cut in.
+
+**Match the transition to the kind of mismatch.** Level mismatch wants a long
+blend. Pose mismatch wants a short one, or a hard cut. Reaching for "fade it
+longer" whenever a seam shows is how a fix for one becomes the cause of the
+other.
+
+## Finishing the camera move in CSS
+
+The take ends with the monitor head on but only filling 70% of the frame width
+and 68% of its height, measured on the final frame, with the bezel and a band
+of studio still visible. Kemal wanted the screen at full frame before the
+handoff.
+
+Pushing further inside the clip means regenerating it, which this document
+already establishes is a one-in-seven lottery. The last part of the move is
+done in CSS instead: a `transform: scale(1.5)` on the video element with
+`transform-origin` at the panel's measured centre, 53.5% across and 45.8% down,
+started 1.5s before the end and running 1400ms.
+
+Two numbers worth keeping. The scale needed to cover is 1.429 horizontally and
+1.469 vertically, so 1.5 clears both with margin and no bezel survives at any
+viewport aspect. The origin is not the centre of the screen, because the panel
+is not centred in the frame; using 50%/50% would drift the screen off to one
+side as it grows.
+
+The timing is set by the content: the panel is solid white from about 8.2s of
+9.71s, so the push starts once there is nothing left in frame but the screen,
+and lands as the cover takes over.

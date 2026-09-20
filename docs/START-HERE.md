@@ -30,6 +30,7 @@ default branch. Work has been landing on `claude/eager-bardeen-yde4ng` and
 | **Walk clip** | **done**, Genjutsu armrest fix over the best take, wired |
 | Hero page, handoff, flash fixes | done, measured, pushed |
 | Hosting the clips in the repo | page repointed at `media/`; **all four files ready to download** |
+| Behind the monitor | a held statement and a scroll cue; **copy is placeholder** |
 | The rest of the site | not started, scope not yet agreed |
 
 ## Do this first: download four files
