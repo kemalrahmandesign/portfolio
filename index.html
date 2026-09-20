@@ -140,9 +140,23 @@ h1{
    instead of two independent ones, so the headline and the button cannot drift
    apart. The skip link is a sibling of .overlay, not a child, so it needs its
    own rule. */
-.overlay,.skip{transition:opacity 420ms ease}
-.hero.is-leaving .overlay,
+/* Fade the pieces, not the container.
+
+   The first version animated opacity on .overlay, which is a full-viewport
+   element stacked over the playing video. Animating opacity on a layer that
+   size makes the compositor promote it for the duration of the transition and
+   re-rasterise, and that re-raster over a decoding video reads as a one-frame
+   flash. Kemal saw it immediately.
+
+   The headline, the button and the skip link are small, so promoting them
+   costs nothing. They share a duration and easing and start in the same frame,
+   so they still leave together. */
+#headline,.cta,.skip{transition:opacity 420ms ease}
+.hero.is-leaving #headline,
 .hero.is-leaving .skip{opacity:0}
+/* .cta carries a 550ms entry delay from .is-in; restate the transition so
+   leaving is not held back by it. */
+.hero.is-leaving .cta{opacity:0;transition:opacity 420ms ease}
 .hero.is-leaving .cta,
 .hero.is-leaving .skip{pointer-events:none}
 
@@ -190,7 +204,7 @@ h1{
   .word > span{transition:none;transform:none}
   .cta{transition:none;opacity:1;transform:none}
   #cover.take{animation:none;opacity:1}
-  .overlay,.skip{transition:none}
+  #headline,.cta,.skip{transition:none}
 }
 </style>
 </head>
