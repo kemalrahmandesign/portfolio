@@ -122,13 +122,26 @@ body{
    inline declaration beats the stylesheet, so the transform transition would
    be dropped whenever a layer was swapped. `animation` is a separate property,
    so it survives both. */
+/* The push has to land the panel centred, not just make it bigger.
+
+   Scaling about the panel's own centre pins that point and streams everything
+   else outward around it. Because the panel sits at 53.5% across and 45.8%
+   down rather than dead centre, the pinned point is off-axis and the move
+   reads as drifting diagonally instead of pushing straight in.
+
+   Scaling about the element centre and translating by the offset fixes the
+   axis. A point p (as a fraction of the box) lands at 0.5 + (p - 0.5)*s, so
+   bringing the panel centre to 0.5 needs t = -(p - 0.5)*s:
+     x: -(0.535 - 0.5) * 1.5 = -5.25%
+     y: -(0.458 - 0.5) * 1.5 = +6.30%
+   The panel then travels to the middle of the screen as it grows, which is
+   what a dolly toward it looks like. */
 @keyframes pushin{
-  from{transform:scale(1)}
-  to  {transform:scale(1.5)}
+  from{transform:translate(0,0) scale(1)}
+  to  {transform:translate(-5.25%,6.3%) scale(1.5)}
 }
 .stage video.zoom{
   animation:pushin 1400ms cubic-bezier(.33,0,.2,1) forwards;
-  transform-origin:53.5% 45.8%;
 }
 
 /* Shown only when the clips cannot be fetched, so the layout still reads. */
@@ -170,16 +183,39 @@ h1{
   display:flex;align-items:center;justify-content:flex-end;
 }
 .cta{
+  position:relative;
   pointer-events:auto;appearance:none;cursor:pointer;
-  font:inherit;font-weight:700;font-size:clamp(17px,1.65vw,27px);
-  letter-spacing:-.01em;color:var(--ink);background:transparent;
-  border:2px dashed var(--ink);border-radius:999px;
-  padding:.62em 1.25em;display:inline-flex;align-items:center;gap:.6em;
+  font:inherit;font-weight:700;font-size:clamp(21px,2.15vw,36px);
+  letter-spacing:-.015em;color:var(--ink);background:transparent;
+  border:0;border-radius:999px;
+  padding:.72em 1.5em;display:inline-flex;align-items:center;gap:.65em;
   opacity:0;transform:translateY(14px);
-  transition:opacity .5s ease .55s,transform .5s cubic-bezier(.16,1,.3,1) .55s,
+  transition:opacity .55s ease,transform .55s cubic-bezier(.16,1,.3,1),
              background-color .18s ease,color .18s ease;
 }
-.is-in .cta{opacity:1;transform:translateY(0)}
+
+/* The dashes travel around the pill.
+
+   The border is an SVG rounded rect rather than `border:2px dashed`, because a
+   CSS border cannot be animated around its own perimeter. `pathLength="100"`
+   normalises the outline to 100 units whatever the button's real size, so one
+   dash period is 12 units at every breakpoint and the loop is seamless: the
+   offset moves exactly one period per cycle. */
+.cta .ring{position:absolute;inset:0;width:100%;height:100%;overflow:visible;
+  pointer-events:none;color:inherit}
+.cta .ring rect{
+  fill:none;stroke:currentColor;stroke-width:2;
+  stroke-dasharray:6 6;
+  animation:ants 2.4s linear infinite;
+}
+@keyframes ants{ to{stroke-dashoffset:-12} }
+
+/* Held back until the wave finishes; see the boot comment in the script.
+   It ships `disabled` and is enabled in the same step, so while it is
+   invisible it is also unclickable and out of the tab order rather than being
+   an invisible hit target sitting over the video. */
+.cta[disabled]{pointer-events:none}
+.hero.ready .cta{opacity:1;transform:translateY(0)}
 .cta:hover,.cta:focus-visible{background:var(--ink);color:var(--bg)}
 .cta .arw{transition:transform .18s ease}
 .cta:hover .arw{transform:translateX(4px)}
@@ -290,6 +326,7 @@ h1{
 }
 @media (prefers-reduced-motion:reduce){
   .scroll .chev{animation:none}
+  .cta .ring rect{animation:none}
   .stage video.zoom{animation:none}
   .intro .line,.scroll{transition:none;opacity:1;transform:none}
   .word > span{transition:none;transform:none}
@@ -316,7 +353,12 @@ h1{
   <div class="overlay">
     <h1 id="headline">Hi, I&rsquo;m Kemal</h1>
     <div class="cta-wrap">
-      <button class="cta" id="cta">Cool Sh*t <span class="arw">&rarr;</span></button>
+      <button class="cta" id="cta" disabled>
+        <svg class="ring" aria-hidden="true" focusable="false">
+          <rect width="100%" height="100%" rx="999" ry="999" pathLength="100"/>
+        </svg>
+        Cool Sh*t <span class="arw">&rarr;</span>
+      </button>
     </div>
   </div>
 
@@ -579,11 +621,26 @@ h1{
      `playsinline`; if a browser refuses anyway, play() rejects, the poster
      stays up and the button still works, because that click is a user
      gesture. */
+    /* The button arrives with the idle, not with the headline.
+
+       Pressing it during the wave was what exposed the layer bug above, but it
+       is also just wrong to offer: the wave is the greeting, and interrupting
+       it mid-gesture to start walking reads as a glitch even when the
+       compositing is correct. Holding the button until he has finished waving
+       makes the invitation land when the scene is actually idle and waiting.
+
+       `ready` is latched, never unlatched, and a timer guarantees it: if the
+       wave stalls or 404s the button still appears, because an intro whose
+       only exit never arrives is the dead end this file already fixed once. */
+    const ready = () => { hero.classList.add('ready'); cta.disabled = false; };
     if (!reduced) {
-      if (CLIPS.wave) playOnce(C, CLIPS.wave, idleLoop, 220);
-      // (wave hands to idleLoop on `ended`)
-      else idleLoop();
+      if (CLIPS.wave) {
+        playOnce(C, CLIPS.wave, () => { ready(); idleLoop(); }, 220);
+        setTimeout(ready, 8000);
+      } else { ready(); idleLoop(); }
       warm(CLIPS.walk);
+    } else {
+      ready();
     }
   }
 
@@ -628,6 +685,16 @@ h1{
     looping = false;                    // stop the loop watcher
     if (!CLIPS.walk || reduced) { hardCut(); return; }
 
+    /* Pick a layer that is not currently on screen.
+       The take used to always load into C, which is also the element the wave
+       plays on. Pressing the button during the wave therefore reassigned .src
+       on the live layer: show() bails out early when the incoming element is
+       already live, so no crossfade ran, and the visible element simply went
+       blank while the new file loaded. That is the flash, and it only happened
+       when the press landed inside the first five seconds. Gating the button
+       until the wave ends removes the trigger; this removes the bug. */
+    const W = (live !== C) ? C : ([A, B].find(v => v !== live) || C);
+
     /* The click has to go somewhere even if the take does not play.
        playOnce waits for the clip to reach readyState 2 before it starts
        anything, so a clip that 404s, is blocked, or stalls on a cold cache
@@ -645,8 +712,8 @@ h1{
       clearTimeout(watchdog);
       hardCut();
     };
-    C.addEventListener('playing', () => { running = true; clearTimeout(watchdog); }, { once: true });
-    C.addEventListener('error', bail, { once: true });
+    W.addEventListener('playing', () => { running = true; clearTimeout(watchdog); }, { once: true });
+    W.addEventListener('error', bail, { once: true });
     watchdog = setTimeout(bail, 4000);
 
     /* 500ms, not the 320ms the other swaps use. The walk clip is a re-render of
@@ -656,27 +723,27 @@ h1{
        not a level difference, so no filter removes it and only the blend can
        cover it. The first half second of the clip is him turning away, which is
        the cheapest half second in the take to spend on a dissolve. */
-    playOnce(C, CLIPS.walk, reveal, WALK_XF);
+    playOnce(W, CLIPS.walk, reveal, WALK_XF);
 
     // Hand over during the clip's final stretch, by which point the monitor has
     // powered on inside the shot and the frame is mostly white.
     let zoomed = false, armed = false;
     const at = () => {
-      const end = C.duration || 10;
-      if (!zoomed && C.currentTime >= end - ZOOM) {
+      const end = W.duration || 10;
+      if (!zoomed && W.currentTime >= end - ZOOM) {
         zoomed = true;
-        C.classList.add('zoom');        // push the panel to full frame
+        W.classList.add('zoom');        // push the panel to full frame
       }
-      if (!armed && C.currentTime >= end - TAKE) {
+      if (!armed && W.currentTime >= end - TAKE) {
         armed = true;
         cover.classList.add('take');
       }
     };
-    if (C.requestVideoFrameCallback) {
-      const tick = () => { at(); if (!armed) C.requestVideoFrameCallback(tick); };
-      C.requestVideoFrameCallback(tick);
+    if (W.requestVideoFrameCallback) {
+      const tick = () => { at(); if (!armed) W.requestVideoFrameCallback(tick); };
+      W.requestVideoFrameCallback(tick);
     } else {
-      C.addEventListener('timeupdate', at);
+      W.addEventListener('timeupdate', at);
     }
   }
 

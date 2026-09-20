@@ -1626,3 +1626,63 @@ intermediate samples between 1.0 and 1.5.
 **Check that an animation actually animates.** Both of these snapped for months
 and read as correct in the source. Sampling the computed value twice, at the
 start and in the middle, is the whole test.
+
+## The last flash: the take was loading into the layer that was on screen
+
+Kemal found this one by noticing when it happened rather than what it looked
+like: only when the button was pressed during the wave.
+
+The wave plays on element C. So did the take. Pressing during the wave meant
+`playOnce` reassigned `.src` on the layer that was live and visible, and
+`show()` opens with:
+
+```js
+if (el === live) return;
+```
+
+so no crossfade ran at all. The element simply emptied while the new file
+loaded, exposing whatever was beneath, and then the take appeared. Press during
+the idle instead and C is free, the crossfade runs normally, and there is
+nothing to see. That is why three rounds of measuring the idle-to-walk blend
+all came back clean: **the blend was never broken, the case being measured was
+the one that works.**
+
+Two changes, because the trigger and the bug are different problems.
+
+The take now picks a layer that is not live, preferring C and falling back to
+whichever of A or B is free. That is the actual fix and it holds regardless of
+when the press lands.
+
+The button is also held back until the wave ends. That is not a workaround: the
+wave is a greeting, and cutting it off mid-gesture to start walking reads as a
+glitch even with the compositing correct. It ships `disabled` and is enabled
+when the wave hands over, so while invisible it is also unclickable and out of
+the tab order rather than an invisible hit target over the video. A timer
+enables it regardless after 8s, because an intro whose only exit never arrives
+is the dead end this file already fixed once.
+
+**When a bug is conditional, the condition is the evidence.** "Only during the
+wave" pointed straight at the one element the wave and the take share, after
+three rounds of instrumenting the wrong transition.
+
+## Scaling about an off-centre point reads as drifting, not pushing
+
+The push-in scaled about the panel's own centre, 53.5% across and 45.8% down.
+That pins the panel centre and streams the rest of the frame outward around it.
+Because the pinned point is off-axis, the move looks like it slides diagonally
+rather than pushing straight in.
+
+Scale about the element centre and translate by the offset instead. A point p,
+as a fraction of the box, lands at `0.5 + (p - 0.5) * s`, so bringing the panel
+centre to the middle needs `t = -(p - 0.5) * s`:
+
+| | |
+|---|---|
+| x | -(0.535 - 0.5) x 1.5 = **-5.25%** |
+| y | -(0.458 - 0.5) x 1.5 = **+6.30%** |
+
+Verified on the computed matrix: `matrix(1.5, 0, 0, 1.5, -75.6, 56.7)` in a
+1440x900 box, which is exactly -5.25% and +6.3%.
+
+**`transform-origin` holds a point still; it does not aim a move.** To push
+toward something off-centre, translate it to the middle as it grows.
