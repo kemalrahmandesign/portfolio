@@ -1011,3 +1011,16 @@ disappearance; the global motion measure will never show one. This is the fifth
 detector in this project to return a confident wrong answer, and the failure
 mode is always the same: it measures the whole frame when the thing that matters
 occupies a small, specific part of it.
+
+### Result
+
+Stating his presence positively fixed it outright. Frames where the dark-subject
+area falls under 4%, meaning he is effectively not in the picture: **22 before,
+0 after.** Through the window where he had vanished, 2.2s to 3.0s, the figure
+went from 3.1-3.9% of frame to 13.5-14.7%. Minimum across the whole clip rose
+from 2.73% to 6.54%.
+
+Nothing else moved much: duplicates 2.7% to 3.7%, pacing jerk 2.50 to 2.66, last
+frame against the pinned end frame 5.3% to 5.8%.
+
+`walk clip, current best: a8189d57-e4d2-4fc1-988b-dece3b3c131b`
