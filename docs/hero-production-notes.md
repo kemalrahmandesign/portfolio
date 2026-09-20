@@ -1830,3 +1830,56 @@ does in the Figma. The masthead moved to 7.5vh.
 The horizontal figures here all held exactly, because cover cropping at these
 viewports is horizontal and the composition is centred. The vertical one did
 not, for the same reason.
+
+## Size the masthead against the thing it collides with
+
+"Too close to my head" had a number behind it. On the hub frame, scanning only
+the centre 40-60% band so the motorcycle and the skis cannot be mistaken for
+him, his hair starts at y=309 of 1080: **28.6% of the frame height**. With
+`object-fit: cover` on a viewport narrower than 16:9 the video is scaled by
+height, so that is 28.6% of the viewport too.
+
+Measured against that line, the tagline was not close to his head, it was on
+it: bottom at 29.6% on a laptop and 31.8% at 16:9.
+
+Moving the block up was not enough on its own, and the reason is the useful
+part. **The headline is sized off the width (11.35vw) but what it collides
+with is a height.** At wide viewports it grows, the block gets taller, and the
+tagline is pushed further down onto him. So the laptop was fine at 3.3pp of
+clearance while 16:9 sat at 1.1pp and the reference's own 1.815 was negative.
+
+`min(11.35vw, 17.5vh)` fixes it by letting whichever dimension is binding
+actually bind. Clearance across desktop shapes after the change:
+
+| | tagline bottom | head | clearance |
+|---|---|---|---|
+| 1440x900 | 24.6% | 28.6% | 36px |
+| 1920x1080 | 24.9% | 28.6% | 40px |
+| 1512x982 | 24.5% | 28.6% | 40px |
+| 2000x1102 | 24.9% | 27.1% | 24px |
+
+It costs about 3% of the headline's size at laptop aspects, which nobody can
+see, against a tagline on his hair, which everybody can.
+
+**Ultrawide letterboxes now too.** Past 2:1 cover crops off the top instead of
+the sides, 360px of it at 21:9, which puts his hair at 4.8% of the viewport
+with the headline across his face. Both extremes now use `contain` and for the
+same reason: cover discards the part of the composition the layout is
+positioned against. The portrait half remains interim until the 9:16
+regeneration.
+
+**A layout positioned against content in a video has to be measured against
+that content**, not against the frame the designer drew. The design put the
+tagline beside his head deliberately; only measuring showed that in a browser
+it was landing on top of it.
+
+### A replace without an assert is a silent no-op
+
+Two edits in this round wrote nothing and reported success, because the
+comment text they matched on had been reflowed by an earlier edit. The first
+was caught only because the re-measurement came back byte-identical to the
+previous run, which is a weak signal that happened to be visible here and
+would not be in most cases.
+
+Every programmatic edit in this file asserts its match count first. The two
+that skipped it are the two that failed.

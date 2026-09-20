@@ -36,8 +36,19 @@
 
   --pad:clamp(20px,3.4vw,64px);
   /* Measured off the Figma frame (2000x1102): the headline cap height is
-     165px, which at Inter's 0.727 cap ratio is a 227px face, or 11.35vw. */
-  --head:clamp(40px,11.35vw,232px);
+     165px, which at Inter's 0.727 cap ratio is a 227px face, or 11.35vw.
+
+     The vh cap is the part that matters in a browser. 11.35vw is sized off
+     the WIDTH, but what the masthead collides with is a HEIGHT: his hair
+     starts at 28.6% of the frame, measured on the hub frame, and on any
+     viewport narrower than 16:9 that is 28.6% of the viewport too. Sized on
+     width alone the headline grows at wide viewports and pushes the tagline
+     down onto him, which is exactly what happened at 16:9 and at the
+     reference's own 1.815. Capping at 17.5vh holds the tagline clear of him
+     across desktop shapes. It costs about 3% of the headline's size at
+     laptop aspects, which is imperceptible, against a tagline sitting on his
+     hair, which is not. */
+  --head:clamp(40px,min(11.35vw,17.5vh),232px);
   --tag:clamp(13px,1.38vw,29px);
   --stage-max:1800px;
 }
@@ -74,9 +85,15 @@ body{
    empty studio. Containing shows the whole frame as a band against --bg, which
    the stage already paints, so the composition survives.
 
-   This is the interim until the 9:16 regeneration; that is the real fix, and
-   this media query is what it replaces. */
-@media (max-aspect-ratio:1/1){
+   The same applies at the other extreme. Past 2:1 the crop comes off the top
+   instead, and it takes 360px at 21:9, which puts his hair at 4.8% of the
+   viewport: no masthead can clear that, and the headline would sit across
+   his face. Both ends letterbox for the same reason, that cover throws away
+   the part of the composition the layout is positioned against.
+
+   The portrait half of this is interim until the 9:16 regeneration; that is
+   the real fix, and it replaces the max-aspect half of this query. */
+@media (max-aspect-ratio:1/1),(min-aspect-ratio:2/1){
   .stage video,.stage img{object-fit:contain;object-position:center center}
 }
 
@@ -164,7 +181,7 @@ body{
      browser that sat the tagline on his head, because the reference frame is
      1.815 and the clips are 16:9 cover-cropped, so he rides higher here than
      he does in the Figma. Pulled up to 7.5vh, which clears him. */
-  padding:clamp(20px,7.5vh,96px) var(--pad) var(--pad);
+  padding:clamp(16px,3.2vh,56px) var(--pad) var(--pad);
   /* auto auto 1fr, not auto 1fr: with two children the second would take the
      1fr row and stretch to the bottom of the viewport. Harmless to look at,
      since its contents sit at the top of that box, but it makes every
@@ -250,7 +267,7 @@ h1{
 .cta .ring{position:absolute;inset:0;width:100%;height:100%;overflow:visible;
   pointer-events:none;color:inherit}
 .cta .ring rect{
-  fill:none;stroke:currentColor;stroke-width:2;
+  fill:none;stroke:currentColor;
   /* An SVG rect clamps rx to half its WIDTH and ry to half its HEIGHT,
      independently. So rx="999" on a wide short box gives a 145px horizontal
      radius against a 39px vertical one: an ellipse, not a pill. Measured, a
@@ -268,6 +285,9 @@ h1{
      pathLength="100" a dash is 2% of the perimeter whatever the button's real
      size, so the density holds at every breakpoint. */
   stroke-dasharray:2 2;
+  /* In em so the outline keeps its weight relative to the pill as the
+     font-size clamp moves: 2px was a hairline once the button grew. */
+  stroke-width:.13em;
   animation:ants 2s linear infinite;
 }
 /* Clockwise: an SVG rect is drawn clockwise from its top-left, and a negative
@@ -287,7 +307,7 @@ h1{
    than flooding it, because a solid fill at this size covers a good part of
    the shot behind it. */
 .cta:hover,.cta:focus-visible{color:var(--ink)}
-.cta:hover .ring rect,.cta:focus-visible .ring rect{stroke-width:3}
+.cta:hover .ring rect,.cta:focus-visible .ring rect{stroke-width:.18em}
 .cta:focus-visible{outline:none}
 .cta .arw{transition:transform .18s ease}
 .cta:hover .arw{transform:translateX(4px)}
