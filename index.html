@@ -47,6 +47,20 @@ body{
   opacity:0;z-index:1;
 }
 
+/* Portrait: letterbox rather than crop.
+   The clips are 16:9. Covering a portrait viewport scales them to fill the
+   height, which on a phone leaves about 26% of the frame width visible -- a
+   narrow vertical slice. That is fatal for this shot specifically, because the
+   walk pans right to the desk: with cover you watch him leave and then stare at
+   empty studio. Containing shows the whole frame as a band against --bg, which
+   the stage already paints, so the composition survives.
+
+   This is the interim until the 9:16 regeneration; that is the real fix, and
+   this media query is what it replaces. */
+@media (max-aspect-ratio:1/1){
+  .stage video,.stage img{object-fit:contain;object-position:center center}
+}
+
 /* Ease the lift back to 1 over the take.
 
    --clip-lift is calibrated for the hero, where the studio renders near 222 and
@@ -259,7 +273,6 @@ h1{
   const WALK_XF = 500;
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const mobile  = matchMedia('(max-width: 760px)').matches;
 
   const hero = document.getElementById('hero');
   const stage = document.getElementById('stage');
@@ -383,7 +396,14 @@ h1{
   show(poster, 0);
   requestAnimationFrame(() => hero.classList.add('is-in'));
 
-  if (!reduced && !mobile) {
+  /* Mobile plays the full sequence too. It used to be excluded along with
+     reduced motion, which left phones on a bare poster and made the call to
+     action a jump cut into the site. The clips are small enough to serve
+     (8.4MB for all four) and autoplay works because they are muted and carry
+     `playsinline`; if a browser refuses anyway, play() rejects, the poster
+     stays up and the button still works, because that click is a user
+     gesture. */
+  if (!reduced) {
     if (CLIPS.wave) playOnce(C, CLIPS.wave, idleLoop, 220);
     // (wave hands to idleLoop on `ended`)
     else idleLoop();
@@ -413,7 +433,7 @@ h1{
   function enter(){
     cta.disabled = true;
     looping = false;                    // stop the loop watcher
-    if (!CLIPS.walk || reduced || mobile) { hardCut(); return; }
+    if (!CLIPS.walk || reduced) { hardCut(); return; }
 
     /* The click has to go somewhere even if the take does not play.
        playOnce waits for the clip to reach readyState 2 before it starts

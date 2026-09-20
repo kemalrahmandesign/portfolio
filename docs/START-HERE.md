@@ -161,8 +161,11 @@ amp                   7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
 3. A real typeface. Inter is a placeholder; his Figma uses something tighter.
 4. Whether to warm `--bg` past `#f1f0ee`. Worth re-judging now the lift taper
    stops the handoff blowing out to pure white.
-5. Mobile still skips all video and shows only the poster. A 9:16 regeneration
-   was always the plan; nothing has been done on it.
+5. The 9:16 regeneration. Mobile now plays the full sequence, but letterboxed:
+   the 16:9 clips are shown with `object-fit: contain` on portrait, because
+   covering a phone viewport shows only ~26% of the frame width and the walk
+   pans right out of that slice. Regenerating at 9:16 is the real fix and
+   replaces the `max-aspect-ratio: 1/1` media query.
 
 ## Environment traps
 

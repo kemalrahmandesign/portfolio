@@ -1408,3 +1408,43 @@ pixels, which reads like a broken stitch. Two-thirds of it was a flat
 brightness offset that the browser clips away, and the third that remained was
 in 13% of the frame. Those three components need three different responses, and
 the aggregate number suggests none of them.
+
+
+## Mobile was switched off, and turning it on is not just removing the gate
+
+The player excluded phones from all video: `if (!reduced && !mobile)` skipped
+the wave and the idle, and `enter()` sent mobile down the same instant-cut path
+as reduced motion. So a phone got a static poster, and the call to action
+jumped into the site instead of playing the take. Reported from an actual
+phone, which is the only way this surfaces -- every headless check passed,
+because "no video on mobile" was the intended behaviour being asserted.
+
+Removing the gate alone would have been worse than leaving it. The clips are
+16:9 and `.stage` uses `object-fit: cover`, which on a portrait viewport scales
+to fill the height:
+
+| viewport | 16:9 scaled to cover | frame width visible |
+|---|---|---|
+| 390x844 | 1500px | **26%** |
+| 430x932 | 1657px | 26% |
+| 820x1180 | 2098px | 39% |
+
+A quarter of the frame width, centred. That is bad for any shot and fatal for
+this one: the walk pans right to the desk, so a centred slice watches him leave
+and then holds on empty studio for six seconds.
+
+So portrait switches to `object-fit: contain` under a `max-aspect-ratio: 1/1`
+query. The whole frame shows as a band against `--bg`, which the stage already
+paints, so the composition survives intact. This is interim; the 9:16
+regeneration is the real fix and that media query is what it replaces.
+
+Autoplay needs nothing extra: the elements are already `muted` and
+`playsinline`, which is what mobile browsers require. If one refuses anyway,
+`play()` rejects into the existing catch, the poster stays, and the button
+still works because the click is a user gesture.
+
+**The lesson is about what a test asserts.** The headless suite covered mobile
+from the start and passed every time, because it asserted the behaviour that
+existed rather than the behaviour that was wanted. A test written against a
+placeholder pins the placeholder. When the intent changes, the assertion is the
+thing to change first.
