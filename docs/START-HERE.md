@@ -88,6 +88,10 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
   cleared and the grace period is still on. Check `transactions` for a grant
   before assuming the cap is gone. The cap counts submissions, so a refused and
   refunded job still costs a slot.
+- **Describe only what the keyframes cannot guarantee.** The pinned start frame
+  already fixes his appearance, the props and the studio; re-describing them cost
+  ~120 words of attention taken from the beats that kept failing. Attention is
+  conserved, so every added clause is silently taken from another.
 - **Re-read the parts of the prompt you are not changing.** "Walks off to the
   right" survived four rounds and is why he vanished from frame at 2.2s: it is
   an instruction to exit. Each round edits one section and carries the rest

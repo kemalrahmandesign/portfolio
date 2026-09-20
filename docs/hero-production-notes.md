@@ -1024,3 +1024,46 @@ Nothing else moved much: duplicates 2.7% to 3.7%, pacing jerk 2.50 to 2.66, last
 frame against the pinned end frame 5.3% to 5.8%.
 
 `walk clip, current best: a8189d57-e4d2-4fc1-988b-dece3b3c131b`
+
+## The prompt is a fixed budget, and the keyframe is already paying part of it
+
+Kemal's note that it had been "really close not too long ago" is the important
+one. It had. Every round since has fixed one beat and broken another:
+
+| Round | fixed | broke |
+|---|---|---|
+| painting placement | painting appears | petting staged, camera on the cat |
+| de-emphasise the pet | camera holds the monitor | he walks out of frame |
+| keep him in frame | he stays in shot | chair malformed, **pet gone entirely** |
+
+That is not bad luck three times. Adding ~90 words about his presence pushed the
+16-word petting beat below the threshold where the model acts on it, and the
+chair lost "plainly something a person can sit on" to a character-count trim in
+the same edit. **Attention is conserved.** Every clause added is taken from
+somewhere else, silently.
+
+**The keyframe is already paying for a large part of the prompt.** The start
+frame is the hub frame: it pins his hair, glasses, clothes, the motorcycle, the
+skis, the guitar, the amp, the skateboard, the ball and the studio. All of it is
+guaranteed by the pin. Re-describing it in text bought nothing and cost roughly
+120 words of attention, taken from the beats that were actually failing.
+
+Cutting everything the keyframe guarantees freed **1,298 characters**, 4,697 down
+to 3,399, and that budget went where the failures are:
+
+| | before | after |
+|---|---|---|
+| The chair | 32 words | **69** |
+| Sitting down | 30 words | 32 |
+| The petting | 16 words | **39** |
+
+**Describe what the keyframes cannot guarantee, and nothing else.** Anything
+visible in the pinned start or end frame does not need words; anything that
+happens *between* them does. The chair also gained a list of what it must not be
+(warped, melted, bent, half-formed, fused into the desk), since malformed
+furniture is a failure of shape, which negatives do address.
+
+One operational note: the preset recommendation is matched on prompt text, so a
+rewritten prompt draws a different preset. This one pulled "DROWN IN MUSIC"
+rather than "IN THE DARK", and `declined_preset_id` has to match whichever is
+actually offered.
