@@ -1067,3 +1067,31 @@ One operational note: the preset recommendation is matched on prompt text, so a
 rewritten prompt draws a different preset. This one pulled "DROWN IN MUSIC"
 rather than "IN THE DARK", and `declined_preset_id` has to match whichever is
 actually offered.
+
+## When a clip is close, change one paragraph and prove the rest is identical
+
+The rebalanced prompt landed at "99 percent", with one defect: the chair was
+missing an armrest. The whole history of this clip says the danger at that point
+is not the fix, it is collateral damage from editing anything else at the same
+time. Every previous round edited a section, trimmed something unrelated to stay
+under the character cap, and broke a beat that had been working.
+
+So the edit was made programmatically and verified before submitting: replace
+the chair paragraph and Kemal's pupils sentence, then substitute a placeholder
+for each changed region in both the old and new text and assert the remainders
+are equal. `everything outside the chair + pupil edits identical: True`.
+
+Do this whenever a generation is close. A diff that *looks* small is not the
+same as a diff that *is* small, and at 3,600 characters an accidental
+rewording is easy to miss by eye.
+
+**Name the actual failure mode, not just the object.** A missing armrest is an
+asymmetry error, so the fix states the symmetry explicitly: "TWO ARMRESTS, A
+MATCHING PAIR, ONE ON THE LEFT SIDE AND ONE ON THE RIGHT SIDE, both fully
+present and the same shape as each other", plus "NOT missing an armrest" in the
+list of what the chair must not be. Negatives work here because this is a
+question of shape, which is what they are good for.
+
+If it misses again, the guaranteed fix is an armless task chair: a chair with no
+arms cannot have one missing. That trades the look Kemal asked for against
+certainty, so it is the fallback rather than the first move.

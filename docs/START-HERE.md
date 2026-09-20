@@ -88,6 +88,10 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
   cleared and the grace period is still on. Check `transactions` for a grant
   before assuming the cap is gone. The cap counts submissions, so a refused and
   refunded job still costs a slot.
+- **When a clip is close, change one paragraph and prove the rest is identical.**
+  Do it programmatically: placeholder out the changed regions in both texts and
+  assert the remainders are equal. Every earlier round broke a working beat by
+  editing something unrelated in the same pass.
 - **Describe only what the keyframes cannot guarantee.** The pinned start frame
   already fixes his appearance, the props and the studio; re-describing them cost
   ~120 words of attention taken from the beats that kept failing. Attention is
