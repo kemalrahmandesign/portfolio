@@ -1551,3 +1551,78 @@ side as it grows.
 The timing is set by the content: the panel is solid white from about 8.2s of
 9.71s, so the push starts once there is nothing left in frame but the screen,
 and lands as the cover takes over.
+
+## --clip-lift was matching the wrong two numbers, and that is the white
+
+Third report of a flash at the press, and the first two fixes were both wrong
+because they treated the symptom. The cause is one line in `:root`.
+
+The lift was set to 1.085 on this reasoning, recorded in the comment: "the
+clips render their studio at about 222 luminance, the design sits nearer 241".
+
+**222 is the whole-frame mean.** It averages the white studio together with his
+dark hair, his clothes, the black motorcycle and the amp. It is not the studio,
+and the studio is the only part that is supposed to correspond to the page.
+Masked to the studio the clips measure 237 (wave), 238 (idle) and 242 (walk),
+against a page at 240. They already matched to within three levels.
+
+Multiplying an already-matched 237-242 by 1.085 gives 257-262. Both clip:
+
+| | |
+|---|---|
+| studio pixels pinned at 255 | **88.8%** (walk), 72.5% (idle) |
+| shading in the white room | crushed flat |
+| picture against the page it sits in | 15 levels brighter |
+
+So the entire hero has been rendering its studio as blown pure white. That is
+why every artefact in it reads as *white* specifically: at 255 there is nothing
+brighter on the page, so anything dark that leaves frame -- his body during a
+dissolve, or the headline fading out -- exposes maximum contrast against a
+clipped background.
+
+With the lift at 1, measured over the press in a recording: **0% of pixels
+clipped**, against 88.8% before, and the brightening across the text fade is
+gradual, largest frame-to-frame step +6.1 levels.
+
+**Never match a flat background colour against a frame mean.** Mask to the
+pixels meant to correspond. The same error is what produced the bogus 0.24
+figure corrected earlier in this document; that one was caught because it
+failed to reproduce, this one survived for weeks because 1.085 looked like a
+plausible number and nothing re-derived it.
+
+Two things fall out of the fix. The `.settle` taper is gone, because with no
+lift there is nothing to ease and the panel arrives within a couple of levels
+of `--bg` on its own. And the two earlier "fixes" for this flash were both
+unnecessary: the crossfade length was never the cause, and it is now back to a
+middle value.
+
+## A transition declared on the state class never runs
+
+The monitor push-in teleported. Measured: computed scale went 1 -> 1.5 between
+consecutive 50ms samples, with nothing in between.
+
+```css
+.stage video.zoom{ transition:transform 1400ms ...; transform:scale(1.5) }
+```
+
+A transition cannot start when the `transition` property is introduced by the
+same style change that sets the new value. There is no previous computed style
+carrying that transition, so the value snaps. The transition has to already be
+on the element before the change.
+
+**`.settle` had the identical bug**, which means the `--clip-lift` taper this
+document describes as "easing out over the same 450ms as the cover" has never
+eased anything since it was written. It was always an instant jump. Two
+separate entries here describe its behaviour as if it animated.
+
+Moving the declaration to the base rule fixes the teleport but breaks
+elsewhere: `show()` writes an inline `transition` for the crossfade, and an
+inline declaration beats the stylesheet, so the transform transition would be
+silently dropped whenever a layer was swapped. **A keyframe animation avoids
+both traps**, because `animation` is a separate property that neither the
+same-frame problem nor `show()` touches. Measured after the change: 21
+intermediate samples between 1.0 and 1.5.
+
+**Check that an animation actually animates.** Both of these snapped for months
+and read as correct in the source. Sampling the computed value twice, at the
+start and in the middle, is the whole test.

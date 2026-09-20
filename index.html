@@ -13,9 +13,25 @@
   --bg:#f1f0ee;
   --ink:#0a0a0a;
 
-  /* The clips render their studio at about 222 luminance, the design sits
-     nearer 241. This lifts the video to match instead of dulling the page. */
-  --clip-lift:1.085;
+  /* Video is not lifted any more, and the 1.085 that used to sit here was a
+     measurement error worth recording.
+
+     The old comment read: "the clips render their studio at about 222
+     luminance, the design sits nearer 241". 222 is the WHOLE-FRAME mean, which
+     averages the white studio together with his dark hair, clothes and the
+     black motorcycle. It is not the studio. Measured on the studio alone, the
+     clips sit at 237 (wave), 238 (idle) and 242 (walk), against a page at 240.
+     They already matched.
+
+     Multiplying an already-matched 237-242 by 1.085 gives 257-262, which
+     clips: 88.8% of studio pixels pinned at pure 255, every bit of shading in
+     the white room crushed flat, and the picture reading brighter than the
+     page it is supposed to sit inside. It also set up the handoff to blow out,
+     which is what the removed .settle taper existed to paper over.
+
+     Do not match a flat background colour against a frame mean. Mask to the
+     pixels that are meant to correspond. */
+  --clip-lift:1;
   --clip-warm:1.02;
 
   --pad:clamp(20px,3.4vw,64px);
@@ -71,10 +87,15 @@ body{
    is what read as a harsh cold white at the handoff, next to a page that is
    actually a warm 240. Easing the lift out over the same 450ms as the cover
    lets the panel arrive at its own value, against a cover painted in --bg. */
-.stage video.settle{
-  transition:filter 450ms ease-in;
-  filter:brightness(1) saturate(var(--clip-warm));
-}
+/* No .settle taper any more. It eased --clip-lift back to 1 over the last
+   450ms so the white panel would not arrive blown out. With the lift at 1
+   there is nothing to ease: the panel arrives at its own value, and that value
+   is within a couple of levels of --bg.
+
+   It never worked anyway, for the reason documented on .zoom below: it
+   declared its transition on the state class, so the filter snapped instead of
+   easing. Every description of it in the notes as "easing out over 450ms" was
+   describing an instant jump. */
 
 /* Drive the monitor the rest of the way to full frame.
 
@@ -87,13 +108,27 @@ body{
    survives at any viewport aspect. The origin is the panel's centre in the
    final frame -- 53.5% across, 45.8% down -- not the middle of the screen,
    because the panel does not sit centred. */
-.stage video.zoom{
-  transition:transform 1400ms cubic-bezier(.33,0,.2,1);
-  transform:scale(1.5);
-  transform-origin:53.5% 45.8%;
+/* A keyframe animation, not a transition, and that is load-bearing twice over.
+
+   A transition cannot start when the `transition` property is introduced by
+   the same style change that sets the new value: there is no previous state
+   carrying the transition, so the value snaps. Declaring
+   `transition:transform ...` inside `.zoom` alongside `transform:scale(1.5)`
+   is exactly that mistake, and it made the push-in teleport. Measured: the
+   computed scale went 1 -> 1.5 between consecutive 50ms samples.
+
+   Moving the transition to the base rule would fix that but break on the other
+   side, because show() writes an inline `transition` for the crossfade and an
+   inline declaration beats the stylesheet, so the transform transition would
+   be dropped whenever a layer was swapped. `animation` is a separate property,
+   so it survives both. */
+@keyframes pushin{
+  from{transform:scale(1)}
+  to  {transform:scale(1.5)}
 }
-.stage video.zoom.settle{
-  transition:transform 1400ms cubic-bezier(.33,0,.2,1),filter 450ms ease-in;
+.stage video.zoom{
+  animation:pushin 1400ms cubic-bezier(.33,0,.2,1) forwards;
+  transform-origin:53.5% 45.8%;
 }
 
 /* Shown only when the clips cannot be fetched, so the layout still reads. */
@@ -222,12 +257,27 @@ h1{
   letter-spacing:-.04em;line-height:1.04;margin:0;
 }
 .intro .dim{color:rgba(10,10,10,.34)}
+
+/* The lines rise in once the camera has landed, rather than being there
+   already. Transitions live on the base rule, not on .in: a transition
+   introduced by the same style change that sets the new value does not run,
+   which is the bug that made the monitor push-in teleport. */
+.intro .line{
+  display:block;opacity:0;transform:translateY(20px);
+  transition:opacity .75s ease,transform .75s cubic-bezier(.16,1,.3,1);
+}
+.intro .line:nth-child(2){transition-delay:.14s}
+.work.in .intro .line{opacity:1;transform:none}
+
 .scroll{
   justify-self:center;display:flex;flex-direction:column;align-items:center;gap:.7em;
   padding-bottom:clamp(18px,3vh,40px);
   font-size:13px;letter-spacing:.14em;text-transform:uppercase;
   color:rgba(10,10,10,.42);
+  opacity:0;transform:translateY(10px);
+  transition:opacity .6s ease .5s,transform .6s ease .5s;
 }
+.work.in .scroll{opacity:1;transform:none}
 .scroll .chev{width:18px;height:18px;animation:nudge 1.8s ease-in-out infinite}
 @keyframes nudge{0%,100%{transform:translateY(0);opacity:.5} 50%{transform:translateY(5px);opacity:1}}
 
@@ -240,7 +290,8 @@ h1{
 }
 @media (prefers-reduced-motion:reduce){
   .scroll .chev{animation:none}
-  .stage video.zoom{transition:none;transform:none}
+  .stage video.zoom{animation:none}
+  .intro .line,.scroll{transition:none;opacity:1;transform:none}
   .word > span{transition:none;transform:none}
   .cta{transition:none;opacity:1;transform:none}
   #cover.take{animation:none;opacity:1}
@@ -274,8 +325,8 @@ h1{
 
 <main class="work" id="work" hidden>
   <p class="intro">
-    Product designer, four&nbsp;years in.
-    <span class="dim">Most of the work is deciding what not to build &mdash;
+    <span class="line">Product designer, four&nbsp;years in.</span>
+    <span class="line dim">Most of the work is deciding what not to build,
     then making what&rsquo;s left feel obvious.</span>
   </p>
   <div class="scroll">
@@ -556,6 +607,11 @@ h1{
     if (revealed) return;
     revealed = true;
     work.hidden = false;
+    /* Two frames: one for the element to leave `hidden` and be laid out, one
+       for the starting styles to be committed. Adding the class in the same
+       frame it becomes visible means there is no previous state to animate
+       from, and the lines would simply appear. */
+    requestAnimationFrame(() => requestAnimationFrame(() => work.classList.add('in')));
     document.body.style.overflow = '';
     hero.style.display = 'none';
     cover.classList.remove('take');
@@ -613,7 +669,6 @@ h1{
       }
       if (!armed && C.currentTime >= end - TAKE) {
         armed = true;
-        C.classList.add('settle');      // ease --clip-lift out, see the CSS
         cover.classList.add('take');
       }
     };
