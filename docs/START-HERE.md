@@ -88,6 +88,13 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
   cleared and the grace period is still on. Check `transactions` for a grant
   before assuming the cap is gone. The cap counts submissions, so a refused and
   refunded job still costs a slot.
+- **Negatives remove, they do not de-emphasise.** Three attempts to make the
+  petting incidental used more and more prohibition and made it more prominent,
+  because attention follows word count whichever way a clause is phrased. Name
+  the camera's subject positively and cut the unimportant action to a fragment.
+- **Do not report a small prop's presence from a colour test.** The canvas was
+  reported missing and was there. Four detectors in this project have now given
+  confident wrong answers; they work on frame-filling properties, not on props.
 - **Place objects where the camera actually looks.** The easel was put at the
   desk's far left; the camera swings right, so the lens never went there and it
   simply did not render. Describing an object is not enough, check the move

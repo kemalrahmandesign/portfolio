@@ -897,3 +897,48 @@ frames from 11.0% to 19.1% and pacing jerk from 3.13 to 4.00. It is dropped from
 the prompt rather than carried forward: a clause with measured negative effect is
 worse than no clause. The camera-path language stays, because that one is
 measured to work.
+
+## Negatives remove; they do not de-emphasise
+
+The petting beat was wrong three times running, and each attempt used more
+prohibition: "the camera does NOT stop for this, does NOT slow down for it,
+does NOT turn toward it and does NOT centre it." Kemal's note each time was the
+same, that it looks staged and the camera goes to the cat instead of the screen.
+
+Negatives are the right tool when something should be **absent**. They fixed the
+sideburns, the vignette and the warm room. They are the wrong tool when
+something should be **present but unimportant**, because prompt attention tracks
+word count, and a prohibition is still words spent on the thing. That beat had
+its own paragraph and about sixty words, four of which were instructions not to
+look at it. The paragraph's size said "this matters" louder than its content
+said "ignore this".
+
+**De-emphasis is grammatical.** Name the camera's subject positively, and demote
+the unimportant action to a short fragment with no sentence of its own:
+
+> FINAL THIRD. THE CAMERA'S ONLY SUBJECT IS THE MONITOR. It glides steadily
+> forward past his shoulder, aimed straight at the black screen... The monitor
+> stays dead centre of frame the entire time... His hand brushes the cat's head
+> once in passing, low at the edge of the frame.
+
+Sixteen words for the pet, against sixty. One negative rather than four. The
+camera is given something to look **at**, which is a stronger instruction than a
+list of things not to look at.
+
+The general rule for this model: **say what the shot is about, do not list what
+it is not about.** A prompt is a budget, and every clause spends attention on
+whatever it names, whichever way it names it.
+
+### The painting was there; the detector was wrong
+
+The previous clip was reported here as missing the canvas, on a scan for
+saturated orange that found only skin tones. It was present. That is the fourth
+measurement in this project that returned a confident wrong answer, after the
+shoulder-versus-screen detector, the cut threshold that could not fire, and the
+blue-cat test that could not tell a cat from plaid pyjamas.
+
+The pattern is consistent enough to be a rule: **these detectors are reliable for
+large, frame-filling properties** — luminance, evenness, whether a cut exists,
+whether the last frame matches the pinned one — **and unreliable for small props
+and anything defined by hue.** Do not report on a small object's presence from a
+colour test. Ask.
