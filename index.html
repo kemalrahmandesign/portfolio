@@ -47,6 +47,35 @@ body{
   opacity:0;z-index:1;
 }
 
+/* Portrait: letterbox rather than crop.
+   The clips are 16:9. Covering a portrait viewport scales them to fill the
+   height, which on a phone leaves about 26% of the frame width visible -- a
+   narrow vertical slice. That is fatal for this shot specifically, because the
+   walk pans right to the desk: with cover you watch him leave and then stare at
+   empty studio. Containing shows the whole frame as a band against --bg, which
+   the stage already paints, so the composition survives.
+
+   This is the interim until the 9:16 regeneration; that is the real fix, and
+   this media query is what it replaces. */
+@media (max-aspect-ratio:1/1){
+  .stage video,.stage img{object-fit:contain;object-position:center center}
+}
+
+/* Ease the lift back to 1 over the take.
+
+   --clip-lift is calibrated for the hero, where the studio renders near 222 and
+   wants to sit at 241. By the end of the walk the picture is almost entirely
+   the monitor's white panel, which the clip already renders at about 235.
+   Multiplying that by 1.085 gives 255 on all three channels, so it clips: the
+   panel arrives as blown pure white and the hue clips away with the level. That
+   is what read as a harsh cold white at the handoff, next to a page that is
+   actually a warm 240. Easing the lift out over the same 450ms as the cover
+   lets the panel arrive at its own value, against a cover painted in --bg. */
+.stage video.settle{
+  transition:filter 450ms ease-in;
+  filter:brightness(1) saturate(var(--clip-warm));
+}
+
 /* Shown only when the clips cannot be fetched, so the layout still reads. */
 .stage-missing{
   position:absolute;left:50%;bottom:8%;transform:translateX(-50%);
@@ -112,11 +141,14 @@ h1{
 /* ---------- the handoff ---------- */
 /* The monitor's power-on flicker happens inside the clip, so this cover has
    only one job: close the gap between the video's white and the page's white.
-   Video encodes limited range, so its white lands near 235 while the page is
-   255, and cutting between the two is a visible step. Ramping up to an opaque
-   CSS white hides it, because the move is toward white rather than a match. */
+
+   It used to be #fff, on a comment that claimed the page was 255. The page is
+   --bg, which is #f1f0ee, luminance 240. So the cover ramped up to pure white
+   and then cleared 15 levels down onto the real page: it created a step at the
+   end of the reveal to hide one in the middle. Painting the cover in --bg
+   instead means clearing it is a no-op, because it is already the page colour. */
 #cover{
-  position:fixed;inset:0;z-index:40;background:#fff;
+  position:fixed;inset:0;z-index:40;background:var(--bg);
   opacity:0;pointer-events:none;
 }
 #cover.take{animation:take 450ms ease-in forwards}
@@ -181,32 +213,91 @@ h1{
 <script>
 (() => {
   /* Each clip carries a `head`: seconds to skip on every start.
-     Both generated clips open 2.8 luminance levels darker than they settle,
-     recovering over about four frames. Starting at 0 therefore plays a fast
-     dark-to-bright pulse every time a clip begins, which is what reads as a
-     flash at each loop wrap. Skipping the ramp removes it, and also takes the
-     idle's wrap mismatch from 3.88% of pixels to 1.15%. The values are the
-     first frame measured within 0.3 levels of each clip's settled value. */
+     The wave and the idle both open about 2.8 luminance levels darker than they
+     settle, recovering over roughly four frames. Starting at 0 therefore plays a
+     fast dark-to-bright pulse every time such a clip begins, which is what reads
+     as a flash at each loop wrap. Skipping the ramp removes it, and also takes
+     the idle's wrap mismatch from 3.88% of pixels to 1.15%.
+
+     The walk clip has a much shallower ramp than the other two, but it is not
+     zero: -0.73 levels at frame 0 against its settled value, reaching tolerance
+     at frame 2. An earlier note here claimed +0.02 and head 0; that was measured
+     on a different generation and does not carry over. Measure this per clip and
+     per generation; do not infer it from the model, and do not inherit it from
+     the clip you are replacing. */
   const CLIPS = {
     // Wave plays once on load, then hands to the idle loop. The arm starts
     // rising at 0.5s and peaks 1.5-3.4s, which lands it mid-headline.
-    wave: { src: 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
-               + 'ed3c524f-cea1-4b6c-8683-46edd68f159f.mp4', head: 0.11 },
+    wave: { src: 'media/wave.mp4', head: 0.11 },
     // 10s, locked-off, breathing and blinks only. Measured: his own pixels
     // move across 0.19% of frames on average against 0.38% for the 3.5s clip,
     // and the motorcycle is static rather than drifting across 4.9%.
-    idle: { src: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
-               + 'hf_20260919_182126_adac86ab-3d37-41ff-860a-4c713b405a9c.mp4', head: 0.14 },
-    walk: null,                                        // pending generation
+    idle: { src: 'media/idle.mp4', head: 0.14 },
+    /* 9.71s at 24fps, one continuous take: turn, walk, camera swings right,
+       Nova crosses and settles on the tower, he sits, the monitor powers on.
+       No dissolve, he is never lost from frame, 2.2% duplicate frames, and the
+       last frame lands on the pinned end frame within 3.8% of pixels.
+
+       It is a Genjutsu object-replacement pass over the original take, run to
+       give the chair its missing armrest. That is a re-render, not an overlay,
+       so it came back at 24fps rather than 30 and about 7 luminance levels
+       brighter. Neither is corrected here, deliberately:
+
+       - The framerate is not referenced anywhere. The cover handoff reads
+         `duration` at runtime, and the monitor still blooms from 8.2s and holds
+         solid white to the end, which is where TAKE lands.
+       - The brightness is invisible where it would matter. Both layers carry
+         --clip-lift, and the studio is 87% of the frame at 221 and 218, which
+         both multiply past 255 and clip to white: measured 0.85% of studio
+         pixels differ after the lift. Correcting it would also darken the
+         final white panel away from --bg, which it currently matches better
+         than the original take did.
+
+       head is 0 because for this clip the stitch, not the ramp, is the binding
+       constraint. Frame 0 is the closest match to the hub pose (6.6% of pixels)
+       and every later frame is worse as he turns away, so the luminance rule's
+       answer of frame 9 would have traded a visible pose jump for a 1.5-level
+       dip that the crossfade hides anyway. */
+    walk: { src: 'media/walk.mp4', head: 0 },
   };
-  const POSTER = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/'
-               + 'hf_20260918_131857_3f470988-9df8-4d61-98f6-e316d6f6ad9e.png';
+  /* The hub frame, pre-cropped to 16:9 and re-encoded as JPEG (2.81MB -> 0.21MB).
+     The source PNG is 2752x1536, which is 1.7917 rather than 16:9's 1.7778, so
+     the browser was cover-cropping it at paint time. Cropping it in advance
+     means the poster and the clips are the same shape before compositing, and
+     measured against the original processed the same way it is +0.03 levels. */
+  const POSTER = 'media/hub.jpg';
+
+  /* Fallback source, used only when media/ is empty.
+
+     The files in media/ are the real source and the reason the CDN references
+     were removed: Higgsfield result URLs die when a generation is deleted, and
+     one already did, which broke the call to action on the deployed page.
+
+     But the files have to be downloaded and committed by hand, and until that
+     happens this page renders as bare text. So each asset carries a fallback
+     on the Higgsfield CDN, and the page probes for the local poster once at
+     boot to decide which set to use. With media/ populated the fallback is
+     never requested; with media/ empty the hero still runs.
+
+     These are uploaded media rather than generation results, so they are not
+     garbage-collected with a deleted generation. They are still a convenience,
+     not a plan. Commit the files. */
+  const CDN = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/';
+  const FALLBACK = {
+    'media/hub.jpg':  CDN + 'f215c1e8-2364-4cf0-a950-cb1851e8c8b4.jpg',
+    'media/wave.mp4': CDN + '71520f4b-933c-4ed5-b321-b46e065e0535.mp4',
+    'media/idle.mp4': CDN + '9b16a3ef-b3fe-441f-99e6-414ffac6f442.mp4',
+    'media/walk.mp4': CDN + 'f8373f35-e3dc-4469-9533-66738f840f3c.mp4',
+  };
+  let useFallback = false;
+  const src = p => (useFallback && FALLBACK[p]) || p;
 
   // Seconds of crossfade over the idle's wrap. Must match .stage.looping in CSS.
   const XF = 0.34;
+  // Milliseconds of crossfade from the idle into the walk. See enter().
+  const WALK_XF = 500;
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const mobile  = matchMedia('(max-width: 760px)').matches;
 
   const hero = document.getElementById('hero');
   const stage = document.getElementById('stage');
@@ -261,7 +352,7 @@ h1{
   function playOnce(el, clip, onEnd, fade){
     el.loop = false;
     el.onended = onEnd || null;
-    el.src = clip.src;
+    el.src = src(clip.src);
     atTime(el, clip.head, () => {
       const p = el.play(); if (p && p.catch) p.catch(() => {});
       show(el, fade);
@@ -287,7 +378,7 @@ h1{
   function idleLoop(){
     const pair = [A, B];
     const clip = CLIPS.idle;
-    pair.forEach(v => { v.loop = false; v.onended = null; v.src = clip.src; });
+    pair.forEach(v => { v.loop = false; v.onended = null; v.src = src(clip.src); });
     looping = true;
     let i = 0;
     const step = () => {
@@ -319,28 +410,50 @@ h1{
   function warm(clip){
     if (!clip) return;
     const v = document.createElement('video');
-    v.preload = 'auto'; v.muted = true; v.src = clip.src;
+    v.preload = 'auto'; v.muted = true; v.src = src(clip.src);
     warm.held = v;
   }
 
-  /* ---- boot ---- */
-  poster.onerror = () => stage.classList.add('is-empty');
-  A.onerror = B.onerror = C.onerror = () => stage.classList.add('is-empty');
-  poster.src = POSTER;
-  show(poster, 0);
-  requestAnimationFrame(() => hero.classList.add('is-in'));
+  /* ---- boot ----
+     Probe for the local poster before anything loads. A missing file 404s
+     immediately, so this costs one round trip and decides the source for every
+     asset at once, rather than leaving each element to fail on its own. */
+  function boot(){
+    poster.onerror = () => stage.classList.add('is-empty');
+    A.onerror = B.onerror = C.onerror = () => stage.classList.add('is-empty');
+    poster.src = src(POSTER);
+    show(poster, 0);
+    requestAnimationFrame(() => hero.classList.add('is-in'));
 
-  if (!reduced && !mobile) {
-    if (CLIPS.wave) playOnce(C, CLIPS.wave, idleLoop, 220);
-    // (wave hands to idleLoop on `ended`)
-    else idleLoop();
-    warm(CLIPS.walk);
+  /* Mobile plays the full sequence too. It used to be excluded along with
+     reduced motion, which left phones on a bare poster and made the call to
+     action a jump cut into the site. The clips are small enough to serve
+     (8.4MB for all four) and autoplay works because they are muted and carry
+     `playsinline`; if a browser refuses anyway, play() rejects, the poster
+     stays up and the button still works, because that click is a user
+     gesture. */
+    if (!reduced) {
+      if (CLIPS.wave) playOnce(C, CLIPS.wave, idleLoop, 220);
+      // (wave hands to idleLoop on `ended`)
+      else idleLoop();
+      warm(CLIPS.walk);
+    }
   }
+
+  const probe = new Image();
+  probe.onload  = boot;
+  probe.onerror = () => { useFallback = true; boot(); };
+  probe.src = POSTER;
 
   /* ---- the handoff into the monitor ---- */
   const TAKE = 0.45;                    // must match the `take` animation
 
+  /* Idempotent: the take ending, the watchdog below and the skip button can all
+     reach this, and two of them can race on a slow machine. */
+  let revealed = false;
   function reveal(){
+    if (revealed) return;
+    revealed = true;
     work.hidden = false;
     document.body.style.overflow = '';
     hero.style.display = 'none';
@@ -349,18 +462,54 @@ h1{
     window.scrollTo(0, 0);
   }
 
+  // No take available, or one that never arrived: cut straight to the site.
+  function hardCut(){ cover.style.opacity = 1; setTimeout(reveal, 180); }
+
   function enter(){
     cta.disabled = true;
     looping = false;                    // stop the loop watcher
-    if (!CLIPS.walk || reduced || mobile) { cover.style.opacity = 1; setTimeout(reveal, 180); return; }
-    playOnce(C, CLIPS.walk, reveal, 320);
+    if (!CLIPS.walk || reduced) { hardCut(); return; }
+
+    /* The click has to go somewhere even if the take does not play.
+       playOnce waits for the clip to reach readyState 2 before it starts
+       anything, so a clip that 404s, is blocked, or stalls on a cold cache
+       simply never fires the callback that calls reveal. The button is already
+       disabled at that point, which leaves the intro with no exit at all. This
+       was not hypothetical: the walk clip's CDN URL started returning 403 and
+       the deployed hero's call to action became a dead end.
+
+       So: a load error, or four seconds without playback actually starting,
+       falls through to the same instant cut the skip button uses. */
+    let running = false, watchdog = 0;
+    const bail = () => {
+      if (running) return;
+      running = true;
+      clearTimeout(watchdog);
+      hardCut();
+    };
+    C.addEventListener('playing', () => { running = true; clearTimeout(watchdog); }, { once: true });
+    C.addEventListener('error', bail, { once: true });
+    watchdog = setTimeout(bail, 4000);
+
+    /* 500ms, not the 320ms the other swaps use. The walk clip is a re-render of
+       the original take, so it no longer opens on the hub frame as tightly: the
+       studio matches to 0.85% after the lift, but his pixels differ across
+       47.7%, against 20.6% for the take it replaces. That is a pose difference,
+       not a level difference, so no filter removes it and only the blend can
+       cover it. The first half second of the clip is him turning away, which is
+       the cheapest half second in the take to spend on a dissolve. */
+    playOnce(C, CLIPS.walk, reveal, WALK_XF);
 
     // Hand over during the clip's final stretch, by which point the monitor has
     // powered on inside the shot and the frame is mostly white.
     let armed = false;
     const at = () => {
       const end = C.duration || 10;
-      if (!armed && C.currentTime >= end - TAKE) { armed = true; cover.classList.add('take'); }
+      if (!armed && C.currentTime >= end - TAKE) {
+        armed = true;
+        C.classList.add('settle');      // ease --clip-lift out, see the CSS
+        cover.classList.add('take');
+      }
     };
     if (C.requestVideoFrameCallback) {
       const tick = () => { at(); if (!armed) C.requestVideoFrameCallback(tick); };
@@ -371,10 +520,7 @@ h1{
   }
 
   cta.addEventListener('click', enter);
-  skip.addEventListener('click', () => {
-    looping = false;
-    cover.style.opacity = 1; setTimeout(reveal, 160);
-  });
+  skip.addEventListener('click', () => { looping = false; hardCut(); });
 })();
 </script>
 </body>
