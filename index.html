@@ -129,6 +129,23 @@ h1{
 .cta .arw{transition:transform .18s ease}
 .cta:hover .arw{transform:translateX(4px)}
 
+/* ---------- clearing the plate for the take ----------
+   The headline and the call to action have done their job by the time he
+   starts walking, and holding them over the shot fights the camera move: the
+   push-in ends on the monitor dead centre, which is exactly where the headline
+   sits. They fade together, with the skip link, over roughly the same time as
+   the blend into the walk.
+
+   Fading .overlay rather than its children means one group opacity animates
+   instead of two independent ones, so the headline and the button cannot drift
+   apart. The skip link is a sibling of .overlay, not a child, so it needs its
+   own rule. */
+.overlay,.skip{transition:opacity 420ms ease}
+.hero.is-leaving .overlay,
+.hero.is-leaving .skip{opacity:0}
+.hero.is-leaving .cta,
+.hero.is-leaving .skip{pointer-events:none}
+
 /* ---------- skip ---------- */
 .skip{
   position:absolute;left:var(--pad);bottom:var(--pad);z-index:3;pointer-events:auto;
@@ -173,6 +190,7 @@ h1{
   .word > span{transition:none;transform:none}
   .cta{transition:none;opacity:1;transform:none}
   #cover.take{animation:none;opacity:1}
+  .overlay,.skip{transition:none}
 }
 </style>
 </head>
@@ -466,6 +484,7 @@ h1{
 
   function enter(){
     cta.disabled = true;
+    hero.classList.add('is-leaving');   // fade the headline, the CTA and skip
     looping = false;                    // stop the loop watcher
     if (!CLIPS.walk || reduced) { hardCut(); return; }
 
