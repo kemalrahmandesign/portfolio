@@ -737,3 +737,56 @@ Veo 3.1 at `quality: high` returned status `nsfw` on the walk prompt: a cartoon
 man walking to a desk. Veo 3.1 Lite did the same on the idle prompt earlier.
 Credits refund automatically, but it is a standing risk on any Veo run here,
 and it is the reason a Veo-only plan needs a fallback.
+
+## Dropping the identity photos is what broke the likeness
+
+The desk keyframe came back with a beard and sideburns, and the 10s walk clip
+had drifted the chin sharp. Kemal called it: accuracy had been good on the early
+stills and had "gone to shit".
+
+The cause is not subtle. The hub frame was generated with **four identity
+photographs plus the style reference**. The desk frames were generated with the
+style reference, the tower, the cat and the desk layout, and **none of his face
+at all**. With nothing to go on, the model invented a man.
+
+This is the rule already written in this document, broken while other parts of
+the same document were being quoted:
+
+> pass all seven references, always
+
+It was written after an attempt dropped the *object* photos and the bike, guitar
+and amp degraded. The identity photos fail exactly the same way, and a frame
+where he is "seen from behind" is not an exemption: the model still has to
+decide what the head it is drawing belongs to.
+
+**Every generation of this character carries `fc39e6cc`, `7c955619` and
+`48839646`.** No exceptions for shots where the face is meant to be hidden.
+
+Repeating it in the text as well is worth the words, because the photographs fix
+shape but the prompt is what forbids additions: clean-shaven apart from the thin
+moustache, no beard, no stubble, no goatee, no sideburns, jaw soft and rounded.
+
+## No video model here gives keyframes and references together
+
+Tested, not inferred:
+
+| Model | keyframes + references | continuous take |
+|---|---|---|
+| Wan 3.0 | 422 | yes |
+| MiniMax H3 | 422 | untested |
+| FLUX 3 Video | accepted | **cuts, twice** |
+| Veo 3 / 3.1 / 3.1 Lite | no reference role; silently coerced to `start_image` | yes |
+
+MiniMax H3's description reads "keyframes **or** references", and that "or" is
+literal: `start_image/end_image cannot be mixed with reference media`. The same
+sentence as Wan's rejection, different wording.
+
+So the answer to "should we try a different video model" is that the model is
+not the variable. Nothing available pins both ends, carries the object
+photographs and holds one take. Accuracy has to come from the frame handed to
+the model, which is what the two-clip split is for. Changing video model cannot
+fix a likeness problem.
+
+A rejected submission is free, so test the combination rather than inferring it
+from the model description — and do not use `get_cost`, which prices a request
+without validating it.

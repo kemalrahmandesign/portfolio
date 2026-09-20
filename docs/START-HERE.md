@@ -69,7 +69,7 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
 1. **The painting.** Reference his real one, or is a generic canvas fine?
 2. **Agency name and the tagline** under "Hi, I'm Kemal".
 3. **Typeface.** Inter is a placeholder; his Figma uses something tighter.
-4. Whether the new 10s idle reads as calm or as frozen.
+5. Whether the new 10s idle reads as calm or as frozen.
 5. Whether to fix the Higgsfield billing or wait out the daily cap. Nothing
    further can be generated until one of the two happens.
 
@@ -122,7 +122,12 @@ amp              7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
 2. **Pass every object photo, always.** Dropping them made the model invent the
    bike, guitar and amp. Individual object photos do not lock composition; a
    previous *full frame* does, and must never be passed.
-3. **Measure the content before rewriting the code.** The "flash" between clips
+3. **Every generation of the character carries the identity photos.**
+   `fc39e6cc`, `7c955619`, `48839646`. Dropping them gave him a beard and
+   sideburns and sharpened his chin. A shot where his face is hidden is not an
+   exemption. This is the "pass all seven references, always" rule, and it has
+   now been broken twice, once for objects and once for his face.
+4. **Measure the content before rewriting the code.** The "flash" between clips
    was two wrong diagnoses deep before anyone measured luminance and found that
    both clips open 2.8 levels dark. The last open suspect, the poster-to-wave
    handoff at boot, has since been measured and is clean: 0.24 levels apart.
