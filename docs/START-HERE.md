@@ -24,7 +24,7 @@ default branch. Work has been landing on `claude/eager-bardeen-yde4ng` and
 | Piece | Status |
 |---|---|
 | Hub frame (the still every clip starts on) | done, `3f470988-9df8-4d61-98f6-e316d6f6ad9e` |
-| Wave clip, 5s | done and wired, but see the CDN warning below |
+| Wave clip, 3s | done and wired, `d6974c93-3cf7-4790-ada6-4ba84737426f` |
 | Idle loop, 10s | done and wired, `adac86ab-3d37-41ff-860a-4c713b405a9c` |
 | End frame (monitor on its arm) | done, media `f9a03660-1c4b-47b0-8323-95918531479d` |
 | **Walk clip** | **done**, Genjutsu armrest fix over the best take, wired |
@@ -52,7 +52,7 @@ to the repo.
 
 ```
 media/hub.jpg    .../f215c1e8-2364-4cf0-a950-cb1851e8c8b4.jpg    0.21 MB
-media/wave.mp4   .../71520f4b-933c-4ed5-b321-b46e065e0535.mp4    1.65 MB
+media/wave.mp4   .../2229135a-3e3c-4651-a827-66c8a7af5f4c.mp4    0.78 MB
 media/idle.mp4   .../9b16a3ef-b3fe-441f-99e6-414ffac6f442.mp4    2.63 MB
 media/walk.mp4   .../f8373f35-e3dc-4469-9533-66738f840f3c.mp4    3.90 MB
 ```
@@ -158,11 +158,14 @@ amp                   7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
 ## Open questions for Kemal
 
 1. Scope of the rest of the site. Deferred until the hero is confirmed live.
-2. Agency name, and the tagline under "Hi, I'm Kemal".
-3. A real typeface. Inter is a placeholder; his Figma uses something tighter.
-4. Whether to warm `--bg` past `#f1f0ee`. Worth re-judging now the lift taper
+2. The call to action: Kemal is sending Figma screenshots for design
+   direction. Its look and its placement, currently floating mid-right, are
+   both open.
+3. Agency name, and the tagline under "Hi, I'm Kemal".
+4. A real typeface. Inter is a placeholder; his Figma uses something tighter.
+5. Whether to warm `--bg` past `#f1f0ee`. Worth re-judging now the lift taper
    stops the handoff blowing out to pure white.
-5. The 9:16 regeneration. Mobile now plays the full sequence, but letterboxed:
+6. The 9:16 regeneration. Mobile now plays the full sequence, but letterboxed:
    the 16:9 clips are shown with `object-fit: contain` on portrait, because
    covering a phone viewport shows only ~26% of the frame width and the walk
    pans right out of that slice. Regenerating at 9:16 is the real fix and

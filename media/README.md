@@ -12,7 +12,7 @@ Four files, these exact names. The player looks for them and nothing else.
 | File | Size | What it is |
 |---|---|---|
 | `hub.jpg` | 0.21 MB | The hub frame. Poster, and the whole hero on mobile and reduced motion. |
-| `wave.mp4` | 1.65 MB | Plays once on load. Holds still ~0.5s, waves, returns to the hub pose. |
+| `wave.mp4` | 0.78 MB | 3s. Plays once on load: smiles, one quick wave, back to the hub pose. |
 | `idle.mp4` | 2.63 MB | Loops forever after the wave, crossfaded in the player. |
 | `walk.mp4` | 3.9 MB | The take: walk, sit, cat, push-in, monitor on. 24fps, 9.71s. |
 
@@ -28,7 +28,7 @@ table above:
 - `hub.jpg`
   https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/f215c1e8-2364-4cf0-a950-cb1851e8c8b4.jpg
 - `wave.mp4`
-  https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/71520f4b-933c-4ed5-b321-b46e065e0535.mp4
+  https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/2229135a-3e3c-4651-a827-66c8a7af5f4c.mp4
 - `idle.mp4`
   https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/9b16a3ef-b3fe-441f-99e6-414ffac6f442.mp4
 
@@ -43,7 +43,7 @@ a page that streams them on every visit. Re-encoded at CRF 21, preset slow, with
 
 | | raw | CRF 21 |
 |---|---|---|
-| wave | 3.00 MB | 1.65 MB |
+| wave | 5.00 MB | 0.78 MB |
 | idle | 16.42 MB | 2.63 MB |
 | hub | 2.81 MB PNG | 0.21 MB JPEG |
 | walk | 20.85 MB | 3.90 MB |
@@ -129,3 +129,31 @@ The fallback URLs point at *uploaded* media rather than generation results, so
 they are not garbage-collected along with a deleted generation, which makes
 them steadier than what they replaced. Steadier is not durable. Commit the
 files.
+
+## The wave was regenerated shorter
+
+The 5s wave was replaced with a 3s one, job
+`d6974c93-3cf7-4790-ada6-4ba84737426f`. It was too long and read as surprised
+rather than welcoming.
+
+Measured against the clip it replaces:
+
+| | old 5s | new 3s |
+|---|---|---|
+| hand up | ~0.5s | ~0.7s |
+| wave peaks | 1.8s | 1.8-2.1s |
+| settled by | still moving at 4s | 2.4s |
+| last frame vs hub pose | 4.12% | **3.53%** |
+| head | 0.11s | 0.067s |
+| encoded | 1.65 MB | **0.78 MB** |
+
+The prompt was written fresh rather than edited, since the original had been
+deleted with its generation. It is about 780 characters against the walk
+prompt's 3,399, because the pinned hub frame already guarantees his
+appearance, the studio and the props, and a single wave is one beat.
+
+For the expression, the wanted state is stated positively first (a calm, warm,
+closed-mouth smile, eyes relaxed, brows level, greeting someone he already
+knows) with the negatives after it. This document already records that a bare
+prohibition still spends attention on the thing it forbids, so leading with
+"not surprised" is a way to get a surprised face.
