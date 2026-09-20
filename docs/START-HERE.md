@@ -27,122 +27,109 @@ default branch. Work has been landing on `claude/eager-bardeen-yde4ng` and
 | Wave clip, 5s | done and wired, but see the CDN warning below |
 | Idle loop, 10s | done and wired, `adac86ab-3d37-41ff-860a-4c713b405a9c` |
 | End frame (monitor on its arm) | done, media `f9a03660-1c4b-47b0-8323-95918531479d` |
-| **Walk clip** | **two armrest re-runs done, Kemal to judge** |
+| **Walk clip** | **done**, Genjutsu armrest fix over the best take, wired |
 | Hero page, handoff, flash fixes | done, measured, pushed |
-| Hosting the clips in the repo | page repointed at `media/`; **three files ready to download, walk pending** |
+| Hosting the clips in the repo | page repointed at `media/`; **all four files ready to download** |
 | The rest of the site | not started, scope not yet agreed |
 
-## The three walk candidates
-
-All 10s, 1920x1080 at 30fps, Wan 3.0, pinned hub frame to end frame. Kemal kept
-these three and deleted the rest.
-
-```
-A  82780415-38f5-4ac8-8eb7-42119d3c3ac2   hf_20260920_054506_...
-B  929f7158-3e53-4068-b283-af5c1492f022   hf_20260920_021659_...
-C  e0fc9680-58ba-4be3-acb2-dd41e94fab18   hf_20260920_002253_...
-```
-
-Kemal called **A** "99 percent there", with one defect: the chair was missing an
-armrest. A fourth generation fixed that and was measured better on every count,
-but it was deleted and its URL now 403s, so it is not recoverable.
-
-Measured on A, which is the best of the three on every number:
-
-| | A | B | C |
-|---|---|---|---|
-| Cuts | none | none | none |
-| Frames where he is lost from frame | 0 | 22 | 0 |
-| Duplicate frames | 3.3% | 2.7% | 11.0% |
-| Pacing jerk | 3.60 | 2.50 | 3.13 |
-| Last frame vs the pinned end frame | 5.8% | 5.3% | 6.1% |
-
-**B is the one where he disappears** between 2.2s and 3.4s. It scores well on the
-other measures; do not let that mislead you.
-
-## Do this first: download three files
+## Do this first: download four files
 
 `index.html` no longer references a CDN anywhere. It loads `media/hub.jpg`,
-`media/wave.mp4`, `media/idle.mp4` and `media/walk.mp4` by relative path. Three
-of those four are re-encoded and waiting; the page is broken until they land.
+`media/wave.mp4`, `media/idle.mp4` and `media/walk.mp4` by relative path. All
+four are re-encoded and waiting; **the page is broken until they land.**
 
-This was urgent for a reason that has already come true: the walk clip the page
-pointed at, `4d06b164`, now returns **403**. The call to action was dead before
-anyone touched it.
+This was urgent for a reason that already came true: the walk clip the page
+used to point at, `4d06b164`, now returns **403**. The call to action was dead
+before anyone touched it.
 
-The agent cannot download them. The result CDN is blocked from its container,
-and the sandbox that can reach it cannot write to the repo.
+The agent cannot download them. The result CDN is blocked from its container
+(verified: connection refused), and the sandbox that can reach it cannot write
+to the repo.
 
-**Save these three into `media/` under exactly these names** (links good 24h
-from 2026-09-20 15:58 UTC; ask for fresh ones after that):
+**Save these four into `media/` under exactly these names** (links good 24h from
+2026-09-20 19:35 UTC; ask for fresh ones after that):
 
 ```
 media/hub.jpg    .../f215c1e8-2364-4cf0-a950-cb1851e8c8b4.jpg    0.21 MB
 media/wave.mp4   .../71520f4b-933c-4ed5-b321-b46e065e0535.mp4    1.65 MB
 media/idle.mp4   .../9b16a3ef-b3fe-441f-99e6-414ffac6f442.mp4    2.63 MB
+media/walk.mp4   .../f8373f35-e3dc-4469-9533-66738f840f3c.mp4    3.90 MB
 ```
 
 all on `https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/`.
 Full URLs and the reasoning are in `media/README.md`.
 
-`media/walk.mp4` follows once the candidate is chosen.
-
 These are re-encoded, not raw: CRF 21, preset slow, `+faststart`, no re-timing.
-47 MB of raw generation becomes about 9 MB. Frame counts are identical and the
-luminance shift is +0.03 levels, so every `head` in the player still holds. The
-measurements are in `media/README.md` and the production notes.
+48 MB of raw generation becomes 8.4 MB. Frame counts and durations are identical
+across the encode and the luminance shift is under 0.1 levels, so every `head`
+in the player still holds.
 
-## The walk clip: two re-runs are waiting on your eyes
+**Then merge into `claude/portfolio-hero-brainstorm-oonxku` to deploy.** Do not
+merge before the files are committed: the page would go live pointing at
+`media/` paths that 404, which is worse than what is deployed now.
 
-Kemal asked for candidate A to be re-run to fix the missing left armrest, and
-allowed a chair swap. Both went out, each derived from A's exact prompt by
-replacing the chair paragraph only, with the remainder proven byte-identical.
+## The walk clip, settled
 
-```
-pair      59a0a114-743b-40e6-9dd0-407e14297ac7   two armrests, named as a symmetry
-armless   1f05732a-8252-450f-ae6b-4cdfddd0f249   armless chair, the guaranteed fix
-```
+`walk.mp4` is job `22c175dd-3735-4641-9e00-0eb372b89db3`: a Genjutsu object
+replacement over candidate `82780415`, run to give the chair its missing
+armrest. Measured: no dissolve, he is never lost from frame, 2.2% duplicate
+frames (better than the 5.4% of the take it replaces), and the last frame lands
+on the pinned end frame within 3.8% of pixels.
 
-**Measured against A as the control:**
+### How that was arrived at, so nobody repeats it
 
-| | A | pair | armless |
-|---|---|---|---|
-| Cuts | none | none | none |
-| Duplicate frames | 5.4% | 11.7% | 8.0% |
-| Last frame vs end frame | 3.6% | 4.0% | 3.7% |
-| head | 0.067s | 0.067s | 0.033s |
-| Discontinuity at 0.85s | **no** | **yes, 5 frames** | **yes, persistent** |
+Seven generations came out of this prompt. **One** was clean. The rest
+dissolved mid-shot, dropped the hobby props and the painting, or lost him from
+frame. The last three ran a prompt verified byte-identical by sha256 to the
+original, and still differed, so **the variation is the model's seed, not the
+text**. Re-rolling was about a one-in-seven draw.
 
-Both re-runs picked up a discontinuity at ~0.85s that A does not have. In pair
-nothing black is on screen for five frames; in armless a third of the dark
-content leaves and stays gone. The cut test passes both — it needs >55% of
-pixels moving and this does not reach that.
+Two dead ends worth not re-walking:
 
-**Two things need eyes, not numbers.** Whether the armrest is fixed, and
-whether the 0.85s event shows at speed. The armrest is a small-prop shape
-question, the category this project has been wrong about five times.
+- **Editing the prompt to fix a defect broke something else, every time.** The
+  armrest fix worked and introduced a fade cut. Buying back the character budget
+  by deleting a redundant description stripped the background. Length correlated
+  with failure across three samples, which looked like a clean signal and was
+  not one; with n=1 per variant it could not be separated from seed variance,
+  and the evidence now says variance dominated.
+- **A cut detector cannot see a dissolve.** Frame-to-frame motion never spikes,
+  so a >55%-of-pixels-moved test passes a fade cut silently. What catches one is
+  a drop in edge energy against a local baseline: validated against three clips
+  with known labels, it read 8.9% on the clean one and 30-31% on the two with
+  fades. Cross-check any hit against motion, though — a frame that flattens
+  because the camera is filling frame with a black monitor drops edge energy
+  too, and that produced a false positive at 7.60s on another take.
 
-If both re-runs are worse than A overall, A is still there
-(`82780415-38f5-4ac8-8eb7-42119d3c3ac2`) and shipping it with one missing
-armrest is a legitimate call.
+**The lesson: when a take is close and the defect is one object, edit the video,
+not the prompt.** `hf_mult_replace_object` takes the source video plus a
+reference image and swaps the object, keeping the camera move, the background
+and the take's luck. It cost one generation where re-rolling had cost six.
 
-## Then: wire the walk clip in
+### What the re-render changed
 
-1. Re-encode the chosen clip at CRF 21 and upload it, same as the other three.
-2. Save it as `media/walk.mp4`.
-3. `CLIPS.walk.head` is already 0.067, which is correct for A and for pair. Set
-   it to 0.033 if armless wins.
-4. The cover handoff does not change: all candidates bloom the monitor from
-   8.3s and hold solid white from 8.9s to 10.0s, and `TAKE` is 0.45s.
+It is a re-render rather than an overlay, so it came back **24fps, 9.71s**
+instead of 30fps, 10.00s, and about **7 luminance levels brighter**. Neither is
+corrected, on measurement — the full reasoning and numbers are in
+`media/README.md` and in the comments in `index.html`.
 
-Optional, free, and worth trying if the motion reads choppy: interpolate to
-60fps. It halved the pacing jerk on an earlier clip. Note duplicate frames are
-*up* on both re-runs against A, which is what choppiness actually is.
+The one real cost is the stitch into the idle, and it is handled:
 
-```
-ffmpeg -i in.mp4 -vf "minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1" \
-       -c:v libx264 -preset veryfast -crf 19 -pix_fmt yuv420p out.mp4
-```
+| | opens on the hub pose within | his pixels differ vs idle |
+|---|---|---|
+| the original take | 3.1% | 20.6% |
+| this one | 6.6% | 47.7% |
+
+The studio, 87% of the frame, matches to 0.85% once both layers carry
+`--clip-lift`, because both clip to white. The mismatch is him, it is pose not
+level, and no filter removes it. So `head` is **0** (frame 0 is the closest
+match to the hub pose; every later frame is worse as he turns) and the
+idle-to-walk crossfade is **500ms** rather than 320ms, spent over the half
+second where he is turning away.
+
+**When a clip both opens dark and opens on a pose, the pose wins.** The
+luminance rule that sets `head` for the wave and the idle wanted frame 9 here,
+which would have traded a visible pose jump for a 1.5-level dip the crossfade
+hides anyway.
 
 ## Asset IDs
 
@@ -169,13 +156,13 @@ amp                   7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
 
 ## Open questions for Kemal
 
-1. Walk clip: is the armrest fixed in `pair` or `armless`, and does the 0.85s
-   event show? Falling back to A with one missing armrest is a valid answer.
-2. Scope of the rest of the site. Deferred until the hero is confirmed live.
-3. Agency name, and the tagline under "Hi, I'm Kemal".
-4. A real typeface. Inter is a placeholder; his Figma uses something tighter.
-5. Whether to warm `--bg` past `#f1f0ee`. Worth re-judging now the lift taper
+1. Scope of the rest of the site. Deferred until the hero is confirmed live.
+2. Agency name, and the tagline under "Hi, I'm Kemal".
+3. A real typeface. Inter is a placeholder; his Figma uses something tighter.
+4. Whether to warm `--bg` past `#f1f0ee`. Worth re-judging now the lift taper
    stops the handoff blowing out to pure white.
+5. Mobile still skips all video and shows only the poster. A 9:16 regeneration
+   was always the plan; nothing has been done on it.
 
 ## Environment traps
 

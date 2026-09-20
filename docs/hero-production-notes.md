@@ -1289,3 +1289,122 @@ It is also an argument for running the page rather than reading it. Every
 measurement in this document is about pixels; this was a control-flow bug that
 no amount of luminance analysis would have surfaced, and it took one headless
 browser run with the files deliberately missing.
+
+
+## Edit the video, not the prompt, when a take is close
+
+Seven generations came out of the walk prompt. One was clean. The rest
+dissolved mid-shot, dropped the hobby props and the painting, or lost him from
+frame. The last three ran a prompt verified **byte-identical by sha256** to the
+original and still came out different, which settles the question this document
+kept circling: **the variation is the model's seed, not the text.**
+
+That reframes several earlier entries here. "Attention is conserved" is a real
+effect and the character-budget rebalance genuinely worked once. But with one
+generation per prompt variant, a prompt effect and a lucky draw are the same
+measurement. Three variants at 3,399 / 3,476 / 3,541 characters produced
+clean / fade / fade, which looked like a clean monotonic and was read as one.
+It did not survive: the same 3,476-character prompt later produced a clip with
+no fade at all. **One sample per variant cannot separate signal from seed. Say
+so rather than narrating a mechanism.**
+
+Two prompt edits made things actively worse:
+
+| edit | fixed | broke |
+|---|---|---|
+| name the armrest symmetry | (unknown, never judged) | fade cut at 0.85s |
+| delete the pinned end-frame description to buy budget back | nothing | hobby props and the painting gone, 20 frames with him lost, fade cut anyway |
+
+The second is the sharper lesson, because the deletion followed this document's
+own best-supported rule — do not describe what a keyframe already guarantees —
+and still cost the background. The rule is sound; applying it to a take that
+was already close was not.
+
+**What worked was not touching the prompt at all.** Genjutsu object replacement
+(`hf_mult_replace_object`) takes the source video plus a reference image and
+swaps an object, tracking it through the camera move. Fed the one clean take
+and a generated image of a correct chair, it returned that take with the chair
+fixed: no dissolve, nobody lost from frame, and *smoother* than the source at
+2.2% duplicate frames against 5.4%. One generation, against six spent
+re-rolling.
+
+**When a take is close and the defect is one object, edit the video.** The
+prompt is a lottery ticket; the video edit is a repair.
+
+It is a re-render, not an overlay, so expect it to change global properties.
+This one returned 24fps/9.71s instead of 30fps/10.00s and about 7 luminance
+levels brighter, and it no longer opened on the pinned hub frame as tightly
+(6.6% of pixels against 3.1%). Budget for re-measuring the stitch afterwards.
+
+## A cut test cannot see a dissolve, and edge energy can
+
+The cut detector in this document flags a frame whose motion exceeds three
+times the median of its twenty neighbours with more than 55% of pixels moving.
+It passed two clips that both contained an obvious fade cut, because a
+dissolve is gradual by construction: frame-to-frame motion never spikes.
+
+What catches one is **edge energy**. Blending two shots averages them, which
+softens every edge in the frame at once. Mean absolute gradient per frame,
+compared against the median over a 31-frame window, and flagged at a 25% drop:
+
+| clip | known | worst drop | verdict |
+|---|---|---|---|
+| clean take | no fade | 8.9% | none |
+| armrest re-run, pair | fade cut | 30% at 0.93s | 8 frames |
+| armrest re-run, armless | fade cut | 31% at 0.83s | 3 frames |
+
+8.9% against 30% is a wide gap with the threshold in the middle, and the
+detected timings matched both the eye and an independent dark-area measurement.
+
+**Validate a detector on labelled examples before trusting it.** Kemal had
+already named the defect, which made three clips with known answers available
+for free. A detector that has never been shown a positive and a negative is a
+hypothesis.
+
+**And cross-check every hit against motion.** A real dissolve drops edge energy
+while motion stays high, because two shots are moving underneath. A frame that
+merely flattens — the camera filling the frame with a large black monitor —
+drops edge energy while motion goes *low*. That distinction turned a flagged
+"dissolve at 7.60s" into a correctly-identified camera slowdown: motion fell
+from 7.1 to 2.4 across the window, the opposite of the dissolve signature.
+Without the cross-check it would have been reported as a fade cut that was not
+there, which is exactly the class of error this document already records five
+of.
+
+## When a clip opens both dark and on a pose, the pose wins
+
+`head` exists to skip a dark opening ramp. For the wave and the idle that is
+the only constraint, because they open on the hub frame by construction.
+
+The Genjutsu walk clip broke that assumption. Its luminance ramp said frame 9.
+Its match to the hub pose said frame 0, and got monotonically worse from there
+as he turned away:
+
+| frame | vs hub, brightness-normalised |
+|---|---|
+| 0 | **6.61%** |
+| 9 | 9.57% |
+| 23 | 17.29% |
+
+Following the luminance rule would have traded a visible pose jump for a
+1.5-level dip that the incoming crossfade hides anyway. So `head` is 0.
+
+The brightness gap was left uncorrected, also on measurement. Both stage layers
+carry `--clip-lift` 1.085, and the studio at 221 and 218 both multiply past 255
+and clip to white: **0.85%** of studio pixels differ once composited, against
+41.9% before the lift on the subject. This is the same clipping argument that
+clears the poster-to-clip gap elsewhere in this document, and it is the second
+time it has decided not to spend a correction. Correcting here would also have
+darkened the final white panel away from `--bg`, which the re-render matches
+more closely than the original take did.
+
+What the lift cannot hide is the subject: 47.7% of his pixels differ against
+the idle, where the original take managed 20.6%. That is pose, not level, so
+the idle-to-walk crossfade went from 320ms to 500ms — spent over the half
+second where he is turning away, which is the cheapest half second in the take.
+
+**Decompose a mismatch before trying to fix it.** The raw number was 28.9% of
+pixels, which reads like a broken stitch. Two-thirds of it was a flat
+brightness offset that the browser clips away, and the third that remained was
+in 13% of the frame. Those three components need three different responses, and
+the aggregate number suggests none of them.

@@ -14,7 +14,7 @@ Four files, these exact names. The player looks for them and nothing else.
 | `hub.jpg` | 0.21 MB | The hub frame. Poster, and the whole hero on mobile and reduced motion. |
 | `wave.mp4` | 1.65 MB | Plays once on load. Holds still ~0.5s, waves, returns to the hub pose. |
 | `idle.mp4` | 2.63 MB | Loops forever after the wave, crossfaded in the player. |
-| `walk.mp4` | ~5 MB | The take: walk, sit, cat, push-in, monitor on. Not yet chosen. |
+| `walk.mp4` | 3.9 MB | The take: walk, sit, cat, push-in, monitor on. 24fps, 9.71s. |
 
 ## Downloading them
 
@@ -32,8 +32,8 @@ table above:
 - `idle.mp4`
   https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/9b16a3ef-b3fe-441f-99e6-414ffac6f442.mp4
 
-`walk.mp4` is pending the candidate choice. Once chosen it gets the same
-treatment and a link is added here.
+- `walk.mp4`
+  https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/f8373f35-e3dc-4469-9533-66738f840f3c.mp4
 
 ## Why they are re-encoded
 
@@ -46,7 +46,7 @@ a page that streams them on every visit. Re-encoded at CRF 21, preset slow, with
 | wave | 3.00 MB | 1.65 MB |
 | idle | 16.42 MB | 2.63 MB |
 | hub | 2.81 MB PNG | 0.21 MB JPEG |
-| walk (measured on candidate A) | 24.96 MB | 5.56 MB |
+| walk | 20.85 MB | 3.90 MB |
 
 Measured, not assumed, because two things here are load-bearing:
 
@@ -68,3 +68,47 @@ through the identical crop and scale, the JPEG is +0.033 levels.
 
 Do not re-encode a second time from these files. Re-encode from the raw
 generation if it is ever needed again.
+
+
+## The walk clip is a Genjutsu re-render, and that has consequences
+
+Seven generations from the walk prompt produced one clean take. The rest
+dissolved mid-shot, dropped the background props, or lost him from frame, and
+the prompt was proven byte-identical across the last three, so the variation is
+the model's seed rather than the text. Re-rolling was roughly a one-in-seven
+draw.
+
+The good take had one defect, a chair missing its left armrest. Rather than keep
+re-rolling, that take was fixed in place with Genjutsu object replacement
+(`hf_mult_replace_object`): the source video plus a generated reference image of
+a correct chair. That preserved the camera move, the background and the absence
+of a dissolve, and came back smoother than the source (2.2% duplicate frames
+against 5.4%).
+
+It is a re-render, not an overlay, so two properties changed:
+
+**24fps, 9.71s** rather than 30fps, 10.00s. Nothing references either; the cover
+handoff reads `duration` at runtime, and the monitor still blooms from 8.2s and
+holds solid white to the end.
+
+**About 7 luminance levels brighter.** Not corrected, on measurement. Both stage
+layers carry `--clip-lift` 1.085, and the studio is 87% of the frame sitting at
+221 against the idle's 218; both multiply past 255 and clip to white, so only
+0.85% of studio pixels differ once composited. Correcting it would also pull the
+final white panel away from `--bg`, which it currently matches more closely than
+the original take did.
+
+What the re-render did cost is the stitch. The original opened on the pinned hub
+frame to within 3.1% of pixels; this one opens at 6.6%, and the residual is
+concentrated on him: 47.7% of his pixels differ against the idle, where the
+original managed 20.6%. That is a pose difference, so no filter removes it.
+
+Two things follow, both in `index.html`:
+
+- `head` is **0**. Frame 0 is the closest match to the hub pose and every later
+  frame is worse as he turns away. The luminance rule that sets `head` for the
+  other clips wanted frame 9; following it would have traded a visible pose jump
+  for a 1.5-level dip that the crossfade hides anyway. **When a clip both opens
+  dark and opens on a pose, the pose wins.**
+- The idle-to-walk crossfade is **500ms**, not the 320ms used elsewhere, spent
+  over the half second where he is turning away.
