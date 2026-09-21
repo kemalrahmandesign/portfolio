@@ -1998,3 +1998,61 @@ to `shake`, a faster ±7px with ±9deg and a 1.1 scale. Both verified by reading
 `translateY(0)` the curved edge is already past the fold, so coverage at the
 swap moment is total. Measured at the swap (555ms): top 0, bottom 1188 on a
 900px viewport, fully covering.
+
+## The face menu, the fast forward, and the rest of the second scene
+
+**The avatar is cut, not generated.** Two rounds of image generation went
+looking for a silhouette and both came back wrong: the first used his identity
+photos and produced a photoreal head, the second used the hub frame plus the
+style reference and produced a character who is not him, which means the style
+reference `7d9079c7` carries its own face and will contaminate any character
+generation it is passed to. **Do not pass the style reference to a character
+generation.** The third attempt, a proper black silhouette with the glasses and
+moustache knocked out, was correct to the brief and genuinely unpleasant to
+look at: a face reduced to negative space reads as a mask.
+
+What worked was not a generation at all. Kemal pasted the cartoon head into the
+chat; those bytes are in the session transcript, so they were extracted,
+converted, cropped square on the head and re-encoded to `media/face.webp`, 320px
+and 10.7KB, which is four times the size it renders at on a 2x screen. The
+lesson is narrow and worth keeping: when the asset already exists in the
+conversation, cropping it beats generating a worse one.
+
+That image is now also uploaded as `8c2b6193-43ca-48d0-a757-088ded892a31`. It is
+the correct cartoon head and should be the face reference for anything new.
+
+**The menu costs the masthead 15px, and that is the whole negotiation.** A
+centred menu and a centred masthead occupy the same column, so one of them has
+to move. The first attempt moved the masthead down by the menu's full height
+and put it straight back on his head, which is the complaint that has come up
+twice. What actually paid for it was the line box: `line-height:.9` was
+measuring 141px for a 130px line, because the words are inline-blocks and each
+one brings its own strut. At `.78` the block is 124px, the menu shrank to 46px
+closed, and the masthead's bottom edge landed at 185px against 170px before.
+Measured, not estimated. 15px is the real cost and Kemal should judge it
+against the video, which cannot be seen from here.
+
+**The left half of the menu is in reverse DOM order on purpose.** `direction:
+rtl` makes the group clip from its left edge, which is the only way the left
+side can open leftwards while `overflow:hidden` does the animating. It also
+reverses the layout order, so the DOM reads About, The studio and the screen
+reads The studio, About. Verified by sorting the links by their measured left
+edge rather than by reading the markup.
+
+**Fast forward verifies its seek.** The button now appears only while the take
+is running and seeks to `duration - ZOOM - 0.08`, so the push-in still plays
+and only the walking is skipped. On the stub clips it silently did nothing:
+MediaRecorder WebM has no seek index, so `currentTime` was assigned and stayed
+where it was, and the "fast forward" took the full 6.4s of the clip. Rather
+than trust the seek, it is checked 420ms later and falls back to
+`playbackRate = 5`, which no container can refuse. 1.84s on the stubs after the
+fix. The real MP4 should seek properly and never reach the fallback.
+
+**The montage was late because the stage was sticky.** Sticky only pins once
+the element's own top reaches the top of the window, which is a full screen of
+scrolling after the reader sets off, and until then the frame is bottom-aligned
+inside a box that is itself below the fold. Two rounds of tuning `--grow` could
+not fix that, because `--grow` was never the part that was wrong. The stage is
+now `position:fixed` with a `live` class toggled from the section's rect, and
+the frame carries `translateY((1 - grow) * 78%)` so it climbs into view as it
+opens. 0.17 at 150px of scroll, full frame by 900px.

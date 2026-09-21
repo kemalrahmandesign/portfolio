@@ -58,7 +58,7 @@
      across desktop shapes. It costs about 3% of the headline's size at
      laptop aspects, which is imperceptible, against a tagline sitting on his
      hair, which is not. */
-  --head:clamp(40px,min(11.35vw,17.5vh),232px);
+  --head:clamp(38px,min(10.4vw,16vh),212px);
   --tag:clamp(13px,1.38vw,29px);
   --stage-max:1800px;
 }
@@ -201,8 +201,13 @@ body{
   /* The reference sets the headline 12.3% of the frame height down. In the
      browser that sat the tagline on his head, because the reference frame is
      1.815 and the clips are 16:9 cover-cropped, so he rides higher here than
-     he does in the Figma. Pulled up to 7.5vh, which clears him. */
-  padding:clamp(16px,3.2vh,56px) var(--pad) var(--pad);
+     he does in the Figma. Pulled up to 7.5vh, which cleared him.
+
+     The face menu then took that space back. Rather than hand the masthead
+     the whole difference and put it on his head again, the menu was made
+     smaller and the masthead was trimmed by the same amount it moved down,
+     so its bottom edge lands within ~20px of where it did. */
+  padding:clamp(52px,6.8vh,80px) var(--pad) var(--pad);
   /* auto auto 1fr, not auto 1fr: with two children the second would take the
      1fr row and stretch to the bottom of the viewport. Harmless to look at,
      since its contents sit at the top of that box, but it makes every
@@ -219,7 +224,12 @@ body{
    width needs far less negative tracking.) */
 h1{
   margin:0;font-family:var(--font-display);
-  font-weight:800;letter-spacing:-.025em;line-height:.9;
+  font-weight:800;letter-spacing:-.025em;
+  /* .9 left a strut under the caps that the inline-block words made worse:
+     the box measured 141px for a 130px line. Tightening it to .78 buys back
+     most of what the face menu took off the top, and a masthead this size
+     wants to be set tight anyway. */
+  line-height:.78;
   font-size:var(--head);
   /* Centred on the frame, which is where he stands, rather than flush left. */
   text-align:center;
@@ -360,13 +370,16 @@ h1{
    so they still leave together. */
 #headline,.tagline,.cta,.skip{transition:opacity 420ms ease}
 .hero.is-leaving #headline,
-.hero.is-leaving .tagline,
-.hero.is-leaving .skip{opacity:0}
+.hero.is-leaving .tagline{opacity:0}
 /* .cta carries a 550ms entry delay from .is-in; restate the transition so
    leaving is not held back by it. */
 .hero.is-leaving .cta{opacity:0;transition:opacity 420ms ease}
-.hero.is-leaving .cta,
-.hero.is-leaving .skip{pointer-events:none}
+/* The trinkets are part of the plate too: they are props standing in the
+   studio he is about to walk out of, and leaving them hanging over the take
+   would be the one thing on screen that is not in the shot. */
+.social{transition:opacity 420ms ease}
+.hero.is-leaving .social{opacity:0;pointer-events:none}
+.hero.is-leaving .cta{pointer-events:none}
 
 /* ---------- the social trinkets ----------
    3D renders in the same look as the scene, cut out to transparent PNG, so
@@ -410,13 +423,21 @@ h1{
 /* Hover swaps the slow sway for a quick side-to-side shake and a lift, so
    the thing visibly reacts to you instead of continuing to drift. Swapping
    the animation rather than adding a transform on top means the two never
-   fight for the same property. */
+   fight for the same property.
+
+   Two wags, then it holds lifted: an infinite shake reads as a broken loop
+   rather than as a reaction, and there is nothing to notice after the second
+   one. The keyframes start and end level so `both` can hold the last frame
+   without leaving the trinket stuck at a tilt. */
 .social a:hover img,.social a:focus-visible img{
-  animation:shake .62s cubic-bezier(.36,.07,.19,.97) infinite;
+  animation:shake .5s cubic-bezier(.36,.07,.19,.97) 2 both;
 }
 @keyframes shake{
-  0%,100%{transform:translate(-7px,-6px) rotate(-9deg) scale(1.1)}
-  50%    {transform:translate( 7px,-6px) rotate( 9deg) scale(1.1)}
+  0%  {transform:translate(  0,-6px) rotate(   0) scale(1.1)}
+  22% {transform:translate(-8px,-6px) rotate(-10deg) scale(1.1)}
+  58% {transform:translate( 8px,-6px) rotate( 10deg) scale(1.1)}
+  82% {transform:translate(-4px,-6px) rotate( -5deg) scale(1.1)}
+  100%{transform:translate(  0,-6px) rotate(   0) scale(1.1)}
 }
 .social a:focus-visible{outline:2px solid var(--ink);outline-offset:6px;border-radius:12px}
 
@@ -437,14 +458,29 @@ h1{
   letter-spacing:-.01em;
 }
 
-/* ---------- skip ---------- */
+/* ---------- fast forward ----------
+   This used to be a text link that skipped the intro, and it was on screen
+   from the first frame: an exit offered before there was anything to exit.
+   It now does the opposite job. It appears only once the take is running and
+   it does not cut away; it seeks the clip to the start of the push-in, so the
+   move into the monitor still plays, just sooner.
+
+   The icon is the transport symbol for exactly that, two triangles, rather
+   than the skip-to-end bar: this is fast forward, not a cut. */
 .skip{
-  position:absolute;left:var(--pad);bottom:var(--pad);z-index:3;pointer-events:auto;
-  appearance:none;border:0;background:transparent;font:inherit;font-size:14px;
-  color:var(--ink);opacity:.45;cursor:pointer;text-decoration:underline;
-  text-underline-offset:3px;
+  position:absolute;right:var(--pad);bottom:var(--pad);z-index:4;
+  appearance:none;border:0;cursor:pointer;font:inherit;
+  display:inline-flex;align-items:center;gap:.5em;
+  height:42px;padding:0 18px;border-radius:50px;
+  background:#fff;color:var(--ink);
+  font-size:14px;font-weight:600;letter-spacing:-.017em;
+  box-shadow:var(--lift);
+  opacity:0;transform:translateY(8px);pointer-events:none;
+  transition:opacity 320ms ease 260ms,transform 320ms cubic-bezier(.16,1,.3,1) 260ms;
 }
-.skip:hover{opacity:.85}
+.hero.is-leaving .skip{opacity:1;transform:none;pointer-events:auto}
+.skip:hover{transform:translateX(3px)}
+.skip svg{display:block}
 
 /* ---------- the handoff ---------- */
 /* The monitor's power-on flicker happens inside the clip, so this cover has
@@ -469,56 +505,82 @@ h1{
    arriving. That means no card grid and no section heading: the camera has
    just landed, and a wall of chrome would undo the move. A held statement,
    then a reason to keep going. */
-/* The bar is in flow and sticky, so it eats a slice of the first screen.
-   A panel that asked for a whole 100svh would push its own scroll cue below
-   the fold, which is exactly the cue that has to be visible. --bar is
-   measured from the bar itself rather than reconstructed from its parts: the
-   arithmetic version was 10px short, and 10px is the whole margin the cue
-   has. */
+/* --bar is how far down the screen the face menu ends, measured off the
+   menu itself rather than reconstructed from its padding and its height:
+   the arithmetic version came out 10px short, and 10px is the entire margin
+   the scroll cue has. */
 .work{--bar:80px;
       max-width:var(--stage-max);margin:0 auto;padding:0 var(--pad)}
 
-/* The chrome that says you are inside something you can leave.
+/* ---------- the face menu ----------
+   One piece of chrome for the whole site rather than a bar that only exists
+   inside the monitor. It is his head, flattened to a mark, and the sections
+   grow out of it sideways when you go near it: closed it is a face, open it
+   is a menu, and the face never moves, so the thing you pointed at is still
+   under the pointer once it has opened.
 
-   Shape language is taken from the supplied style reference: a grouped pill
-   container at 20px radius, a 50px capsule for the standalone control, and
-   the four-layer diffuse shadow that makes a surface read as floating rather
-   than stuck on. The colours are ours, not the reference's. */
-.mono-bar{
-  position:sticky;top:0;z-index:20;
-  display:flex;align-items:center;gap:12px;
-  padding:clamp(12px,2vh,22px) 0;
-  pointer-events:none;
-}
-.mono-bar > *{pointer-events:auto}
+   Shape language is the supplied style reference: a 50px capsule and the
+   four-layer diffuse shadow. Colours are ours.
 
-.back{
-  appearance:none;border:0;cursor:pointer;font:inherit;
-  display:inline-flex;align-items:center;gap:.45em;
-  height:44px;padding:0 20px 0 16px;border-radius:50px;
-  background:#fff;color:var(--ink);
-  font-size:15px;font-weight:600;letter-spacing:-.017em;
+   The sides are clipped with max-width rather than laid out with grid `fr`
+   units, because the left side has to open leftwards. `direction:rtl` on that
+   group makes overflow clip from its left edge, and the children set the
+   direction back so the words themselves read normally. */
+.topnav{
+  position:fixed;z-index:70;top:clamp(7px,1vh,14px);left:50%;
+  transform:translateX(-50%);
+  display:flex;align-items:center;
+  background:#fff;border-radius:50px;padding:4px;
   box-shadow:var(--lift);
-  transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s ease;
+  transition:opacity 380ms ease,transform 380ms cubic-bezier(.16,1,.3,1);
 }
-.back:hover,.back:focus-visible{transform:translateX(-3px)}
-.back svg{transition:transform .2s ease}
-.back:hover svg{transform:translateX(-2px)}
+/* Out of the way for the one stretch that is a camera move rather than a
+   page: it comes back when the monitor does. */
+.topnav.away{opacity:0;transform:translateX(-50%) translateY(-14px);pointer-events:none}
 
-.mono-nav{
-  margin-left:auto;display:flex;align-items:center;gap:2px;
-  background:#fff;border-radius:20px;padding:5px;box-shadow:var(--lift);
+.tn-face{
+  appearance:none;border:0;padding:0;margin:0;cursor:pointer;flex:none;
+  width:38px;height:38px;border-radius:50%;
+  background:var(--bg);overflow:hidden;
+  display:grid;place-items:center;
+  transition:transform .3s cubic-bezier(.16,1,.3,1);
 }
-.mono-nav a{
+.topnav.open .tn-face{transform:scale(1.04)}
+.tn-face img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.06)}
+.tn-face:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+/* The plate is 46px closed, which is smaller than a finger. The hit area is
+   grown past it rather than the plate, so the masthead keeps the room. */
+.tn-face::after{content:"";position:absolute;left:50%;top:50%;
+  width:56px;height:56px;transform:translate(-50%,-50%)}
+.topnav{position:fixed}
+.tn-face{position:relative}
+
+.tn-side{
+  display:flex;align-items:center;overflow:hidden;
+  max-width:0;
+  transition:max-width .46s cubic-bezier(.16,1,.3,1);
+}
+.tn-left{direction:rtl}
+.tn-left > *{direction:ltr}
+.topnav.open .tn-side{max-width:42ch}
+
+.tn-side a{
   display:inline-flex;align-items:center;height:34px;padding:0 14px;
-  border-radius:15px;text-decoration:none;
+  border-radius:17px;white-space:nowrap;text-decoration:none;
   font-size:15px;font-weight:500;letter-spacing:-.017em;
-  color:var(--ink);opacity:.62;
-  transition:opacity .16s ease,background-color .16s ease;
+  color:var(--ink);opacity:0;
+  transition:opacity .2s ease,background-color .16s ease;
 }
-.mono-nav a:hover,.mono-nav a:focus-visible{opacity:1;background:#f1f0ee}
+.topnav.open .tn-side a{opacity:.62;transition-delay:.12s}
+.topnav.open .tn-side a:hover,
+.topnav.open .tn-side a:focus-visible{opacity:1;background:var(--bg)}
+.tn-side a[aria-current="page"]{opacity:1;background:var(--bg)}
 
-.panel{min-height:calc(100svh - var(--bar));display:grid;grid-template-rows:auto 1fr auto}
+/* --bar is the face menu's footprint: it floats over the top of every
+   panel, so a panel that asked for a whole screen would push its own last
+   row underneath it. */
+.panel{min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;
+       padding-top:var(--bar)}
 .panel-body{align-self:center}
 .intro{
   max-width:26ch;margin:0 auto;text-align:center;
@@ -546,37 +608,126 @@ h1{
 .intro .line:nth-child(3){transition-delay:.28s}
 .work.in .intro .line{opacity:1;transform:none}
 
-.scroll{
+.scroll-cta{
   justify-self:center;align-self:end;
-  display:flex;flex-direction:column;align-items:center;gap:.7em;
-  padding-bottom:clamp(18px,3vh,40px);
-  font-size:13px;letter-spacing:.14em;text-transform:uppercase;
-  color:rgba(10,10,10,.42);
+  appearance:none;border:0;cursor:pointer;font:inherit;
+  display:inline-flex;align-items:center;gap:.6em;
+  height:46px;padding:0 10px 0 22px;border-radius:50px;
+  margin-bottom:clamp(18px,3.4vh,44px);
+  background:#fff;color:var(--ink);
+  font-size:15px;font-weight:600;letter-spacing:-.017em;
+  box-shadow:var(--lift);
   opacity:0;transform:translateY(10px);
-  transition:opacity .6s ease .5s,transform .6s ease .5s;
+  transition:opacity .6s ease .6s,transform .6s cubic-bezier(.16,1,.3,1) .6s;
 }
-.work.in .scroll{opacity:1;transform:none}
-.scroll .chev{width:18px;height:18px;animation:nudge 1.8s ease-in-out infinite}
-@keyframes nudge{0%,100%{transform:translateY(0);opacity:.5} 50%{transform:translateY(5px);opacity:1}}
+.work.in .scroll-cta{opacity:1;transform:none}
+.scroll-cta svg{width:20px;height:20px;animation:nudge 1.8s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateY(0);opacity:.55} 50%{transform:translateY(4px);opacity:1}}
+
+/* ---------- the ramp ----------
+   A quarterpipe drawn as one stroke across the bottom of the About screen:
+   steep on the left, flattening to the right, so the eye rolls down it into
+   the scroll cue. The path is generated from the measured box rather than
+   from a fixed viewBox, because a viewBox stretched to fit would thicken the
+   stroke unevenly along its length.
+
+   .skater is the slot the clip drops into. Empty, it costs nothing and the
+   curve stands on its own. */
+.ramp{position:relative;height:clamp(96px,17vh,190px);margin:0 calc(var(--pad) * -1)}
+.ramp svg{display:block;width:100%;height:100%}
+.ramp-floor{
+  stroke:var(--ink);stroke-width:2;stroke-linecap:round;opacity:.22;
+  stroke-dasharray:var(--len,1200);stroke-dashoffset:var(--len,1200);
+}
+.work.in .ramp-floor{transition:stroke-dashoffset 1.5s cubic-bezier(.22,1,.3,1) .5s;stroke-dashoffset:0}
+.skater{
+  position:absolute;left:0;top:0;width:clamp(74px,8vw,132px);aspect-ratio:1;
+  pointer-events:none;
+}
+.skater video,.skater img{width:100%;height:100%;object-fit:contain;display:block}
+.skater:empty{display:none}
+
+/* ---------- experience ---------- */
+.sec-head{
+  font-family:var(--font-display);font-size:clamp(13px,1.1vw,15px);
+  font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(10,10,10,.42);margin:0 0 clamp(20px,3vh,40px);
+}
+.cv{list-style:none;margin:0;padding:0;border-top:1px solid rgba(10,10,10,.12)}
+.cv li{
+  display:grid;grid-template-columns:minmax(96px,14%) 1fr minmax(120px,26%);
+  gap:clamp(12px,2vw,32px);align-items:baseline;
+  padding:clamp(16px,2.4vh,28px) 0;border-bottom:1px solid rgba(10,10,10,.12);
+}
+.cv-yr{font-size:15px;color:rgba(10,10,10,.42);font-variant-numeric:tabular-nums}
+.cv-ro{
+  font-family:var(--font-display);font-weight:700;letter-spacing:-.025em;
+  font-size:clamp(20px,2.4vw,34px);
+}
+.cv-co{font-size:15px;color:rgba(10,10,10,.5);text-align:right}
+.cv-note{margin:clamp(18px,2.6vh,30px) 0 0;font-size:14px;color:rgba(10,10,10,.38)}
+@media (max-width:760px){
+  .cv li{grid-template-columns:1fr auto}
+  .cv-ro{grid-column:1/-1;order:-1}
+  .cv-co{text-align:right}
+}
+
+/* ---------- goodbye ----------
+   He waved you in, so he waves you out. The clip slot sits above the line,
+   which puts the character last on the page rather than a footer. */
+.bye-body{display:grid;justify-items:center;text-align:center;gap:clamp(14px,2.4vh,30px)}
+.bye-stage{width:clamp(180px,26vw,380px);aspect-ratio:1}
+.bye-stage:empty{display:none}
+.bye-stage video,.bye-stage img{width:100%;height:100%;object-fit:contain;display:block}
+.bye-head{
+  margin:0;font-family:var(--font-display);
+  font-size:clamp(30px,5vw,76px);font-weight:800;letter-spacing:-.034em;
+  line-height:1.04;
+}
+.bye-mail{
+  font-size:clamp(15px,1.5vw,22px);color:var(--ink);opacity:.55;
+  text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:2px;
+  transition:opacity .2s ease;
+}
+.bye-mail:hover{opacity:1}
 
 /* ---------- the montage ----------
    A sticky viewport-height stage the reel grows inside. Scroll position
    through the tall parent drives --grow, so the clip opens from the bottom
    centre and finishes full frame, shedding its radius on the way.
    Placeholder until the real montage exists. */
-.montage{height:200vh;position:relative;margin:0 calc(var(--pad) * -1)}
-.montage-stick{position:sticky;top:0;height:100svh;display:grid;place-items:end center;overflow:hidden}
+.montage{height:170vh;position:relative;margin:0 calc(var(--pad) * -1)}
+/* Fixed, not sticky.
+
+   A sticky stage only pins once its own top reaches the top of the window,
+   which is a full screen of scrolling after the reader sets off. Until then
+   the frame is bottom-aligned inside a box that is itself below the fold, so
+   nothing is visible however early --grow starts counting. Kemal saw the
+   frame arrive late twice, and both times the fix was applied to --grow,
+   which was never the part that was wrong.
+
+   Anchoring the stage to the viewport instead means the frame's position is
+   the bottom of the screen from the first pixel of scroll. It starts just
+   below the edge and rises as it grows, so it climbs into frame rather than
+   waiting for its section to arrive. */
+.montage-stage{
+  position:fixed;left:0;right:0;bottom:0;height:100svh;z-index:5;
+  display:grid;place-items:end center;overflow:hidden;pointer-events:none;
+  visibility:hidden;
+}
+.montage.live .montage-stage{visibility:visible}
 .montage-frame{
   --grow:0;
   width:calc(34% + 66% * var(--grow));
   aspect-ratio:16/9;
   max-height:calc(100svh * (0.42 + 0.58 * var(--grow)));
   margin-bottom:calc((1 - var(--grow)) * 8vh);
+  transform:translateY(calc((1 - var(--grow)) * 78%));
   border-radius:calc(28px - 12px * var(--grow));
   background:#e4e3e0;overflow:hidden;
   display:grid;place-items:center;
   color:#8d8b87;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
-  will-change:width;
+  will-change:width,transform;
 }
 .montage-frame video,.montage-frame img{width:100%;height:100%;object-fit:cover;display:block}
 
@@ -615,9 +766,11 @@ h1{
   .scroll .chev{animation:none}
   .social img{animation:none}
   .social a:hover img,.social a:focus-visible img{animation:none;transform:scale(1.1)}
+  .montage-frame{transform:none}
   .cta .ring rect{animation:none}
   .stage video.zoom{animation:none}
-  .intro .line,.scroll,.tagline span{transition:none;opacity:1;transform:none}
+  .intro .line,.scroll-cta,.tagline span{transition:none;opacity:1;transform:none}
+  .ramp-floor{stroke-dashoffset:0}
   .word > span{transition:none;transform:none}
   .cta{transition:none;opacity:1;transform:none}
   #cover.take{animation:none;opacity:1}
@@ -626,6 +779,23 @@ h1{
 </style>
 </head>
 <body>
+
+<nav class="topnav" id="topnav" aria-label="Sections">
+  <!-- rtl lays this group out from the right, so the DOM order is the
+       reverse of the reading order: About sits nearest the face. -->
+  <div class="tn-side tn-left">
+    <a href="#about" data-go="about">About</a>
+    <a href="#top" data-go="hero">The studio</a>
+  </div>
+  <button class="tn-face" id="tnFace" type="button" aria-expanded="false" aria-label="Menu">
+    <img alt="" src="" id="tnFaceImg">
+  </button>
+  <div class="tn-side tn-right">
+    <a href="#reel" data-go="reel">Work</a>
+    <a href="#experience" data-go="experience">Experience</a>
+    <a href="#contact" data-go="contact">Contact</a>
+  </div>
+</nav>
 
 <div class="hero-shell" id="heroShell">
   <div class="hero-slide" id="heroSlide">
@@ -669,7 +839,13 @@ h1{
 
 
 
-  <button class="skip" id="skip">Skip intro</button>
+  <button class="skip" id="skip" type="button">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M3 5.4c0-1 1.1-1.6 2-1.1l8.6 5.4a1.3 1.3 0 0 1 0 2.2L5 17.7c-.9.5-2-.1-2-1.1z"/>
+      <path d="M12.4 5.4c0-1 1.1-1.6 2-1.1L23 9.7a1.3 1.3 0 0 1 0 2.2l-8.6 5.8c-.9.5-2-.1-2-1.1z"/>
+    </svg>
+    Fast forward
+  </button>
 </section>
 
   <div class="underside" id="underside" aria-hidden="true">
@@ -684,46 +860,71 @@ h1{
 </div>
 
 <main class="work" id="work" hidden>
-  <div class="mono-bar">
-    <button class="back" id="back" type="button">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M15 18l-6-6 6-6"/>
-      </svg>
-      Back
-    </button>
-    <nav class="mono-nav">
-      <a href="#about">About</a>
-      <a href="#reel">My work</a>
-      <a href="#experience">Experience</a>
-      <a href="#cases">Case studies</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </div>
+  <!-- ---------- about ----------
+       The statement the camera lands on, and the section the menu calls
+       About: one screen, not two, because the push-in ends here and a second
+       full screen of prose before the work would undo the arrival.
 
-  <section class="panel" id="about">
+       The ramp is the floor of it. One curve, drawn from the element's
+       measured box for the same reason the overscroll arc is, with the
+       skater riding it left to right. Until that clip exists the slot is
+       empty and the curve is just a line, which is a fine thing to be. -->
+  <section class="panel ramp-panel" id="about">
     <div></div>
     <p class="intro panel-body">
-      <span class="line">Product designer, four&nbsp;years in.</span>
+      <span class="line">Product designer, four&nbsp;years in,
+      obsessed with visual storytelling.</span>
       <span class="line dim">Most of the work is deciding what not to build,
       then making what&rsquo;s left feel obvious.</span>
       <span class="line close">Honoured you made it this far. The work is
       just below.</span>
     </p>
-    <div class="scroll">
-      <span>Scroll</span>
-      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M6 9l6 6 6-6"/>
-      </svg>
+    <div class="ramp" id="ramp" aria-hidden="true">
+      <svg id="rampSvg"><path class="ramp-floor" id="rampFloor" fill="none"/></svg>
+      <div class="skater" id="skater"></div>
     </div>
+    <button class="scroll-cta" id="scrollCta" type="button">
+      Scroll to continue
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 5v14M6 13l6 6 6-6"/>
+      </svg>
+    </button>
   </section>
 
   <section class="montage" id="reel">
-    <div class="montage-stick">
+    <div class="montage-stage">
       <div class="montage-frame" id="montageFrame">Montage goes here</div>
     </div>
   </section>
+
+  <section class="panel roster" id="experience">
+    <div></div>
+    <div class="panel-body">
+      <h2 class="sec-head">Experience</h2>
+      <ol class="cv">
+        <li><span class="cv-yr">2024&ndash;now</span><span class="cv-ro">Product designer</span><span class="cv-co">Placeholder Co.</span></li>
+        <li><span class="cv-yr">2023&ndash;24</span><span class="cv-ro">Product designer</span><span class="cv-co">Placeholder Co.</span></li>
+        <li><span class="cv-yr">2022&ndash;23</span><span class="cv-ro">Designer</span><span class="cv-co">Placeholder Co.</span></li>
+      </ol>
+      <p class="cv-note">Draft. Send me the real roles and dates and I will set them.</p>
+    </div>
+    <div></div>
+  </section>
+
+  <!-- ---------- contact ----------
+       He waves you off the same way he waved you in. The clip slot sits above
+       the line so the character is the last thing on the page, not a footer. -->
+  <section class="panel bye" id="contact">
+    <div></div>
+    <div class="panel-body bye-body">
+      <div class="bye-stage" id="byeStage" aria-hidden="true"></div>
+      <h2 class="bye-head">Thanks for stopping by.</h2>
+      <a class="bye-mail" href="mailto:kemal203@gmail.com">kemal203@gmail.com</a>
+    </div>
+    <div></div>
+  </section>
+
 </main>
 
 <div id="wall" aria-hidden="true"></div>
@@ -813,6 +1014,9 @@ h1{
     'media/social-li.png': CDN + '761ee33a-71c1-4ac5-b202-051ae2296ee6.png',
     'media/social-em.png': CDN + 'f325216e-cce1-4c14-b424-19321aef8678.png',
     'media/social-xx.png': CDN + '4ed5c223-d5e5-468d-98d0-48c97006775a.png',
+    /* face.webp is cut locally from the cartoon head rather than generated,
+       so it has no CDN twin. It is 10.7KB at 320px, which is four times the
+       size it renders at on a 2x screen. */
   };
   let useFallback = false;
   const src = p => (useFallback && FALLBACK[p]) || p;
@@ -845,6 +1049,9 @@ h1{
   const hero = document.getElementById('hero');
   const heroShell = document.getElementById('heroShell');
   const heroSlide = document.getElementById('heroSlide');
+  const topnav  = document.getElementById('topnav');
+  const face    = document.getElementById('tnFace');
+  const faceImg = document.getElementById('tnFaceImg');
   const stage = document.getElementById('stage');
   const poster = document.getElementById('poster');
   const cta = document.getElementById('cta');
@@ -986,6 +1193,10 @@ h1{
     poster.src = src(POSTER);
     document.querySelectorAll('.social img').forEach(
       img => { img.src = src('media/social-' + img.dataset.k + '.png'); });
+    if (faceImg){
+      faceImg.onerror = () => topnav.classList.add('no-face');
+      faceImg.src = src('media/face.webp');
+    }
     show(poster, 0);
     requestAnimationFrame(() => hero.classList.add('is-in'));
 
@@ -1048,6 +1259,7 @@ h1{
   /* Idempotent: the take ending, the watchdog below and the skip button can all
      reach this, and two of them can race on a slow machine. */
   let revealed = false;
+  let take = null;                      // the layer the take is playing on
   function reveal(){
     if (revealed) return;
     revealed = true;
@@ -1057,6 +1269,9 @@ h1{
        frame it becomes visible means there is no previous state to animate
        from, and the lines would simply appear. */
     sizeBar();
+    drawRamp();
+    growMontage();
+    topnav.classList.remove('away');
     requestAnimationFrame(() => requestAnimationFrame(() => work.classList.add('in')));
     document.body.style.overflow = '';
     heroShell.style.display = 'none';
@@ -1076,7 +1291,8 @@ h1{
     if (entered) return;
     entered = true;
     cta.disabled = true;
-    hero.classList.add('is-leaving');   // fade the headline, the CTA and skip
+    hero.classList.add('is-leaving');   // fade the headline, the CTA and the trinkets
+    topnav.classList.add('away');       // the take is a shot, not a page
     looping = false;                    // stop the loop watcher
     if (!CLIPS.walk || reduced) { hardCut(); return; }
 
@@ -1089,6 +1305,7 @@ h1{
        when the press landed inside the first five seconds. Gating the button
        until the wave ends removes the trigger; this removes the bug. */
     const W = (live !== C) ? C : ([A, B].find(v => v !== live) || C);
+    take = W;                           // what fast forward seeks
 
     /* The click has to go somewhere even if the take does not play.
        playOnce waits for the clip to reach readyState 2 before it starts
@@ -1213,42 +1430,53 @@ h1{
   drawUnderside();
   addEventListener('resize', drawUnderside);
 
-  /* The scroll cue sits on the panel's last row, so the panel has to be
-     exactly the screen minus the bar above it. Measured, not computed. */
-  const monoBar = document.querySelector('.mono-bar');
+  /* ---- the face menu ----
+     --bar is how far down the screen the menu ends. Panels pad themselves by
+     it so their last row is not underneath it. Measured off the menu, not
+     reconstructed from its parts: the arithmetic version came out 10px short
+     and 10px is the whole margin the scroll cue has. */
   function sizeBar(){
-    if (!monoBar) return;
-    const h = monoBar.getBoundingClientRect().height;
-    if (h) work.style.setProperty('--bar', Math.ceil(h) + 'px');
+    if (!topnav) return;
+    const r = topnav.getBoundingClientRect();
+    work.style.setProperty('--bar', Math.ceil(r.bottom + 10) + 'px');
   }
+  sizeBar();
   addEventListener('resize', sizeBar);
 
-  /* ---- the montage grows as you scroll past it ---- */
-  const montage = document.getElementById('reel');
-  const frame = document.getElementById('montageFrame');
-  /* Grow while the section is travelling INTO view, not after it has pinned.
-
-     Mapping against the section's own scrolled distance meant nothing
-     happened until its top reached the top of the window, a full screen of
-     scrolling after the user set off. Mapping against the section's top
-     crossing the viewport instead means the first pixel of scroll is the
-     first pixel of growth, and it is full frame by the time it pins. */
-  function growMontage(){
-    if (!montage || !frame) return;
-    const r = montage.getBoundingClientRect();
-    if (!innerHeight) return;
-    const t = Math.min(1, Math.max(0, (innerHeight - r.top) / innerHeight));
-    frame.style.setProperty('--grow', t.toFixed(4));
+  /* Open on hover for a pointer, on click for a finger. Closing on
+     pointerleave rather than on mouseout means crossing between the face and
+     a link does not flicker it shut, because the whole nav is one element and
+     the sides are inside it. focusin/focusout keep it usable from a keyboard,
+     and closing on Escape gives the keyboard a way out that is not tabbing
+     through every link. */
+  let navOpen = false;
+  function setNav(open){
+    navOpen = open;
+    topnav.classList.toggle('open', open);
+    face.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
-  addEventListener('scroll', growMontage, { passive: true });
-  addEventListener('resize', growMontage);
+  if (topnav){
+    topnav.addEventListener('pointerenter', e => { if (e.pointerType !== 'touch') setNav(true); });
+    topnav.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') setNav(false); });
+    topnav.addEventListener('focusin',  () => setNav(true));
+    topnav.addEventListener('focusout', e => {
+      if (!topnav.contains(e.relatedTarget)) setNav(false);
+    });
+    face.addEventListener('click', () => setNav(!navOpen));
+    addEventListener('keydown', e => { if (e.key === 'Escape' && navOpen) setNav(false); });
+  }
 
-  /* ---- back to the hero, behind a falling wall ----
+  /* ---- the wall, and what it is used for ----
+     Two callers now: the menu going back to the studio, and nothing else.
      The wall covers before anything changes, so the swap itself is never on
      screen, then keeps travelling and clears off the bottom. */
   const wall = document.getElementById('wall');
-  const back = document.getElementById('back');
-  if (back) back.addEventListener('click', () => {
+  let walling = false;
+
+  function toStudio(){
+    if (walling || !revealed) return;
+    walling = true;
+    setNav(false);
     wall.classList.remove('gone');
     wall.classList.add('down');
     setTimeout(() => {
@@ -1271,15 +1499,106 @@ h1{
       else { waveEnded = true; idleLoop(); }
       wall.classList.remove('down');
       wall.classList.add('gone');
+      setTimeout(() => { walling = false; }, 640);
     }, 540);
+  }
+
+  /* A menu that only worked once you were inside the monitor would be a menu
+     that is missing for the first ten seconds of the site. From the hero, a
+     section link takes the short way in: cut, then scroll. */
+  function goTo(id){
+    setNav(false);
+    if (id === 'hero'){ toStudio(); return; }
+    const land = () => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: revealed ? 'smooth' : 'auto', block: 'start' });
+    };
+    if (revealed){ land(); return; }
+    queued = false; entered = true; looping = false;
+    hardCut();
+    setTimeout(land, 260);
+  }
+  document.querySelectorAll('.topnav [data-go]').forEach(a => {
+    a.addEventListener('click', e => { e.preventDefault(); goTo(a.dataset.go); });
+  });
+
+  /* ---- the ramp ----
+     One curve across the bottom of the About screen: steep on the left,
+     flattening to the right. Drawn from the measured box rather than from a
+     fixed viewBox, because scaling a viewBox to fit scales the stroke with
+     it and the line thins out at one end. */
+  const ramp = document.getElementById('ramp');
+  function drawRamp(){
+    if (!ramp) return;
+    const w = ramp.clientWidth, h = ramp.clientHeight;
+    if (!w || !h) return;
+    const svg = ramp.querySelector('svg');
+    const floor = ramp.querySelector('#rampFloor');
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    const top = h * 0.10, base = h * 0.86;
+    floor.setAttribute('d',
+      `M0,${top} C${w * 0.20},${top} ${w * 0.30},${base} ${w * 0.62},${base} L${w},${base}`);
+    const len = floor.getTotalLength();
+    floor.style.setProperty('--len', Math.ceil(len));
+  }
+
+  /* ---- the montage ----
+     The stage is fixed to the viewport, so --grow is the only thing deciding
+     what is on screen, and it starts counting the moment the section's top
+     crosses the bottom of the window. `live` keeps the fixed stage out of the
+     way of the sections either side of it. */
+  const montage = document.getElementById('reel');
+  const frame = document.getElementById('montageFrame');
+  function growMontage(){
+    if (!montage || !frame || !innerHeight) return;
+    const r = montage.getBoundingClientRect();
+    frame.style.setProperty('--grow',
+      Math.min(1, Math.max(0, (innerHeight - r.top) / innerHeight)).toFixed(4));
+    montage.classList.toggle('live', r.top < innerHeight && r.bottom > innerHeight * 0.34);
+  }
+  addEventListener('scroll', growMontage, { passive: true });
+  addEventListener('resize', growMontage);
+  addEventListener('resize', drawRamp);
+
+  const scrollCta = document.getElementById('scrollCta');
+  if (scrollCta) scrollCta.addEventListener('click', () => {
+    montage.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   cta.addEventListener('click', enter);
+  /* Fast forward, not skip.
+     The button only exists while the take is running, and its job is to get
+     to the monitor sooner without throwing the move away: it seeks the clip
+     to just before the push-in, so the camera still travels and the cover
+     still lands. Everything downstream is driven off currentTime, so nothing
+     else has to know this happened.
+
+     Two things can go wrong, and both have a fallback. A clip whose duration
+     is not known yet cannot be seeked against, so that case cuts. And a clip
+     that reports a duration but refuses to seek leaves currentTime where it
+     was, so the seek is verified rather than assumed: if it did not land,
+     the rate goes up instead, which no container can refuse.
+
+     Verified rather than assumed because the seek genuinely did not take on
+     the stub clips used for layout testing, and a fast forward that silently
+     does nothing is worse than one that is a little less cinematic. */
   skip.addEventListener('click', () => {
-    queued = false;                     // drop any banked press
-    entered = true;                     // and stop waveOver reviving it
-    looping = false;
-    hardCut();
+    const W = take;
+    const end = W && W.duration;
+    if (!W || !end || !isFinite(end)){
+      queued = false; entered = true; looping = false;
+      hardCut();
+      return;
+    }
+    skip.disabled = true;
+    const mark = Math.max(W.currentTime, end - ZOOM - 0.08);
+    if (mark - W.currentTime < 0.25) return;    // already there
+    W.currentTime = mark;
+    W.play().catch(() => {});
+    setTimeout(() => {
+      if (revealed) return;
+      if (W.currentTime < mark - 0.25) W.playbackRate = 5;
+    }, 420);
   });
 })();
 </script>
