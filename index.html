@@ -6,7 +6,7 @@
 <title>Kemal Rahman</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   /* Page tone, taken from the Figma reference. */
@@ -33,6 +33,11 @@
      pixels that are meant to correspond. */
   --clip-lift:1;
   --clip-warm:1.02;
+
+  /* Two faces, per the style reference: a tight grotesque for display, Inter
+     for everything that is UI. The reference names TWK Lausanne and lists
+     Inter Tight as its substitute, which is on Google Fonts. */
+  --font-display:'Inter Tight',Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
 
   --pad:clamp(20px,3.4vw,64px);
   /* Measured off the Figma frame (2000x1102): the headline cap height is
@@ -191,11 +196,14 @@ body{
 }
 
 /* ---------- headline ---------- */
-/* -.055em is measured, not judged. The reference sets "Kemal Rahman" 1520px
-   wide at a 227px face. Inter 800 at -.055em renders it 1518.2px; -.05em was
-   12px wide and -.06em 15px narrow. */
+/* Measured, not judged. The reference sets "Kemal Rahman" 1520px wide at a
+   227px face. Inter Tight 800 renders 1532.5px at -.02em and 1505.3px at
+   -.03em, so -.025em lands within a couple of pixels. (Plain Inter wanted
+   -.055em for the same width; Inter Tight is a narrower face, so the same
+   width needs far less negative tracking.) */
 h1{
-  margin:0;font-weight:800;letter-spacing:-.055em;line-height:.9;
+  margin:0;font-family:var(--font-display);
+  font-weight:800;letter-spacing:-.025em;line-height:.9;
   font-size:var(--head);
   /* Centred on the frame, which is where he stands, rather than flush left. */
   text-align:center;
@@ -344,6 +352,66 @@ h1{
 .hero.is-leaving .cta,
 .hero.is-leaving .skip{pointer-events:none}
 
+/* ---------- the social trinkets ----------
+   3D renders in the same look as the scene, cut out to transparent PNG, so
+   they read as more props standing in the studio rather than as UI bolted on
+   top. They live in .hero, not .overlay, for the same reason the pill does:
+   they are positioned against the frame the video fills. */
+.social{
+  position:absolute;z-index:3;
+  left:clamp(16px,4.5vw,92px);top:clamp(90px,17vh,190px);
+  display:flex;flex-direction:column;gap:clamp(8px,1.4vh,20px);
+  pointer-events:none;
+}
+.social a{
+  pointer-events:auto;display:block;width:clamp(42px,4.4vw,78px);aspect-ratio:1;
+  opacity:0;transform:translateY(12px);
+  transition:opacity .6s ease,transform .6s cubic-bezier(.16,1,.3,1);
+}
+.is-in .social a{opacity:1;transform:none}
+.social a:nth-child(1){transition-delay:.50s}
+.social a:nth-child(2){transition-delay:.58s}
+.social a:nth-child(3){transition-delay:.66s}
+.social a:nth-child(4){transition-delay:.74s}
+
+/* Each one drifts on its own clock so the column never pulses in unison. */
+.social img{
+  width:100%;height:100%;object-fit:contain;display:block;
+  animation:bob 5.5s ease-in-out infinite;
+  transition:transform .45s cubic-bezier(.34,1.56,.64,1);
+}
+.social a:nth-child(2) img{animation-duration:6.4s;animation-delay:-1.1s}
+.social a:nth-child(3) img{animation-duration:5.9s;animation-delay:-2.3s}
+.social a:nth-child(4) img{animation-duration:7.1s;animation-delay:-3.4s}
+@keyframes bob{
+  0%,100%{transform:translateY(0) rotate(-2deg)}
+  50%    {transform:translateY(-7px) rotate(2deg)}
+}
+/* Hover pauses the drift and gives it a shove, so the reaction is legible
+   rather than fighting the idle loop. */
+.social a:hover img,.social a:focus-visible img{
+  animation-play-state:paused;
+  transform:translateY(-10px) scale(1.14) rotate(-8deg);
+}
+.social a:focus-visible{outline:2px solid var(--ink);outline-offset:6px;border-radius:12px}
+
+/* ---------- what is under the hero ----------
+   There is no page below the hero, so a scroll gesture has nothing to do.
+   Rather than swallow it, the hero lifts against resistance and this shows
+   underneath, then it springs back. The shape and the text share one SVG
+   whose viewBox is set from the element's pixel size, so the text sits on the
+   arc exactly instead of approximately. */
+.underside{
+  position:absolute;left:0;right:0;top:100%;height:46vh;
+  z-index:4;pointer-events:none;
+}
+.underside svg{display:block;width:100%;height:100%}
+.underside .fill{fill:var(--ink)}
+.underside text{
+  fill:#fff;font-family:var(--font-display);font-weight:700;
+  letter-spacing:-.01em;
+}
+
 /* ---------- skip ---------- */
 .skip{
   position:absolute;left:var(--pad);bottom:var(--pad);z-index:3;pointer-events:auto;
@@ -376,12 +444,33 @@ h1{
    arriving. That means no card grid and no section heading: the camera has
    just landed, and a wall of chrome would undo the move. A held statement,
    then a reason to keep going. */
-.work{
-  min-height:100svh;max-width:var(--stage-max);margin:0 auto;
-  padding:var(--pad);display:grid;grid-template-rows:1fr auto;
+.work{max-width:var(--stage-max);margin:0 auto;padding:0 var(--pad)}
+
+/* The chrome that says you are inside something you can leave. */
+.mono-bar{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:clamp(12px,2vw,32px);
+  padding:clamp(14px,2.2vh,26px) 0;
+  background:linear-gradient(var(--bg) 72%,transparent);
 }
+.back{
+  appearance:none;border:0;background:transparent;cursor:pointer;font:inherit;
+  display:inline-flex;align-items:center;gap:.5em;
+  font-size:14px;font-weight:600;color:var(--ink);opacity:.55;
+  padding:.4em .2em;transition:opacity .18s ease,transform .18s ease;
+}
+.back:hover,.back:focus-visible{opacity:1;transform:translateX(-3px)}
+.mono-nav{display:flex;gap:clamp(10px,1.7vw,30px);margin-left:auto;flex-wrap:wrap}
+.mono-nav a{
+  font-size:14px;font-weight:500;color:var(--ink);opacity:.6;text-decoration:none;
+  padding:.3em 0;transition:opacity .18s ease;
+}
+.mono-nav a:hover,.mono-nav a:focus-visible{opacity:1}
+
+.panel{min-height:100svh;display:grid;grid-template-rows:auto 1fr auto}
+.panel-body{align-self:center}
 .intro{
-  align-self:center;max-width:22ch;
+  max-width:22ch;font-family:var(--font-display);
   font-size:clamp(30px,5.2vw,78px);font-weight:800;
   letter-spacing:-.04em;line-height:1.04;margin:0;
 }
@@ -399,7 +488,8 @@ h1{
 .work.in .intro .line{opacity:1;transform:none}
 
 .scroll{
-  justify-self:center;display:flex;flex-direction:column;align-items:center;gap:.7em;
+  justify-self:center;align-self:end;
+  display:flex;flex-direction:column;align-items:center;gap:.7em;
   padding-bottom:clamp(18px,3vh,40px);
   font-size:13px;letter-spacing:.14em;text-transform:uppercase;
   color:rgba(10,10,10,.42);
@@ -409,6 +499,38 @@ h1{
 .work.in .scroll{opacity:1;transform:none}
 .scroll .chev{width:18px;height:18px;animation:nudge 1.8s ease-in-out infinite}
 @keyframes nudge{0%,100%{transform:translateY(0);opacity:.5} 50%{transform:translateY(5px);opacity:1}}
+
+/* ---------- the montage ----------
+   A sticky viewport-height stage the reel grows inside. Scroll position
+   through the tall parent drives --grow, so the clip opens from the bottom
+   centre and finishes full frame, shedding its radius on the way.
+   Placeholder until the real montage exists. */
+.montage{height:260vh;position:relative;margin:0 calc(var(--pad) * -1)}
+.montage-stick{position:sticky;top:0;height:100svh;display:grid;place-items:end center;overflow:hidden}
+.montage-frame{
+  --grow:0;
+  width:calc(34% + 66% * var(--grow));
+  aspect-ratio:16/9;
+  max-height:calc(100svh * (0.42 + 0.58 * var(--grow)));
+  margin-bottom:calc((1 - var(--grow)) * 8vh);
+  border-radius:calc(28px - 12px * var(--grow));
+  background:#e4e3e0;overflow:hidden;
+  display:grid;place-items:center;
+  color:#8d8b87;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+  will-change:width;
+}
+.montage-frame video,.montage-frame img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ---------- the wall that drops you back to the hero ----------
+   Two phases on one element: it falls in from above to cover the screen, the
+   hero is restored behind it, then it keeps going and drops off the bottom.
+   Covering first is what makes the swap invisible. */
+#wall{
+  position:fixed;inset:0;z-index:60;background:var(--ink);
+  transform:translateY(-100%);pointer-events:none;
+}
+#wall.down{transform:translateY(0);transition:transform 520ms cubic-bezier(.5,0,.75,0)}
+#wall.gone{transform:translateY(100%);transition:transform 620ms cubic-bezier(.22,1,.3,1)}
 
 @media (max-width:760px){
   h1{font-size:clamp(34px,12.5vw,86px)}
@@ -466,23 +588,65 @@ h1{
       </button>
   </div>
 
+  <div class="social" id="social">
+    <a href="#" aria-label="Instagram"><img alt="" src="" data-k="ig"></a>
+    <a href="#" aria-label="LinkedIn"><img alt="" src="" data-k="li"></a>
+    <a href="#" aria-label="Email"><img alt="" src="" data-k="em"></a>
+    <a href="#" aria-label="X"><img alt="" src="" data-k="xx"></a>
+  </div>
+
+  <div class="underside" id="underside" aria-hidden="true">
+    <svg preserveAspectRatio="none"><path class="fill"/><path id="arcpath" fill="none"/>
+      <text><textPath href="#arcpath" startOffset="50%" text-anchor="middle"
+        >there&rsquo;s nothing down here&hellip; but maybe click that button &#129300;</textPath></text>
+    </svg>
+  </div>
+
   <button class="skip" id="skip">Skip intro</button>
 </section>
 
 <main class="work" id="work" hidden>
-  <p class="intro">
-    <span class="line">Product designer, four&nbsp;years in.</span>
-    <span class="line dim">Most of the work is deciding what not to build,
-    then making what&rsquo;s left feel obvious.</span>
-  </p>
-  <div class="scroll">
-    <span>Scroll</span>
-    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M6 9l6 6 6-6"/>
-    </svg>
+  <div class="mono-bar">
+    <button class="back" id="back" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+      Back
+    </button>
+    <nav class="mono-nav">
+      <a href="#about">About</a>
+      <a href="#reel">My work</a>
+      <a href="#experience">Experience</a>
+      <a href="#cases">Case studies</a>
+      <a href="#contact">Contact</a>
+    </nav>
   </div>
+
+  <section class="panel" id="about">
+    <div></div>
+    <p class="intro panel-body">
+      <span class="line">Product designer, four&nbsp;years in.</span>
+      <span class="line dim">Most of the work is deciding what not to build,
+      then making what&rsquo;s left feel obvious.</span>
+    </p>
+    <div class="scroll">
+      <span>Scroll</span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9l6 6 6-6"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="montage" id="reel">
+    <div class="montage-stick">
+      <div class="montage-frame" id="montageFrame">Montage goes here</div>
+    </div>
+  </section>
 </main>
+
+<div id="wall" aria-hidden="true"></div>
 
 <div id="cover"></div>
 
@@ -565,6 +729,10 @@ h1{
     'media/wave.mp4': CDN + '2229135a-3e3c-4651-a827-66c8a7af5f4c.mp4',
     'media/idle.mp4': CDN + '9b16a3ef-b3fe-441f-99e6-414ffac6f442.mp4',
     'media/walk.mp4': CDN + 'f8373f35-e3dc-4469-9533-66738f840f3c.mp4',
+    'media/social-ig.png': CDN + '69ebf354-2af9-4cb4-ac03-1602cff68d16.png',
+    'media/social-li.png': CDN + '761ee33a-71c1-4ac5-b202-051ae2296ee6.png',
+    'media/social-em.png': CDN + 'f325216e-cce1-4c14-b424-19321aef8678.png',
+    'media/social-xx.png': CDN + '4ed5c223-d5e5-468d-98d0-48c97006775a.png',
   };
   let useFallback = false;
   const src = p => (useFallback && FALLBACK[p]) || p;
@@ -734,6 +902,8 @@ h1{
     poster.onerror = () => stage.classList.add('is-empty');
     A.onerror = B.onerror = C.onerror = () => stage.classList.add('is-empty');
     poster.src = src(POSTER);
+    document.querySelectorAll('.social img').forEach(
+      img => { img.src = src('media/social-' + img.dataset.k + '.png'); });
     show(poster, 0);
     requestAnimationFrame(() => hero.classList.add('is-in'));
 
@@ -756,12 +926,6 @@ h1{
 
        waveOver is latched and also fires on a timer, because a wave that
        stalls or 404s must not swallow a press. */
-    const waveOver = () => {
-      if (waveEnded) return;
-      waveEnded = true;
-      if (queued) enter();            // banked press: straight into the take
-      else idleLoop();
-    };
     if (!reduced) {
       if (CLIPS.wave) {
         playOnce(C, CLIPS.wave, waveOver, 220);
@@ -781,6 +945,15 @@ h1{
   /* Set once the greeting is done, so enter() knows whether to run now or
      bank the press until it is. */
   let waveEnded = false, queued = false, entered = false;
+
+  /* Declared out here rather than inside boot() because the back button
+     restarts the greeting and needs the same handler. */
+  function waveOver(){
+    if (waveEnded) return;
+    waveEnded = true;
+    if (queued) enter();              // banked press: straight into the take
+    else idleLoop();
+  }
 
   /* ---- the handoff into the monitor ---- */
   const TAKE = 0.45;                    // must match the `take` animation
@@ -885,6 +1058,122 @@ h1{
       W.addEventListener('timeupdate', at);
     }
   }
+
+  /* ---- the hero has nothing below it, so answer the gesture ----
+     A scroll on the hero cannot go anywhere: the page is exactly one
+     viewport tall until the take reveals the rest. Swallowing the gesture
+     makes the page feel broken, so it is answered instead. The hero lifts
+     against a resistance curve that approaches a hard ceiling, the note
+     underneath comes into view, and letting go springs it back.
+
+     damp() is exponential rather than linear so the first few pixels move
+     freely and the last ones barely move at all, which is what makes it read
+     as elastic rather than as a short scroll. */
+  const underside = document.getElementById('underside');
+  const PULL_MAX = 170;
+  let pull = 0, springing = false, releaseT = 0;
+
+  const damp = raw => PULL_MAX * (1 - Math.exp(-raw / PULL_MAX));
+
+  function setPull(px, animate){
+    pull = Math.max(0, px);
+    hero.style.transition = animate ? 'transform 620ms cubic-bezier(.22,1.4,.36,1)' : 'none';
+    hero.style.transform = pull ? `translateY(${-pull}px)` : '';
+  }
+  function release(){
+    if (springing) return;
+    springing = true;
+    setPull(0, true);
+    setTimeout(() => { springing = false; hero.style.transition = ''; }, 660);
+  }
+  let raw = 0;
+  function onWheel(e){
+    if (revealed || entered) return;
+    if (e.deltaY <= 0) { if (pull) { raw = 0; release(); } return; }
+    e.preventDefault();
+    raw += e.deltaY;
+    setPull(damp(raw), false);
+    clearTimeout(releaseT);
+    releaseT = setTimeout(() => { raw = 0; release(); }, 140);
+  }
+  hero.addEventListener('wheel', onWheel, { passive: false });
+
+  let touchY = null;
+  hero.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; raw = 0; }, {passive:true});
+  hero.addEventListener('touchmove', e => {
+    if (touchY === null || revealed || entered) return;
+    const dy = touchY - e.touches[0].clientY;
+    if (dy <= 0) return;
+    raw = dy;
+    setPull(damp(raw), false);
+  }, {passive:true});
+  hero.addEventListener('touchend', () => { touchY = null; raw = 0; release(); }, {passive:true});
+
+  /* The arc and the text on it share one SVG, and its viewBox is set from the
+     element's own pixel box so the two cannot drift apart. Drawing the shape
+     with preserveAspectRatio="none" and the text separately would stretch the
+     glyphs; matching the viewBox to the box 1:1 avoids the question. */
+  function drawUnderside(){
+    if (!underside) return;
+    const w = underside.clientWidth, h = underside.clientHeight;
+    if (!w || !h) return;
+    const svg = underside.querySelector('svg');
+    const dip = Math.min(w * 0.075, 130);          // how far the arc rises
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    svg.querySelector('.fill').setAttribute('d',
+      `M0,${dip} Q${w/2},${-dip} ${w},${dip} L${w},${h} L0,${h} Z`);
+    const ty = dip + Math.min(h * 0.30, 96);
+    svg.querySelector('#arcpath').setAttribute('d',
+      `M0,${ty} Q${w/2},${ty - dip * 2} ${w},${ty}`);
+    svg.querySelector('text').setAttribute('font-size', String(Math.max(13, Math.min(w * 0.016, 26))));
+  }
+  drawUnderside();
+  addEventListener('resize', drawUnderside);
+
+  /* ---- the montage grows as you scroll past it ---- */
+  const montage = document.getElementById('reel');
+  const frame = document.getElementById('montageFrame');
+  function growMontage(){
+    if (!montage || !frame) return;
+    const r = montage.getBoundingClientRect();
+    const total = r.height - innerHeight;
+    if (total <= 0) return;
+    const t = Math.min(1, Math.max(0, -r.top / total));
+    frame.style.setProperty('--grow', t.toFixed(4));
+  }
+  addEventListener('scroll', growMontage, { passive: true });
+  addEventListener('resize', growMontage);
+
+  /* ---- back to the hero, behind a falling wall ----
+     The wall covers before anything changes, so the swap itself is never on
+     screen, then keeps travelling and clears off the bottom. */
+  const wall = document.getElementById('wall');
+  const back = document.getElementById('back');
+  if (back) back.addEventListener('click', () => {
+    wall.classList.remove('gone');
+    wall.classList.add('down');
+    setTimeout(() => {
+      work.hidden = true;
+      work.classList.remove('in');
+      hero.style.display = '';
+      hero.classList.remove('is-leaving', 'armed');
+      hero.style.transform = '';
+      cover.classList.remove('take', 'clear');
+      cover.style.opacity = '';
+      scrollTo(0, 0);
+      revealed = false; entered = false; queued = false;
+      cta.disabled = false;
+      [A, B, C].forEach(v => { v.classList.remove('zoom'); v.pause(); });
+      live = null;
+      poster.style.transition = 'none'; poster.style.opacity = '1'; poster.style.zIndex = '2';
+      live = poster;
+      waveEnded = false;
+      if (!reduced && CLIPS.wave) playOnce(C, CLIPS.wave, waveOver, 220);
+      else { waveEnded = true; idleLoop(); }
+      wall.classList.remove('down');
+      wall.classList.add('gone');
+    }, 540);
+  });
 
   cta.addEventListener('click', enter);
   skip.addEventListener('click', () => {

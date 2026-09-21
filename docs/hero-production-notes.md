@@ -1883,3 +1883,64 @@ would not be in most cases.
 
 Every programmatic edit in this file asserts its match count first. The two
 that skipped it are the two that failed.
+
+## Second scene: trinkets, overscroll, monitor chrome
+
+### The social icons did not need the scene regenerated
+
+They are 3D renders generated separately, background-removed to transparent
+PNG, scaled to 320px and layered over the stage as ordinary DOM. Nothing about
+the video changed, and nothing about them risks it. This is the pattern for
+any future prop that wants to be interactive: **generate it as a separate
+cutout and composite in the browser, rather than putting it in the clip**,
+because anything inside the clip cannot be hovered, linked or changed without
+another trip through the generation lottery.
+
+They sit in `.hero`, not `.overlay`, for the same reason the pill does: they
+are positioned against the frame the video fills, not against the capped text
+column.
+
+Each drifts on its own clock (5.5s to 7.1s, with negative delays so they start
+out of phase) so the column never pulses in unison. Hover pauses the drift and
+applies a transform, rather than adding motion on top of motion, so the
+reaction is legible instead of fighting the idle.
+
+### The hero answers a scroll it cannot perform
+
+The page is exactly one viewport tall until the take reveals the rest, so a
+scroll gesture on the hero has nowhere to go. Swallowing it reads as a broken
+page. Instead the hero lifts against resistance, the note underneath comes
+into view, and release springs it back.
+
+The resistance is exponential, `PULL_MAX * (1 - exp(-raw / PULL_MAX))`, not
+linear. The first pixels move freely and the last barely move at all, which is
+what makes it feel elastic rather than like a short scroll. Measured at the
+ceiling: 167.5px against a PULL_MAX of 170.
+
+**The arc and the text on it share one SVG whose viewBox is set from the
+element's own pixel box.** The alternative, drawing the shape with
+`preserveAspectRatio="none"` and the text separately, stretches the glyphs;
+matching the viewBox to the box 1:1 means the text sits on the arc exactly
+instead of approximately, at any width.
+
+### The wall covers before anything changes
+
+Going back to the hero is two phases on one element: it falls from above to
+cover the screen, the hero is restored behind it, then it keeps travelling and
+clears off the bottom. Covering first is the whole trick, the same principle
+as the crossfade rule elsewhere in this document: the swap is never on screen.
+
+### A `const` inside `boot()` is not available to the back button
+
+The back button restarts the greeting, so it needs the wave's end handler.
+That handler was a `const` arrow function declared inside `boot()`, so the
+click threw `waveOver is not defined` and, because the exception aborted the
+rest of the handler, **the wall stopped mid-fall and stayed covering the
+screen**. The visible symptom was a black screen, four statements away from
+the actual cause.
+
+Worth keeping as a debugging note: the test reported both the exception and
+`wall: matrix(1,0,0,1,0,0)` in the same run, and the second is what made the
+first obviously fatal rather than incidental. **Assert on the end state, not
+just on the absence of errors** -- and equally, when an error is present, read
+the state assertions as its consequences.
