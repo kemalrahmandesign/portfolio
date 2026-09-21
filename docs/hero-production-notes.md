@@ -1944,3 +1944,57 @@ Worth keeping as a debugging note: the test reported both the exception and
 first obviously fatal rather than incidental. **Assert on the end state, not
 just on the absence of errors** -- and equally, when an error is present, read
 the state assertions as its consequences.
+## Second scene, round two: the fixes Kemal called out
+
+**The arc was never going to be visible.** `.underside` sat at
+`position:absolute; top:100%` *inside* `.hero`, and `.hero` has
+`overflow:hidden`. Anything positioned past the bottom edge of a clipping box
+is clipped, so the black dome and its curved text were being painted and then
+thrown away every frame. Fixed by splitting the hero into three:
+`.hero-shell` (the clipping viewport, `100svh`), `.hero-slide` (the thing that
+moves), and `.hero` + `.underside` as siblings riding on the slide. The
+overscroll transform moved from `hero` to `heroSlide`; `reveal()` and the back
+button now hide and restore `heroShell`. Measured after: underside top at
+732px of a 900px viewport during a full pull, text box 636px wide and on
+screen.
+
+**The sideways shift was the scrollbar, exactly as he guessed.** The classic
+version of this: the hero has no scrollbar, the revealed page does, and the
+17px gutter appears and disappears under the layout. `html{scrollbar-gutter:
+stable}` reserves it permanently. Measured: headline left edge 49px before the
+pull and 49px during it, zero shift.
+
+**Wheel and touch listeners moved to the shell.** They were on `.hero`, which
+is the element that travels. Listening on the stationary parent means the
+gesture keeps reading once the slide has moved out from under the pointer.
+
+**Monitor copy: the type scale was the problem, not the alignment.** It was
+already centred. At `clamp(28px,4.6vw,70px)` the statement ran five lines of
+66px type against a 17px closing line: a 4:1 jump that read as two unrelated
+blocks. Dropped the statement to `clamp(26px,3.4vw,52px)` at 26ch and lifted
+the close to `clamp(15px,1.35vw,21px)`, which puts the closing line on one
+line at desktop width.
+
+**The scroll cue was 10px below the fold.** `.panel` asked for a full
+`100svh`, but `.mono-bar` is in flow above it and sticky, so the panel's last
+row ended one bar-height past the bottom of the screen. `--bar` is now
+measured off the bar itself (`sizeBar()`, also on resize) rather than
+reconstructed from its padding and button height, which was 10px short.
+Measured after: panel 820px under an 80px bar, cue bottom at exactly 900.
+
+**Montage starts on the first pixel of scroll.** Mapping growth against the
+section's own scrolled distance meant nothing happened until its top reached
+the top of the window, a full screen late. Mapping `(innerHeight - top) /
+innerHeight` instead: 0.22 at 200px of scroll, 0.56 at 500px, full frame by
+900px.
+
+**Socials move sideways on hover.** Idle is `sway` (translateX ±3px with a
+matching ±2.5deg tilt, so the trinket swings rather than slides); hover swaps
+to `shake`, a faster ±7px with ±9deg and a 1.1 scale. Both verified by reading
+`animationName` before and after hover rather than by eye.
+
+**The wall is curved, same language as the arc.** `border-radius:0 0 50% 50% /
+0 0 16vh 16vh` on a 132vh panel. It is taller than the screen on purpose: at
+`translateY(0)` the curved edge is already past the fold, so coverage at the
+swap moment is total. Measured at the swap (555ms): top 0, bottom 1188 on a
+900px viewport, fully covering.
