@@ -2280,3 +2280,33 @@ first tap opens the menu and the second goes home, so both stay reachable.
 `PROPS` table in a textarea and a copy button, because the instructions for the
 console version were "open devtools and read five pairs of numbers", which is
 not an instruction anyone should be given.
+
+## Three things that only worked once
+
+**Fast forward now speeds the clip up rather than jumping over it.** Seeking to
+just before the push-in did get to the monitor, but it threw away the walk, the
+sit and the cat, which is most of what there is to see. `playbackRate = 4` is
+the honest version of what the icon promises, and no container can refuse it
+where a seek can and did. The push-in and the cover both trigger off
+currentTime so they come round sooner on their own; the only wall-clock piece is
+the 1400ms push-in animation, and at 4x there is still 1.6s of clip left when it
+starts.
+
+It also did not work a second time, because nothing put the layers back:
+`playbackRate` stayed at 4, so the whole sequence ran at 4x from the first frame
+of the second run, and `skip.disabled` stayed true, so the button was dead.
+Going home now resets both, and clears `take`.
+
+**The wall only fell from above the first time.** On the second run it was still
+carrying `gone`, which is `translateY(100%)`. Removing that and adding `down` in
+the same frame gives the browser a single style change from below the fold to
+covering, so it slid *up* from the bottom: on screen, a flash of black and then
+the hero, with no wall in it. It is now parked at `translateY(-100%)` with the
+transition off, a layout property is read to commit that, and only then does
+`down` go on. Verified by sampling the top edge twice during the fall and
+checking it climbs from off-screen toward zero, on the second run rather than
+the first.
+
+**`?props` also accepts `#props`.** A query string is easy to lose on the way to
+a deployed page, and when it goes missing nothing happens and there is nothing
+to say why. Both forms are matched now, with or without a value.

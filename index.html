@@ -1917,7 +1917,12 @@ h1{
      typing them back in. Dragging the things themselves and having the page
      write the table out is the same job in about thirty seconds, and it
      cannot transcribe a number wrong. */
-  if (location.search.includes('props') && props){
+  /* `?props` or `#props`. The query string is easy to lose: a host that
+     redirects, a link with a trailing slash, or pasting the address after a
+     hash all drop it silently, and then nothing happens and there is nothing
+     to tell you why. */
+  const wantProps = /(^|[?&#])props\b/.test(location.search + location.hash);
+  if (wantProps && props){
     props.style.pointerEvents = 'auto';
     props.classList.add('calibrating');
     document.querySelectorAll('.prop-tag').forEach(t => {
@@ -2096,7 +2101,23 @@ h1{
     walling = true;
     setNav(false);
     topnav.classList.add('away');       // the studio has no menu over it
-    wall.classList.remove('gone');
+    /* Park it above the fold with no transition before dropping it.
+
+       On the second run it was still carrying `gone`, which is
+       translateY(100%): removing that and adding `down` in the same frame
+       gave the browser one style change from below the fold to covering, so
+       it slid up from the bottom instead of falling from the top. On screen
+       that read as a flash of black and then the hero, with no wall at all.
+
+       Clearing both classes, forcing the parked position, reading a layout
+       property to commit it, and only then adding `down` makes the second
+       run identical to the first. */
+    wall.classList.remove('gone', 'down');
+    wall.style.transition = 'none';
+    wall.style.transform  = 'translateY(-100%)';
+    void wall.offsetHeight;
+    wall.style.transition = '';
+    wall.style.transform  = '';
     wall.classList.add('down');
     setTimeout(() => {
       work.hidden = true;
@@ -2110,7 +2131,13 @@ h1{
       scrollTo(0, 0);
       revealed = false; entered = false; queued = false;
       cta.disabled = false;
-      [A, B, C].forEach(v => { v.classList.remove('zoom'); v.pause(); });
+      /* Every layer goes back to how it started. The take's playbackRate in
+         particular: left at 4 it made the whole sequence run at 4x the second
+         time through, and `skip.disabled` left the button dead. */
+      [A, B, C].forEach(v => { v.classList.remove('zoom'); v.pause(); v.playbackRate = 1; });
+      take = null;
+      skip.disabled = false;
+      skip.classList.remove('ffwd');
       live = null;
       poster.style.transition = 'none'; poster.style.opacity = '1'; poster.style.zIndex = '2';
       live = poster;
@@ -2190,40 +2217,32 @@ h1{
   });
 
   cta.addEventListener('click', enter);
-  /* Fast forward, not skip.
-     The button only exists while the take is running, and its job is to get
-     to the monitor sooner without throwing the move away: it seeks the clip
-     to just before the push-in, so the camera still travels and the cover
-     still lands. Everything downstream is driven off currentTime, so nothing
-     else has to know this happened.
+  /* Fast forward: run the clip faster, do not jump over it.
 
-     Two things can go wrong, and both have a fallback. A clip whose duration
-     is not known yet cannot be seeked against, so that case cuts. And a clip
-     that reports a duration but refuses to seek leaves currentTime where it
-     was, so the seek is verified rather than assumed: if it did not land,
-     the rate goes up instead, which no container can refuse.
+     The first version seeked to just before the push-in, which got you to the
+     monitor but threw away the walk, the sit and the cat. Kemal wanted the
+     tape sped up, which is also the thing the icon promises. playbackRate is
+     the honest version of that and no container can refuse it, where a seek
+     can and did.
 
-     Verified rather than assumed because the seek genuinely did not take on
-     the stub clips used for layout testing, and a fast forward that silently
-     does nothing is worse than one that is a little less cinematic. */
+     The push-in and the cover are both triggered off currentTime, so they
+     come round sooner on their own; only the 1400ms push-in animation runs on
+     wall-clock time, and at 4x the clip has 1.6s left when it starts, which
+     still covers it. */
+  const FF = 4;
   skip.addEventListener('click', () => {
     const W = take;
-    const end = W && W.duration;
-    if (!W || !end || !isFinite(end)){
+    if (!W || !W.duration || !isFinite(W.duration)){
       queued = false; entered = true; looping = false;
       hardCut();
       return;
     }
-    skip.disabled = true;
-    const mark = Math.max(W.currentTime, end - ZOOM - 0.08);
-    if (mark - W.currentTime < 0.25) return;    // already there
-    W.currentTime = mark;
+    if (W.playbackRate >= FF) return;      // already winding
+    W.playbackRate = FF;
+    skip.classList.add('ffwd');
     W.play().catch(() => {});
-    setTimeout(() => {
-      if (revealed) return;
-      if (W.currentTime < mark - 0.25) W.playbackRate = 5;
-    }, 420);
   });
+
 })();
 </script>
 </body>
