@@ -2398,3 +2398,55 @@ renders about 130px tall. `tools/shrink-glb.js` re-encodes it at 1024 and
 rebuilds the binary chunk: every bufferView indexes into one shared buffer, so
 shrinking one moves all of them and the offsets have to be re-laid. 4.29MB to
 0.91MB, re-rendered and compared, no visible difference.
+
+## The second scene, rebuilt around a colour
+
+The monitor used to be four near-white screens in a row, which meant the
+arrival at the end of the push-in had nothing to arrive at. About is now a
+full-bleed block of `--primary`, and that colour does a second job further
+down: whichever experience row is nearest the middle of the screen takes it.
+Two uses of one colour, so the marker reads as belonging to the block rather
+than as a highlight bolted on.
+
+`--primary` and `--on-primary` are the only saturated things on the site.
+Changing those two lines moves the scheme.
+
+**Removed:** the ramp, the skater and its renderer, the scroll cue, and the
+"honoured you made it this far" line. The About copy is rewritten around
+working end to end, which is what Kemal actually wanted it to say.
+
+**The experience list is dimmed to 0.16 except the row in focus.** Dimmed
+rather than hidden, because the shape of the whole list has to stay readable
+or the focus has nothing to be a focus within. Four real roles now, his own
+studio first.
+
+**The case cards parallax by disagreeing with the page.** The picture is 124%
+of its frame's height and travels against the scroll while the card's edge
+does not, so the card reads as a window rather than a panel with a picture in
+it. One scroll handler drives both that and the experience focus, because both
+are answers to the same question: where is this element relative to the middle
+of the screen.
+
+**The cursor** is a dot that lerps toward the pointer at 0.18, swells on
+anything clickable and carries a word when there is one. The lag is the point;
+a dot pinned exactly to the pointer is a system cursor wearing a costume. It
+is gated on `(hover: hover) and (pointer: fine)` together, because `hover`
+alone still matches a laptop being driven by touch, and the system cursor is
+hidden only once ours is confirmed running.
+
+**Three things the rebuild broke and the tests caught:**
+
+1. `.about` kept the `.panel` class, whose three-row grid put the copy in the
+   first row and left two empty rows under it, so `align-items: center` had
+   nothing to centre against. The copy sat at the top of a full screen of
+   colour. Measured after: 277px above, 262px below.
+2. `scrollbar-gutter: stable` was reserving 15px that now showed as a strip of
+   page colour down the edge of a full-bleed coloured block. It was added to
+   stop the layout jumping when the page becomes scrollable, which happens at
+   the reveal, which is behind a full-screen cover. It was buying nothing and
+   costing that strip. Removed; the no-sideways-shift test still passes,
+   because the hero cannot scroll at all.
+3. Half the new tests failed because they ran after the suite had already gone
+   back to the hero, so nothing they measured was on screen. The behaviour was
+   correct the whole time. Worth the reminder: when a batch of assertions fail
+   together, suspect the harness before the feature.
