@@ -2175,3 +2175,54 @@ against a 1440x900 window, the 15px being the reserved scrollbar gutter.
 taken: the board sits at 17% of the frame and the ball at 91%, so a corner put
 them under a hotspot with an arrow pointing straight at them. One shake on
 hover, not two, and about 40% smaller.
+
+## Symmetry, and the arrow that finally points at something
+
+**The menu's shake was two animations disagreeing.** Each side opened to its
+own width, which made them different lengths, which put the face off the centre
+of the column. The fix at the time was to offset the whole menu by the
+difference. That corrected the resting position and introduced a wobble: a
+custom property is not an animatable type, so `--off` snapped to its new value
+while the two sides were still 500ms into animating their widths, and the face
+slid across and settled.
+
+Kemal's suggestion was the right one and simpler than any of it: give every item
+the same width, measured off the widest, and centre the text in it. The two
+sides then come out identical, the face is centred by construction, and there is
+no offset to snap, nothing to race, and no empty strip inside the pill. Measured
+0.0px difference between the sides.
+
+**Which also settled what "centred" means here.** The page reserves a scrollbar
+gutter, so the column everything is laid out in is 1425px inside a 1440px
+window. A menu centred on the window sits 7.5px off the masthead it hangs above.
+The test now measures the face against the centred copy rather than against
+`innerWidth`, because lining up with the page is the thing that is actually
+wanted; an earlier round had "fixed" this by pushing the menu 7.5px off the
+column to agree with the window.
+
+**The arrowheads were pointing off into space, and the bow was why.** The head
+was built from the curve's tangent at its end, which is honest but useless: a
+bowed cubic leaves at whatever angle the bow left it at, and at bow 0.5 that is
+thirty degrees or more away from the object. The second control point now sits
+on the line between the object and the curve's end, behind the end, which makes
+the tangent there that line by construction. The bow only shapes the first half
+of the stroke, which is the half doing the hand-drawn work.
+
+The loop came back, but on the way rather than dangling off the end: the curve
+finishes into a small loop set back by two of its own radii plus a head and a
+half, then runs straight into the arrowhead. Swoop, curl, arrive. At the first
+spacing the loop and the head overlapped into a single knot, which is why the
+gap is expressed in terms of both their sizes rather than as a constant.
+
+**Calibration is drag and drop now.** Logging the coordinate under the pointer
+was barely better than guessing: it still meant reading five pairs of numbers off
+a console and typing them back. With `?props` the hotspots and the writing are
+draggable, scrolling over a hotspot resizes it, and every change prints the whole
+`PROPS` table ready to paste. The coordinates themselves were also re-derived
+from the reference screenshot with a corrected crop: the previous set assumed the
+crop reached 98% down the frame when the tagline's position puts it at about
+85%, which had stretched every y value.
+
+**The overscroll holds for 850ms before it springs**, from 140ms. It used to
+start returning almost the moment the wheel stopped, which left no time to read
+the line that is the entire reason for pulling.
