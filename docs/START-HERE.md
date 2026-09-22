@@ -245,3 +245,36 @@ evaluated to 112%, above the 100% ceiling, so it could never fire.
 
 **Say plainly what has not been looked at.** Do not present a table of numbers
 in a way that implies the image was reviewed.
+
+## 3D assets are available, and the earlier answer was wrong
+
+An earlier round told Kemal that character drop-ins had to be video on a
+near-white plate because nothing in the toolchain produces alpha. That is wrong,
+and he was right to push back. Higgsfield exposes a 3D route:
+
+- `generate_3d` with `image_to_3d` (Meshy) takes one image and returns a
+  **textured GLB**, with `enable_rigging` for a humanoid skeleton and
+  `enable_animation` + `animation_action_id` to bake a clip from a 678-action
+  library into the file. `multi_image_to_3d` takes 2 to 4 views and is
+  geometrically more accurate. `3d_rigging` rigs a GLB that already exists.
+- `animation_actions` searches the clip library. **`Big_Wave_Hello` is id 28**,
+  which is exactly the goodbye the contact section wants. There is **no skate
+  clip**: the library's groups are WalkAndRun, BodyMovements, DailyActions,
+  Dancing and Fighting, and a search for "skate" returns nothing.
+- `scene_builder_3d_*` is a separate Blender-backed scene tool with its own GLB
+  catalogue and a Python surface, for composing whole scenes rather than lifting
+  one character.
+
+What this changes: a GLB rendered in the page with three.js has a genuinely
+transparent background, scales to any size, can be moved and re-lit per section,
+and is one asset for desktop and mobile instead of a regeneration per aspect
+ratio. That is the answer to "can you move the clip around", and it is a better
+answer than the one that was given.
+
+The open risk is fidelity, not capability. Image-to-3D on a stylised cartoon can
+come back lumpy, and the face is the part that has already cost several rounds.
+Generate a single test GLB and look at it before committing to the approach.
+
+For the skate ride specifically: with no clip in the library, the move is a
+static model on a board whose transform is animated in the page (travel, lean,
+spin at the end) rather than a rigged performance.
