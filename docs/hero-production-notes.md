@@ -2310,3 +2310,53 @@ the first.
 **`?props` also accepts `#props`.** A query string is easy to lose on the way to
 a deployed page, and when it goes missing nothing happens and there is nothing
 to say why. Both forms are matched now, with or without a value.
+
+## The skater, and what a stub can and cannot prove
+
+The About ramp now carries a 3D mesh of him riding it. Three decisions kept it
+from being an indulgence:
+
+**The renderer is not loaded unless the mesh is there.** The page fetches
+`media/skater.glb` first and only real bytes buy three.js, so the normal state
+of this repo, which is no mesh, costs nothing rather than 600KB of renderer
+with nothing to render. The same bytes are then handed to `GLTFLoader.parse`,
+so the probe is not an extra request.
+
+That started as a HEAD, which Python's `http.server` answers badly enough that
+Chromium reports `ERR_ABORTED`. Fetching the bytes once and reusing them is
+both more portable and one request cheaper.
+
+**It runs once and stops.** An IntersectionObserver at 50% starts it, the
+timeline runs 6.2s, and the animation frame is not re-armed at the end.
+Verified by counting draws: 375 frames, then 375 again eight hundred
+milliseconds later. Nothing is burning a GPU under copy nobody is reading.
+
+**One catch is not enough.** The first version wrapped the probe and the scene
+in a single `.catch(() => {})`, on the reasoning that a missing mesh is normal.
+It also swallowed a real failure in the scene, and an absent scene looks
+exactly like a working one that has not scrolled into view. It cost a debugging
+round to notice, and the moment the catches were separated the actual error
+printed itself immediately. A missing file is silent; anything else warns.
+
+**What was verified and what was not.** jsdelivr is blocked from this
+container, so three.js itself could not be fetched and the render was never
+seen. A stub module standing in for the parts the code uses proved the wiring:
+the mesh is fetched and parsed, the canvas goes live, the renderer is sized to
+the real box (1425x337), the pixel ratio is capped, the routine animates on
+entry and stops at the end, and the absent-mesh path loads no renderer, draws
+no canvas and says nothing. **None of that is evidence about pixels.** Whether
+he is the right size, facing the right way or lit like the rest of the studio
+is unknown until someone looks.
+
+`SKATER.yaw` exists for exactly that reason: image-to-3D has no agreed
+orientation, so if he comes out sideways it is a quarter turn, not a
+regeneration.
+
+## The prop coordinates are real now
+
+Kemal dragged all five into place against the actual clip with `?props` and
+sent the table back. Everything in `PROPS` is measured rather than estimated
+for the first time. The estimates were not close: the ball was 7 points out
+horizontally, the board 14 points vertically, and the skis' hotspot was more
+than 8 points high. Worth remembering against the temptation to derive
+coordinates from a screenshot with an assumed crop.
