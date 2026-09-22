@@ -2224,6 +2224,17 @@ h1{
   const skater = document.getElementById('skater');
   const SKATER = {
     src:   'media/skater.glb',
+    /* The generation's own URL, tried when the local file is not there yet.
+
+       Worth having and not worth trusting. The clips proved both halves of
+       that: they loaded fine from this CDN right up until one was deleted
+       and started returning 403, which is what moved everything local in the
+       first place. A GLB is also fetched rather than pointed at by an
+       element, so it needs CORS where a <video> does not, and that cannot be
+       checked from this container. So: try it, and if it fails, the ramp is
+       simply a ramp until the file is committed. */
+    cdn:   'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/' +
+           'hf_20260922_060933_b07b7fec-c7de-4035-88e5-20a8948c124a.glb',
     /* The mesh comes out of image-to-3D with no agreed orientation, so it
        is normalised here: measured, centred on its own feet, scaled to a
        height in ramp units, and turned to face the way it travels. Nudge
@@ -2242,9 +2253,12 @@ h1{
        around both halves swallowed a broken scene as if it were an absent
        one, and an absent scene looks exactly like a working one that has
        not scrolled into view yet. */
-    fetch(SKATER.src)
+    const grab = url => fetch(url)
       .then(r => (r.ok ? r.arrayBuffer() : null))
-      .catch(() => null)
+      .catch(() => null);
+
+    grab(SKATER.src)
+      .then(buf => (buf && buf.byteLength > 4 ? buf : grab(SKATER.cdn)))
       .then(buf => {
         if (!buf || buf.byteLength <= 4) return;
         return startSkater(buf).catch(e => console.warn('skater:', e));

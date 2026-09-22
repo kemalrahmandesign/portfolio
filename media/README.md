@@ -170,6 +170,12 @@ nothing beyond the browser's own 404. The ramp is a fine thing on its own.
 - `skater.glb`
   https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/hf_20260922_060933_b07b7fec-c7de-4035-88e5-20a8948c124a.glb
 
+The page already tries that URL by itself when the local file is not there, so
+the skater may well appear without anyone downloading anything. Do not leave it
+that way. It is the arrangement the clips were on when one of them was deleted
+and started returning 403, which is what moved all of this local to begin with.
+A generation URL is a preview, not a host.
+
 Generated with `image_to_3d`, textured, 12000 triangles, no rigging, from a
 side view of him riding: cheap on purpose, because he is small and passing by.
 
