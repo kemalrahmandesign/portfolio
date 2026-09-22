@@ -157,3 +157,28 @@ closed-mouth smile, eyes relaxed, brows level, greeting someone he already
 knows) with the negatives after it. This document already records that a bare
 prohibition still spends attention on the thing it forbids, so leading with
 "not surprised" is a way to get a surprised face.
+## skater.glb
+
+The About section's ramp has a 3D skater on it. The mesh is a GLB and the file
+goes here, next to the clips, for the same reason they do: the result CDN is
+blocked from the agent's container, so it is downloaded by hand and committed.
+
+Nothing breaks if it is missing. The page fetches it before it loads a
+renderer, so an absent mesh costs no dependency, draws no canvas and logs
+nothing beyond the browser's own 404. The ramp is a fine thing on its own.
+
+- `skater.glb`
+  https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/hf_20260922_060933_b07b7fec-c7de-4035-88e5-20a8948c124a.glb
+
+Generated with `image_to_3d`, textured, 12000 triangles, no rigging, from a
+side view of him riding: cheap on purpose, because he is small and passing by.
+
+**What this mesh can do.** It was lifted from an image of him already standing
+on a board, so the board is part of the same mesh. That covers rolling, the
+manual, the tail scrape and the 180. It rules out a kickflip, because the board
+would spin with him.
+
+**What it would take to add the kickflip.** One more mesh: him in the same pose
+with no board, 30 credits. The board itself should then be built in code, which
+is free, reads as silver without a chrome texture at this size, and can be
+spun, popped and scraped independently. That is the whole upgrade.
