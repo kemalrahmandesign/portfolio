@@ -11,13 +11,11 @@
 :root{
   /* Page tone, taken from the Figma reference. */
   --bg:#f1f0ee;
-  /* One primary. It carries the About block and marks whatever the reader is
-     on in the experience list, and it is the only saturated thing on the
-     site, which is what makes it read as a marker rather than as decoration.
-     Warm, because everything else here is a warm near-white and a cold
-     accent would look pasted on. Change this line and the scheme moves. */
-  --primary:#e2553c;
-  --on-primary:#fff6f2;
+  /* The primary is the ink. Nothing on this site is saturated: the reference
+     is black type on near-white, and the only thing that changes between a
+     row you are reading and one you are not is how dark it is. An accent
+     colour here was my invention and it was wrong. */
+  --primary:var(--ink);
   --ink:#0a0a0a;
 
   /* Video is not lifted any more, and the 1.085 that used to sit here was a
@@ -770,114 +768,81 @@ h1{
    the monitor are both near white, so the first thing under the arrival has
    to say "somewhere else" before it says anything at all. */
 .about{
-  background:var(--primary);color:var(--on-primary);
   /* Not a .panel: that class lays out three rows and would drop the copy in
      the first one, which leaves align-items nothing to work with. */
-  margin:0 calc(var(--pad) * -1);
-  padding:calc(var(--bar) + 4vh) var(--pad) 8vh;
-  min-height:100svh;display:grid;align-items:center;
+  padding:calc(var(--bar) + 6vh) 0 10vh;
+  min-height:76svh;display:grid;align-items:center;
 }
-/* The measure. 30ch at this size put the statement on four short lines and
-   the body in a column narrower than the statement, which reads as a
-   phone layout that wandered onto a desktop. */
-.about-body{width:100%;max-width:min(28ch,100%);margin:0 auto}
-@media (min-width:900px){ .about-body{max-width:44ch} }
-@media (min-width:1400px){ .about-body{max-width:50ch} }
+/* One paragraph, one size, the label sitting inline at the head of it the
+   way the reference does. The previous version set the first line huge and
+   the rest small, which turned one thought into a headline with footnotes
+   stapled underneath. */
+/* The measure is set on the type, in its own ems, not in a character count
+   on the wrapper. In the reference the paragraph is about thirty times its
+   own font size wide and runs four lines; a ch-based cap gave a column two
+   words across and eleven lines deep. */
+.about-body{width:100%;margin:0}
 .lede{
   margin:0;font-family:var(--font-display);
-  font-size:clamp(26px,3.4vw,52px);font-weight:700;
-  letter-spacing:-.03em;line-height:1.14;
-}
-.lede-tag{
-  display:block;margin-bottom:1.6em;
-  font-family:Inter,sans-serif;font-size:13px;font-weight:500;
-  letter-spacing:.16em;opacity:.6;
-}
-.lede-line{
-  display:block;
+  font-size:clamp(23px,2.7vw,46px);font-weight:700;
+  letter-spacing:-.03em;line-height:1.18;
+  max-width:min(30em,100%);
   opacity:0;transform:translateY(16px);
   transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1);
 }
-/* Everything after the first line drops to body size. One statement, then
-   the detail under it, rather than three paragraphs shouting equally. */
-.lede-line + .lede-line{
-  margin-top:1.1em;font-size:.38em;font-weight:500;max-width:46ch;
-  letter-spacing:-.011em;line-height:1.55;
+.about.seen .lede{opacity:1;transform:none}
+/* Inline, indented, and small: a margin note that the paragraph starts
+   after, not a heading it sits under. */
+.lede-tag{
+  font-family:Inter,sans-serif;font-size:12px;font-weight:500;
+  letter-spacing:.16em;opacity:.42;
+  margin-right:1.6em;vertical-align:.55em;white-space:nowrap;
 }
-.about.seen .lede-line{opacity:1;transform:none}
-.about.seen .lede-line + .lede-line{opacity:.86}
-.lede-line:nth-of-type(2){transition-delay:.1s}
-.lede-line:nth-of-type(3){transition-delay:.2s}
 
 /* ---------- experience ----------
-   Everything is dimmed except the row nearest the middle of the screen, and
-   the marker is the same primary the About block is made of, so the two read
-   as one idea rather than as a highlight bolted on afterwards. */
-.cvsec{display:block;min-height:auto;padding:clamp(60px,12vh,160px) 0 clamp(40px,8vh,120px)}
-.cv-head{margin-bottom:clamp(28px,5vh,64px)}
-.cv-head .lede-tag{margin:0;opacity:.42;color:var(--ink)}
-
-/* ---------- experience ---------- */
-.sec-head{
-  font-family:var(--font-display);font-size:clamp(13px,1.1vw,15px);
-  font-weight:600;letter-spacing:.12em;text-transform:uppercase;
-  color:rgba(10,10,10,.42);margin:0 0 clamp(20px,3vh,40px);
-}
-.cv{list-style:none;margin:0;padding:0;border-top:1px solid rgba(10,10,10,.12)}
+   Centred, quiet, and dimmed to almost nothing except the row nearest the
+   middle of the screen. The dimming is opacity on black, not a colour: the
+   reference has one dark row in a column of pale ones and that is the whole
+   effect. */
+.cvsec{display:block;min-height:auto;padding:clamp(40px,8vh,110px) 0 clamp(60px,12vh,150px)}
+.cv{list-style:none;margin:0;padding:0;text-align:center}
 .cv-row{
-  display:grid;grid-template-columns:minmax(120px,16%) 1fr;
-  gap:clamp(12px,3vw,48px);
-  padding:clamp(26px,4.6vh,58px) 0;border-bottom:1px solid rgba(10,10,10,.12);
-  /* Dimmed rather than hidden: the shape of the whole list has to stay
-     readable or the focus has nothing to be a focus within. */
-  opacity:.16;
-  transition:opacity .45s ease;
+  padding:clamp(14px,2.4vh,30px) 0;
+  opacity:.14;
+  transition:opacity .5s ease;
 }
 .cv-row.on{opacity:1}
-.cv-when{
-  margin:0;font-size:14px;letter-spacing:-.006em;
-  color:rgba(10,10,10,.45);font-variant-numeric:tabular-nums;
-  transition:color .45s ease;
-}
-.cv-row.on .cv-when{color:var(--primary)}
 .cv-who{
-  margin:0 0 .22em;font-family:var(--font-display);font-weight:700;
-  letter-spacing:-.03em;line-height:1.02;
-  font-size:clamp(26px,3.9vw,56px);
-  transition:color .45s ease;
+  margin:0;font-family:var(--font-display);font-weight:700;
+  letter-spacing:-.032em;line-height:1.04;
+  font-size:clamp(28px,5vw,74px);
 }
-.cv-row.on .cv-who{color:var(--primary)}
-.cv-what{margin:0 0 1em;font-size:clamp(14px,1.3vw,18px);color:rgba(10,10,10,.55)}
-.cv-notes{margin:0;padding:0;list-style:none;max-width:62ch}
-.cv-notes li{
-  position:relative;padding-left:1.1em;margin-bottom:.55em;
-  font-size:clamp(14px,1.15vw,17px);line-height:1.55;color:rgba(10,10,10,.62);
+/* Set as a superscript against the name rather than as its own column, so
+   the list reads as a run of names with dates attached. */
+.cv-when{
+  font-size:.24em;font-weight:500;letter-spacing:0;
+  vertical-align:.95em;margin-left:.5em;opacity:.5;
+  font-variant-numeric:tabular-nums;white-space:nowrap;
 }
-.cv-notes li::before{
-  content:"";position:absolute;left:0;top:.62em;
-  width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.42;
+.cv-what{
+  margin:.5em 0 0;font-size:clamp(13px,1.1vw,16px);
+  letter-spacing:-.006em;color:rgba(10,10,10,.55);
 }
-@media (max-width:760px){ .cv-row{grid-template-columns:1fr;gap:10px} }
 
 /* ---------- case studies ----------
-   The picture drifts against the page while the card's own edge does not, so
-   the two disagree by a few percent and the card reads as a window rather
-   than a panel with a picture in it. */
-.cases{padding:clamp(40px,8vh,120px) 0 clamp(60px,12vh,160px)}
+   The picture is the whole card. It is 124% of its frame's height and drifts
+   against the scroll while the frame does not, so the two disagree by a few
+   percent and the card reads as a window rather than a panel. */
+.cases{padding:0 0 clamp(60px,12vh,150px)}
 .case{
-  display:grid;grid-template-columns:1fr;gap:clamp(16px,2.4vw,32px);
-  text-decoration:none;color:var(--ink);
-  margin-bottom:clamp(40px,8vh,110px);
+  display:block;position:relative;overflow:hidden;
+  border-radius:20px;aspect-ratio:16/10;
+  background:#e4e3e0;box-shadow:var(--lift);
+  margin-bottom:clamp(24px,5vh,72px);
   opacity:0;transform:translateY(26px);
   transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1);
 }
 .case.seen{opacity:1;transform:none}
-.case-shot{
-  position:relative;overflow:hidden;border-radius:20px;
-  aspect-ratio:16/9;background:#e4e3e0;box-shadow:var(--lift);
-}
-/* Taller than its frame by the amount it is allowed to travel, so the drift
-   never exposes an edge. */
 .case-img{
   position:absolute;left:0;right:0;top:-12%;height:124%;
   transform:translateY(calc(var(--par,0) * 10%));
@@ -887,16 +852,6 @@ h1{
 .case-img[data-tint="2"]{background:linear-gradient(140deg,#3c2f4d,#8a6ea8 62%,#d8cde6)}
 .case-img[data-tint="3"]{background:linear-gradient(140deg,#243f38,#5e8f7e 62%,#c6ded4)}
 .case-img[data-tint="4"]{background:linear-gradient(140deg,#4d3623,#a5794c 62%,#e5d3bd)}
-.case-meta{display:grid;gap:.2em;max-width:62ch;align-content:center}
-.case-title{
-  margin:0;font-family:var(--font-display);font-weight:700;
-  letter-spacing:-.03em;font-size:clamp(24px,3.1vw,46px);line-height:1.05;
-}
-.case-sub{margin:0;font-size:14px;color:rgba(10,10,10,.45)}
-.case-line{margin:.6em 0 0;font-size:clamp(14px,1.2vw,18px);line-height:1.55;color:rgba(10,10,10,.6)}
-.cases-note{margin:0;font-size:14px;color:rgba(10,10,10,.38)}
-@media (min-width:1000px){
-  .case{grid-template-columns:1.35fr 1fr;align-items:center;gap:clamp(28px,4vw,64px)}
 }
 
 /* ---------- goodbye ----------
@@ -923,26 +878,23 @@ h1{
    through the tall parent drives --grow, so the clip opens from the bottom
    centre and finishes full frame, shedding its radius on the way.
    Placeholder until the real montage exists. */
-.montage{height:170vh;position:relative;margin:0 calc(var(--pad) * -1)}
-/* Fixed, not sticky.
+.montage{height:200vh;position:relative;margin:0 calc(var(--pad) * -1)}
+/* Sticky, so it belongs to its own section.
 
-   A sticky stage only pins once its own top reaches the top of the window,
-   which is a full screen of scrolling after the reader sets off. Until then
-   the frame is bottom-aligned inside a box that is itself below the fold, so
-   nothing is visible however early --grow starts counting. Kemal saw the
-   frame arrive late twice, and both times the fix was applied to --grow,
-   which was never the part that was wrong.
+   It was fixed to the viewport for a while, which made it arrive early but
+   also made it a thing floating over the whole page that had to be switched
+   off or faded out by hand at both ends. Sticky pins at the top of the
+   window while the section passes and releases at the section's bottom
+   edge, so it leaves the way everything else on the page leaves: by being
+   scrolled off. There is nothing to fade and nothing to toggle.
 
-   Anchoring the stage to the viewport instead means the frame's position is
-   the bottom of the screen from the first pixel of scroll. It starts just
-   below the edge and rises as it grows, so it climbs into frame rather than
-   waiting for its section to arrive. */
+   The late arrival that pushed it to fixed is no longer a problem, because
+   the montage now has a full About block and the experience list in front of
+   it rather than starting one screen down. */
 .montage-stage{
-  position:fixed;left:0;right:0;bottom:0;height:100svh;z-index:5;
-  display:grid;place-items:end center;overflow:hidden;pointer-events:none;
-  visibility:hidden;
+  position:sticky;top:0;height:100svh;
+  display:grid;place-items:center;overflow:hidden;pointer-events:none;
 }
-.montage.live .montage-stage{visibility:visible}
 .montage-frame{
   --grow:0;
   /* Width and height are both interpolated, and there is no aspect-ratio.
@@ -959,13 +911,12 @@ h1{
      had been scrolled, which is why it read as appearing rather than
      growing: there was nothing to watch it come from. 110% of its own
      height clears the bottom edge at every size it takes. */
-  transform:translateY(calc((1 - var(--grow)) * 110%));
+  transform:translateY(calc((1 - var(--grow)) * 62%));
   border-radius:calc(28px - 28px * var(--grow));
   background:#e4e3e0;overflow:hidden;
   display:grid;place-items:center;
   color:#8d8b87;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
-  opacity:var(--fade,1);
-  will-change:width,transform,opacity;
+  will-change:width,transform;
 }
 .montage-frame video,.montage-frame img{width:100%;height:100%;object-fit:cover;display:block}
 
@@ -1008,20 +959,32 @@ h1{
    browser that cannot do this is never left with no pointer at all. */
 .cur{
   position:fixed;left:0;top:0;z-index:200;pointer-events:none;
-  width:var(--d,16px);height:var(--d,16px);margin:calc(var(--d,16px) / -2);
-  border-radius:50%;background:var(--primary);
-  display:grid;place-items:center;
-  font:600 12px/1 Inter,sans-serif;letter-spacing:.04em;color:var(--on-primary);
+  display:flex;align-items:flex-start;gap:6px;
   transform:translate3d(var(--x,-100px),var(--y,-100px),0);
-  transition:width .26s cubic-bezier(.16,1,.3,1),height .26s cubic-bezier(.16,1,.3,1),
-             margin .26s cubic-bezier(.16,1,.3,1),background-color .26s ease,opacity .2s ease;
+  transition:opacity .2s ease;
   will-change:transform;
-  mix-blend-mode:normal;
 }
-.cur span{opacity:0;transition:opacity .2s ease;white-space:nowrap}
-.cur.big{--d:72px}
-.cur.big span{opacity:1}
-.cur.tap{--d:40px}
+/* The arrow itself: the familiar pointer silhouette with the corners taken
+   off, which is the whole difference between a cursor and a shape. A filled
+   dot was not a cursor, it was a bullet following the mouse. */
+.cur svg{
+  width:24px;height:24px;display:block;flex:none;
+  fill:var(--ink);stroke:var(--bg);stroke-width:1.4;stroke-linejoin:round;
+  transform:scale(var(--s,1));transform-origin:4px 3px;
+  transition:transform .22s cubic-bezier(.16,1,.3,1);
+  filter:drop-shadow(0 2px 5px rgba(10,10,10,.18));
+}
+.cur.tap{--s:.86}
+/* The label rides beside it the way a name tag does on a shared canvas. */
+.cur-tag{
+  margin-top:14px;
+  padding:5px 11px;border-radius:50px;
+  background:var(--ink);color:var(--bg);
+  font:600 12px/1 Inter,sans-serif;letter-spacing:.01em;white-space:nowrap;
+  opacity:0;transform:translateX(-4px) scale(.92);transform-origin:0 50%;
+  transition:opacity .2s ease,transform .24s cubic-bezier(.16,1,.3,1);
+}
+.cur.big .cur-tag{opacity:1;transform:none}
 .cur.hide{opacity:0}
 html.cursored,html.cursored *{cursor:none !important}
 
@@ -1160,18 +1123,10 @@ html.cursored,html.cursored *{cursor:none !important}
        room" before it says anything else. -->
   <section class="about" id="about">
     <div class="about-body">
-      <p class="lede">
-        <span class="lede-tag">( about )</span>
-        <span class="lede-line">I am a product designer who works end to
-        end.</span>
-        <span class="lede-line">Research, interface, motion, and the build
-        conversations in between. Four years of it, most recently on trading
-        products used by millions of people, where the job is deciding what
-        somebody needs to see in the second before they act.</span>
-        <span class="lede-line">I am obsessed with visual storytelling, and
-        with the part most people skip: making a thing feel obvious once it
-        is finished.</span>
-      </p>
+      <p class="lede"><span class="lede-tag">( about )</span> A product
+      designer of four years, working end to end from research through to the
+      last call with engineering, mostly on crypto trading products used by
+      millions of people, and quietly obsessed with visual storytelling.</p>
     </div>
   </section>
 
@@ -1179,66 +1134,27 @@ html.cursored,html.cursored *{cursor:none !important}
        Everything is faded except whatever is nearest the middle of the
        screen, which the scroll handler marks. It is a list you read one row
        at a time rather than a wall of dates. -->
+  <!-- ---------- experience ----------
+       Company, role, years. Nothing else. The long version belongs on a CV
+       and this is not one: the list exists so somebody can see the shape of
+       four years in about four seconds. -->
   <section class="cvsec" id="experience">
-    <div class="cv-head"><span class="lede-tag">( experience )</span></div>
     <ol class="cv" id="cv">
       <li class="cv-row">
-        <p class="cv-when">Jan 2026 &ndash; present</p>
-        <h3 class="cv-who">Own studio</h3>
-        <p class="cv-what">Design lead, multiple clients</p>
-        <ul class="cv-notes">
-          <li>Running my own practice, working directly with founders and
-          product teams across the whole arc of a project.</li>
-        </ul>
+        <h3 class="cv-who">Own studio<span class="cv-when">(2026 &ndash; now)</span></h3>
+        <p class="cv-what">Design lead</p>
       </li>
       <li class="cv-row">
-        <p class="cv-when">Sep 2024 &ndash; Dec 2025</p>
-        <h3 class="cv-who">Osmosis Labs &mdash; Polaris</h3>
-        <p class="cv-what">Product Designer &amp; UI/UX Researcher</p>
-        <ul class="cv-notes">
-          <li>Led user research with crypto traders across experience levels,
-          and turned the findings into scalable research systems in Airtable
-          and Notion.</li>
-          <li>Designed the news feed, the For You discovery feed and the
-          article architecture, giving traders one surface for sentiment,
-          market movement and trending assets.</li>
-          <li>Redesigned trading workflows end to end, cutting friction out of
-          execution.</li>
-          <li>Built portfolio tracking and wallet asset views, including
-          transaction history and a privacy mode.</li>
-          <li>Produced trading data visualisation and charts, and partnered
-          with engineering on QA so what shipped matched the intent.</li>
-        </ul>
+        <h3 class="cv-who">Osmosis &mdash; Polaris<span class="cv-when">(2024 &ndash; 25)</span></h3>
+        <p class="cv-what">Product Designer &amp; UX Researcher</p>
       </li>
       <li class="cv-row">
-        <p class="cv-when">May 2024 &ndash; Nov 2025</p>
-        <h3 class="cv-who">Osmosis Labs &mdash; Osmosis DEX</h3>
-        <p class="cv-what">Product Designer &amp; UI/UX Researcher</p>
-        <ul class="cv-notes">
-          <li>Drove UX across a decentralised exchange with more than two
-          million users in the Cosmos ecosystem.</li>
-          <li>Redesigned the core trading interface, improving clarity around
-          swaps, asset selection and real time pricing.</li>
-          <li>Co-designed one click trading and streamlined liquidity pool
-          flows to cut steps out of execution.</li>
-          <li>Built financial charts and market visualisations for faster,
-          more confident reading of a market.</li>
-          <li>Partnered with engineering on QA and UI refinement ahead of
-          release.</li>
-        </ul>
+        <h3 class="cv-who">Osmosis DEX<span class="cv-when">(2024 &ndash; 25)</span></h3>
+        <p class="cv-what">Product Designer &amp; UX Researcher</p>
       </li>
       <li class="cv-row">
-        <p class="cv-when">Jul 2020 &ndash; Apr 2021</p>
-        <h3 class="cv-who">Brainfood</h3>
-        <p class="cv-what">Product Designer &amp; UI/UX Researcher</p>
-        <ul class="cv-notes">
-          <li>Designed and prototyped an education platform built around
-          short form, structured learning.</li>
-          <li>Built the interfaces and interaction flows behind lesson
-          progression, content discovery and repeat engagement.</li>
-          <li>Worked concept through delivery on several projects at once,
-          holding the experience consistent across them.</li>
-        </ul>
+        <h3 class="cv-who">Brainfood<span class="cv-when">(2020 &ndash; 21)</span></h3>
+        <p class="cv-what">Product Designer &amp; UX Researcher</p>
       </li>
     </ol>
   </section>
@@ -1254,46 +1170,23 @@ html.cursored,html.cursored *{cursor:none !important}
        against the scroll, which is the whole parallax: the card edge is
        fixed to the page and the picture is not, so the two disagree by a few
        percent and the card reads as a window rather than a panel. -->
+  <!-- ---------- case studies ----------
+       Four pictures, near full width, stacked. No titles: in the reference
+       the work carries its own name inside the image, and a caption beside
+       it would be the site talking over the thing it is showing. -->
   <section class="cases" id="cases">
-    <div class="cv-head"><span class="lede-tag">( selected work )</span></div>
-    <a class="case" href="#" data-case="polaris">
-      <div class="case-shot"><div class="case-img" data-tint="1"></div></div>
-      <div class="case-meta">
-        <h3 class="case-title">Polaris</h3>
-        <p class="case-sub">Osmosis Labs &middot; 2024</p>
-        <p class="case-line">A news and discovery surface for traders, built
-        so sentiment, movement and trending assets read in one glance.</p>
-      </div>
+    <a class="case" href="#" data-cursor="view" aria-label="Polaris">
+      <div class="case-img" data-tint="1"></div>
     </a>
-    <a class="case" href="#" data-case="dex">
-      <div class="case-shot"><div class="case-img" data-tint="2"></div></div>
-      <div class="case-meta">
-        <h3 class="case-title">Osmosis DEX</h3>
-        <p class="case-sub">Osmosis Labs &middot; 2024</p>
-        <p class="case-line">The core trading interface of a decentralised
-        exchange with two million users, rebuilt for clarity under pressure.</p>
-      </div>
+    <a class="case" href="#" data-cursor="view" aria-label="Osmosis DEX">
+      <div class="case-img" data-tint="2"></div>
     </a>
-    <a class="case" href="#" data-case="portfolio">
-      <div class="case-shot"><div class="case-img" data-tint="3"></div></div>
-      <div class="case-meta">
-        <h3 class="case-title">Portfolio &amp; wallet</h3>
-        <p class="case-sub">Osmosis Labs &middot; 2025</p>
-        <p class="case-line">Holdings, transaction history and a privacy mode,
-        for people who check a number more often than they trade.</p>
-      </div>
+    <a class="case" href="#" data-cursor="view" aria-label="Portfolio and wallet">
+      <div class="case-img" data-tint="3"></div>
     </a>
-    <a class="case" href="#" data-case="brainfood">
-      <div class="case-shot"><div class="case-img" data-tint="4"></div></div>
-      <div class="case-meta">
-        <h3 class="case-title">Brainfood</h3>
-        <p class="case-sub">Brainfood &middot; 2020</p>
-        <p class="case-line">Short form structured learning, designed around
-        finishing a lesson rather than starting one.</p>
-      </div>
+    <a class="case" href="#" data-cursor="view" aria-label="Brainfood">
+      <div class="case-img" data-tint="4"></div>
     </a>
-    <p class="cases-note">Placeholder imagery. Send me the shots and I will
-    set them.</p>
   </section>
 
   <!-- ---------- contact ----------
@@ -1311,7 +1204,12 @@ html.cursored,html.cursored *{cursor:none !important}
 
 </main>
 
-<div class="cur" id="cur" aria-hidden="true"><span></span></div>
+<div class="cur" id="cur" aria-hidden="true">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5.2 3.1a1 1 0 0 1 1.4-.4l12.1 7.4a1 1 0 0 1-.2 1.8l-5 1.5a1 1 0 0 0-.6.5l-2.3 4.8a1 1 0 0 1-1.8-.1z"/>
+  </svg>
+  <span class="cur-tag"></span>
+</div>
 
 <div class="prop-sheet" id="propSheet" hidden>
   <div class="ps-card" role="dialog" aria-modal="true" aria-labelledby="psTitle">
@@ -2360,7 +2258,7 @@ html.cursored,html.cursored *{cursor:none !important}
   const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
   if (cur && fine && !reduced){
     document.documentElement.classList.add('cursored');
-    const label = cur.querySelector('span');
+    const label = cur.querySelector('.cur-tag');
     /* Lerped toward the pointer rather than pinned to it. A dot that tracks
        exactly is a cursor with a costume on; the lag is the whole character
        of the thing. */
@@ -2380,9 +2278,8 @@ html.cursored,html.cursored *{cursor:none !important}
          list of selectors on the element itself, because every one of these
          has children and the pointer is usually over one of them. */
       const hit = e.target.closest('[data-cursor],a,button');
-      const word = hit && (hit.dataset.cursor || (hit.matches('.case') ? 'view' : ''));
+      const word = (hit && hit.dataset.cursor) || '';
       cur.classList.toggle('big', !!word);
-      cur.classList.toggle('tap', !!hit && !word);
       if (word && label.textContent !== word) label.textContent = word;
     }, { passive: true });
     addEventListener('pointerdown', () => cur.classList.add('tap'));
@@ -2436,23 +2333,15 @@ html.cursored,html.cursored *{cursor:none !important}
      way of the sections either side of it. */
   const montage = document.getElementById('reel');
   const frame = document.getElementById('montageFrame');
+  /* Grow while the section travels up to its pin, then hold. The stage is
+     sticky, so once it is pinned the section carries it and there is nothing
+     left to drive: no fade, no toggle, no exit to write. It scrolls off the
+     way the rest of the page does. */
   function growMontage(){
     if (!montage || !frame || !innerHeight) return;
     const r = montage.getBoundingClientRect();
-    /* Over 1.25 screens rather than one. The first pixel of scroll is still
-       the first pixel of growth, but it takes the whole of the About screen
-       to reach full frame, which is the point: it grows over that section
-       while the section is still leaving. */
-    const t = Math.min(1, Math.max(0, (innerHeight - r.top) / (innerHeight * 1.25)));
+    const t = Math.min(1, Math.max(0, (innerHeight - r.top) / (innerHeight * 1.15)));
     frame.style.setProperty('--grow', t.toFixed(4));
-    /* And an exit. It used to be switched off the moment its section passed a
-       threshold, which at full frame meant a whole screen of picture
-       vanishing between one scroll event and the next. It now fades over the
-       last 45% of a screen on the way out, so the montage hands over to
-       whatever is under it instead of being deleted. */
-    const out = Math.min(1, Math.max(0, (r.bottom - innerHeight * 0.1) / (innerHeight * 0.45)));
-    frame.style.setProperty('--fade', out.toFixed(3));
-    montage.classList.toggle('live', t > 0 && out > 0.01);
   }
   addEventListener('scroll', growMontage, { passive: true });
   addEventListener('resize', growMontage);
