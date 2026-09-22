@@ -73,6 +73,7 @@ section's goodbye can be done properly whenever the rigging route is taken.
   the geometry of the curl is what he is unhappy with.
 - **Real social URLs.** Every link in the hero is still `href="#"`.
 - **"Cool Sh\*t" or "My work".** Floated, never decided. Copy comes last.
-- **Case study content.** Four cards are built with placeholder gradients and
-  a sheet that says so. They need shots and the actual stories.
+- **Case study content.** Four image blocks with placeholder gradients. They
+  need the real shots. There is deliberately no title or caption on them: in
+  the reference the work carries its own name inside the picture.
 - **The montage** is a grey placeholder. It needs the real reel.

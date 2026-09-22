@@ -2450,3 +2450,44 @@ hidden only once ours is confirmed running.
    back to the hero, so nothing they measured was on screen. The behaviour was
    correct the whole time. Worth the reminder: when a batch of assertions fail
    together, suspect the harness before the feature.
+
+## Undoing a round that went the wrong way
+
+The previous pass introduced a coral accent, a three-size About paragraph, a
+full CV with bullets, four captioned case cards and an orange dot for a
+cursor. Kemal had sent two screenshots; almost none of that was in them. Worth
+recording what the reference actually showed, because the failure was reading
+it carelessly, not building it badly:
+
+- **Black type on the page colour.** No accent anywhere. The only difference
+  between a row being read and one that is not is how dark it is. `--primary`
+  is now `var(--ink)`; the token stays so the idea survives, but nothing on
+  this site is saturated.
+- **One paragraph, one size**, with a small bracketed label sitting inline at
+  its head. The earlier version set the opening line huge and the rest small,
+  which turns a single thought into a headline with footnotes stapled under
+  it. The measure is set on the type in its own ems, about thirty of them,
+  not as a character count on the wrapper: a `ch` cap produced a column two
+  words across and eleven lines deep.
+- **Company, years, role. Nothing else.** The reference is a run of names down
+  the middle of the page with dates as superscripts. The bullets Kemal sent
+  are CV material and this is not a CV; the list exists so the shape of four
+  years reads in about four seconds.
+- **The picture is the whole card.** No title beside it. In the reference the
+  work carries its own name inside the image, and a caption next to it is the
+  site talking over the thing it is showing.
+
+**The montage is sticky again.** It was fixed to the viewport, which made it
+arrive early but also made it a thing floating over the whole page that had to
+be switched off at one end and faded out at the other. Sticky pins it while
+its section passes and releases at the section's bottom edge, so it leaves the
+way everything else does: scrolled off. The late arrival that forced the move
+to fixed is gone, because the montage now has a full About block and the
+experience list in front of it instead of starting one screen down. Measured:
+stage top pinned at 0 through the section, negative once past it.
+
+**The cursor is a pointer.** A filled dot following the mouse is not a cursor,
+it is a bullet; the arrow silhouette with its corners taken off is what makes
+it read as one. Ink fill, page-colour stroke so it survives a dark image
+under it, a drop shadow for the same reason, and a label pill that rides
+beside it the way a name tag does on a shared canvas.
