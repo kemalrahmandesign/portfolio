@@ -65,11 +65,20 @@
 }
 
 *{box-sizing:border-box}
-/* Reserve the scrollbar's width at all times. Without this the gutter appears
-   the moment the page becomes scrollable, the viewport narrows by ~15px, and
-   every centred thing on the page jumps left. On the hero that read as a
-   horizontal slide during the overscroll pull. */
-html{scrollbar-gutter:stable}
+/* The scrollbar gutter is reserved only once the page is actually
+   scrollable, which is from the moment the monitor takes over.
+
+   Reserving it always did stop the layout jumping when the scrollbar
+   arrived, but it charged the hero 15px it never uses: the hero is exactly
+   one screen tall and never scrolls, so the reserved strip showed as a bar
+   of page colour down the right and the video was cover-cropped into 1425px
+   instead of the full window. The jump it was there to prevent happens at
+   the reveal, which is the one moment of the whole sequence that is behind a
+   full-screen cover. */
+html.scrolls{scrollbar-gutter:stable}
+/* Belt and braces: while the hero is up there is nothing to scroll, so no
+   scrollbar can appear to shove anything sideways. */
+html:not(.scrolls) body{overflow:hidden}
 html,body{height:100%}
 body{
   margin:0;background:var(--bg);color:var(--ink);
@@ -208,7 +217,7 @@ body{
      the whole difference and put it on his head again, the menu was made
      smaller and the masthead was trimmed by the same amount it moved down,
      so its bottom edge lands within ~20px of where it did. */
-  padding:clamp(52px,6.8vh,80px) var(--pad) var(--pad);
+  padding:clamp(64px,9vh,110px) var(--pad) var(--pad);
   /* auto auto 1fr, not auto 1fr: with two children the second would take the
      1fr row and stretch to the bottom of the viewport. Harmless to look at,
      since its contents sit at the top of that box, but it makes every
@@ -529,8 +538,25 @@ h1{
 }
 .prop-curls path.on{stroke-dashoffset:0}
 
-/* Calibration only: the hotspots are invisible by design, and you cannot
-   drag what you cannot see. */
+/* Calibration only. */
+.calib{
+  position:fixed;z-index:120;right:16px;bottom:16px;width:min(560px,calc(100% - 32px));
+  background:#fff;border-radius:16px;padding:16px;box-shadow:var(--lift);
+  font-size:13px;line-height:1.5;
+}
+.calib p{margin:0 0 10px}
+.calib textarea{
+  width:100%;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;
+  border:1px solid rgba(10,10,10,.14);border-radius:10px;padding:10px;resize:vertical;
+}
+.calib button{
+  margin-top:10px;appearance:none;border:0;cursor:pointer;font:inherit;font-weight:600;
+  height:34px;padding:0 16px;border-radius:50px;background:var(--ink);color:#fff;
+}
+.calib-ok{margin-left:10px;color:rgba(10,10,10,.5)}
+
+/* The hotspots are invisible by design, and you cannot drag what you cannot
+   see. */
 .props.calibrating .prop-hit{outline:1px dashed rgba(10,10,10,.45);border-radius:0}
 .props.calibrating .prop-tag{outline:1px dashed rgba(10,10,10,.25)}
 
@@ -962,14 +988,12 @@ h1{
   <div class="tn-side tn-left">
     <a href="#reel" data-go="reel">work</a>
     <a href="#about" data-go="about">about</a>
-    <a href="#top" data-go="hero">the studio</a>
   </div>
-  <button class="tn-face" id="tnFace" type="button" aria-expanded="false" aria-label="Menu">
+  <button class="tn-face" id="tnFace" type="button" aria-expanded="false" aria-label="Back to the studio">
     <img alt="" src="" id="tnFaceImg">
   </button>
   <div class="tn-side tn-right">
     <a href="#experience" data-go="experience">experience</a>
-    <a href="#cases" data-go="cases">case studies</a>
     <a href="#contact" data-go="contact">contact</a>
   </div>
 </nav>
@@ -1091,20 +1115,6 @@ h1{
         <li><span class="cv-yr">2022&ndash;23</span><span class="cv-ro">Designer</span><span class="cv-co">Placeholder Co.</span></li>
       </ol>
       <p class="cv-note">Draft. Send me the real roles and dates and I will set them.</p>
-    </div>
-    <div></div>
-  </section>
-
-  <section class="panel roster" id="cases">
-    <div></div>
-    <div class="panel-body">
-      <h2 class="sec-head">Case studies</h2>
-      <ol class="cv">
-        <li><span class="cv-yr">01</span><span class="cv-ro">Case study one</span><span class="cv-co">Coming</span></li>
-        <li><span class="cv-yr">02</span><span class="cv-ro">Case study two</span><span class="cv-co">Coming</span></li>
-        <li><span class="cv-yr">03</span><span class="cv-ro">Case study three</span><span class="cv-co">Coming</span></li>
-      </ol>
-      <p class="cv-note">Draft. Point me at the write-ups and I will build these out.</p>
     </div>
     <div></div>
   </section>
@@ -1329,7 +1339,9 @@ h1{
     el.src = src(clip.src);
     atTime(el, clip.head, () => {
       const p = el.play(); if (p && p.catch) p.catch(() => {});
-      show(el, fade);
+      /* One more painted frame after play() starts, because the seek's frame
+         and the first playing frame are not always the same one. */
+      painted(el, () => show(el, fade));
     });
   }
 
@@ -1341,6 +1353,29 @@ h1{
      the outgoing copy plays its tail while the incoming one restarts beneath
      it. Nothing is re-encoded and the full 10s is kept. */
   // Run cb once v is parked at time t with that frame decoded.
+  /* `seeked` says the decoder has moved, not that the element has painted
+     the frame it moved to. Raising a layer on `seeked` therefore raises a
+     surface that is still showing whatever it had before, or nothing at all,
+     and for a frame or two the page shows through: that is the flash between
+     clips. requestVideoFrameCallback fires when a frame has actually been
+     presented, which is the guarantee that was wanted all along.
+
+     Firefox has no rVFC, so there it falls back to one animation frame after
+     the seek, which is not a guarantee but is better than none. */
+  /* Only ever call this on a video that is PLAYING.
+
+     requestVideoFrameCallback fires when a frame has been presented, and a
+     paused video presents nothing: waiting on it before play() froze the
+     whole intro on its first frame, forever, with readyState 4 and
+     currentTime 0. The guard is the timeout, because a browser that never
+     presents is a browser that must not be waited on. */
+  function painted(v, cb){
+    let done = false;
+    const go = () => { if (!done){ done = true; cb(); } };
+    if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(go);
+    else requestAnimationFrame(go);
+    setTimeout(go, 200);
+  }
   function atTime(v, t, cb){
     if (v.readyState < 2) { v.addEventListener('canplay', () => atTime(v, t, cb), {once:true}); return; }
     if (Math.abs(v.currentTime - t) < 0.02) { cb(); return; }
@@ -1479,6 +1514,7 @@ h1{
     topnav.classList.remove('away');
     requestAnimationFrame(() => requestAnimationFrame(() => work.classList.add('in')));
     document.body.style.overflow = '';
+    document.documentElement.classList.add('scrolls');
     heroShell.style.display = 'none';
     cover.classList.remove('take');
     cover.classList.add('clear');
@@ -1764,8 +1800,18 @@ h1{
       let vx = ex - sx, vy = ey - sy;
       const L = Math.hypot(vx, vy) || 1;
       const aimx = vx / L, aimy = vy / L;
-      // land on the object's edge rather than its centre
-      const stop = Math.min(Math.max(h, w) * 0.42, L * 0.55);
+      /* How far short of the object's centre to stop: its own radius in the
+         direction the line arrives from, which for an ellipse is exact.
+
+         max(w, h) was wrong in both directions. The board is 15% of the
+         frame wide and 8% tall, so approached from the side it reserved 100px
+         and ate the entire arrow, leaving a stub; that is why the board and
+         the ball looked like they had no line at all. Capping it against the
+         run's own length stops a short run being consumed by its own
+         endpoint. */
+      const ra = Math.max(1, w / 2), rb = Math.max(1, h / 2);
+      const rdir = 1 / Math.hypot(aimx / ra, aimy / rb);
+      const stop = Math.min(rdir, L * 0.30);
       const tx = ex - aimx * stop, ty = ey - aimy * stop;
       vx = tx - sx; vy = ty - sy;
       const nx = -aimy, ny = aimx;                      // unit normal
@@ -1784,7 +1830,10 @@ h1{
       /* By construction the tangent at the end is the aim vector, so the
          head is built straight off it. */
       const ux = aimx, uy = aimy;
-      const head = Math.max(9, size * 0.50);
+      /* The loop and the head shrink on a short run rather than crowding out
+         the curve they are supposed to decorate. */
+      const trim = Math.min(1, L / 200);
+      const head = Math.max(8, size * 0.50 * trim);
       const A = 0.46;                    // half the head's spread, radians
       const cosA = Math.cos(A), sinA = Math.sin(A);
       // rotate the reversed tangent by +/-A to get the two barbs
@@ -1796,7 +1845,7 @@ h1{
          off the end. It sits a little before the tip, so the stroke reads
          swoop, curl, arrive: which is how the reference draws it, and is
          also what a hand does when it doubles back before pointing. */
-      const lr = Math.max(6, size * 0.30);
+      const lr = Math.max(8, size * 0.72 * trim);
       /* Far enough back that the loop and the head read as two marks rather
          than as one knot: two radii of loop plus a head and a bit. */
       const back = lr * 2 + head * 1.5;
@@ -1804,12 +1853,25 @@ h1{
       // the main curve now finishes at the loop rather than at the tip
       const k1x = sx + vx * .34 + nx * b, k1y = sy + vy * .34 + ny * b;
       const k2x = lx - aimx * L * .22,    k2y = ly - aimy * L * .22;
+      /* The loop has to CROSS itself. An arc that returns near where it
+         started reads as a bead threaded on the line, which is what the last
+         two attempts drew; the reference is a hand doubling back over its
+         own stroke, and the crossing is the whole character of it.
+
+         So it is written as two cubics in the line's own frame: `a` runs
+         along the direction of travel, `o` runs across it. The first swings
+         forward and up and over, the second comes back down and behind the
+         entry point, and the straight run to the tip then passes through the
+         first one. That intersection is the cross. */
+      const sg = b >= 0 ? 1 : -1;
+      const P = (a, o) => `${(lx + aimx * a * lr + nx * o * lr * sg).toFixed(1)},` +
+                          `${(ly + aimy * a * lr + ny * o * lr * sg).toFixed(1)}`;
       path.setAttribute('d',
         `M${sx.toFixed(1)},${sy.toFixed(1)} ` +
         `C${k1x.toFixed(1)},${k1y.toFixed(1)} ${k2x.toFixed(1)},${k2y.toFixed(1)} ` +
         `${lx.toFixed(1)},${ly.toFixed(1)} ` +
-        `a${lr.toFixed(1)},${lr.toFixed(1)} 0 1 ${b >= 0 ? 1 : 0} ` +
-        `${(aimx * lr * 0.5).toFixed(1)},${(aimy * lr * 0.5).toFixed(1)} ` +
+        `C${P(1.2, 0)} ${P(1.9, 1.1)} ${P(1.0, 1.7)} ` +
+        `C${P(0.1, 2.3)} ${P(-0.9, 1.2)} ${P(-0.2, 0.3)} ` +
         `L${tx.toFixed(1)},${ty.toFixed(1)} ` +
         `M${b1x.toFixed(1)},${b1y.toFixed(1)} L${tx.toFixed(1)},${ty.toFixed(1)} ` +
         `L${b2x.toFixed(1)},${b2y.toFixed(1)}`);
@@ -1893,14 +1955,37 @@ h1{
       placeProps(); dump();
     }, { passive: false }));
 
+    /* On screen, not in the console. Reading five pairs of numbers out of a
+       devtools panel is the part nobody wants to do; this puts the table
+       where the dragging is and gives it a copy button. */
+    const panel = document.createElement('div');
+    panel.className = 'calib';
+    panel.innerHTML =
+      '<p><b>Drag</b> the dashed boxes to move an object, ' +
+      'and the writing to move a label.<br>' +
+      '<b>Scroll</b> over a dashed box to make it taller, ' +
+      '<b>shift-scroll</b> to make it wider.<br>' +
+      'Then press Copy and send me the text.</p>' +
+      '<textarea readonly rows="7" spellcheck="false"></textarea>' +
+      '<button type="button">Copy</button><span class="calib-ok"></span>';
+    document.body.appendChild(panel);
+    const box = panel.querySelector('textarea');
+    const btn = panel.querySelector('button');
+    const okk = panel.querySelector('.calib-ok');
+    btn.addEventListener('click', async () => {
+      box.select();
+      try { await navigator.clipboard.writeText(box.value); }
+      catch { document.execCommand('copy'); }
+      okk.textContent = 'copied';
+      setTimeout(() => { okk.textContent = ''; }, 1400);
+    });
+
     function dump(){
-      const rows = PROPS.map(d =>
+      box.value = PROPS.map(d =>
         `    { k:'${d.k}',${' '.repeat(Math.max(0, 6 - d.k.length))} ` +
         `label:'${d.label}',${' '.repeat(Math.max(0, 16 - d.label.length))} ` +
         `hit:[${d.hit.join(', ')}], tag:[${d.tag[0]}, ${d.tag[1]}], ` +
         `tilt:${d.tilt}, bow:${d.bow} },`).join('\n');
-      console.clear();
-      console.log('Drag the objects and the writing. Paste this back into PROPS:\n\n' + rows);
     }
     dump();
   }
@@ -1988,7 +2073,14 @@ h1{
     topnav.addEventListener('focusout', e => {
       if (!topnav.contains(e.relatedTarget)) setNav(false);
     });
-    face.addEventListener('click', () => setNav(!navOpen));
+    /* His head is the way home. On a pointer the menu is already open from
+       the hover, so a click can only mean the one thing; on a touch screen
+       there is no hover, so the first tap opens the menu and the second one
+       goes home, which keeps both reachable from a finger. */
+    face.addEventListener('click', e => {
+      if (!navOpen && e.pointerType === 'touch'){ setNav(true); return; }
+      goTo('hero');
+    });
     addEventListener('keydown', e => { if (e.key === 'Escape' && navOpen) setNav(false); });
   }
 
@@ -2009,6 +2101,7 @@ h1{
     setTimeout(() => {
       work.hidden = true;
       work.classList.remove('in');
+      document.documentElement.classList.remove('scrolls');
       heroShell.style.display = '';
       hero.classList.remove('is-leaving', 'armed');
       heroSlide.style.transform = '';

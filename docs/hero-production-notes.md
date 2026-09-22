@@ -2226,3 +2226,57 @@ crop reached 98% down the frame when the tagline's position puts it at about
 **The overscroll holds for 850ms before it springs**, from 140ms. It used to
 start returning almost the moment the wheel stopped, which left no time to read
 the line that is the entire reason for pulling.
+
+## The round where the intro froze
+
+**The hero was 15px narrower than the window, and that was the gutter.**
+`scrollbar-gutter:stable` was reserving a scrollbar's width at all times to stop
+the layout jumping when the page became scrollable. The hero is exactly one
+screen tall and never scrolls, so on the hero that reservation was a strip of
+page colour down the right edge and a video cover-cropped into 1425px instead of
+1440. The gutter is now added only when the page is actually scrollable, which
+is from the reveal onward, and the jump it was there to prevent happens behind a
+full-screen cover. Measured 0px of gutter on the hero.
+
+**Waiting for a painted frame froze the entire intro.** The flash between clips
+is real and the diagnosis was right: `seeked` says the decoder has moved, not
+that the element has presented the frame it moved to, so raising a layer on
+`seeked` raises a surface that has not painted yet. The fix was
+`requestVideoFrameCallback`, and putting it inside `atTime` was the mistake.
+`atTime` runs BEFORE `play()`, and a paused video never presents a frame, so the
+callback never fired: readyState 4, currentTime 0.00, opacity 0, forever. Every
+clip sat on its first frame and the call to action banked a press that would
+never be released.
+
+It belongs after `play()`, which is where it now is, with a 200ms timeout behind
+it, because a browser that never presents is a browser that must not be waited
+on. The symptom was a blank hero, which looks nothing like "the crossfade is
+slightly early" — worth remembering that a fix for a one-frame artefact can
+take the whole thing down.
+
+**The board and the ball had no arrows because their own hotspots ate them.**
+The line stops short of the object by its radius, and that radius was
+`max(w, h)`. The board is 15% of the frame wide and 8% tall, so approached from
+the side it reserved 100px of a 206px run and left a stub. It is now the
+ellipse's radius in the direction the line actually arrives from, which is exact,
+capped at 30% of the run's length so a short run cannot be consumed by its own
+endpoint. The loop and the head also scale down on a short run rather than
+crowding out the curve they decorate.
+
+**Three goes at a loop that crosses.** An arc back to near its start reads as a
+bead threaded on the line. An arc exiting slightly behind its start reads the
+same, only messier. What the reference actually draws is a hand doubling back
+over its own stroke, so it is now two cubics written in the line's own frame:
+forward and up and over, then back down behind the entry point, and the straight
+run to the tip passes through the first one. It also has to be about the height
+of the writing; at a third of that it reads as a dot whatever its geometry.
+
+**His head is the way home** and "the studio" and "case studies" are gone, which
+leaves four items, two a side. On a pointer the menu is already open from the
+hover so a click on the face can only mean one thing; on a touch screen the
+first tap opens the menu and the second goes home, so both stay reachable.
+
+**Calibration moved out of the console.** `?props` now draws a panel with the
+`PROPS` table in a textarea and a copy button, because the instructions for the
+console version were "open devtools and read five pairs of numbers", which is
+not an instruction anyone should be given.
