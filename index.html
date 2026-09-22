@@ -320,11 +320,14 @@ h1{
      padding or the clamp changes. */
   rx:var(--ring-r,1.27em);
   ry:var(--ring-r,1.27em);
-  /* Longer dashes than gaps, and fewer of them: measured off the reference
-     at roughly 23 periods around the perimeter with the ink about 60% of
-     each period. With pathLength="100" that is a 4.4 unit period whatever
-     the button's real size, so the density holds at every breakpoint. */
-  stroke-dasharray:2.6 1.8;
+  /* Longer dashes than gaps, measured off the reference at about 60% ink.
+
+     The period has to DIVIDE 100 exactly. At 4.4 units the pattern did not
+     close: 22.7 periods fitted around the outline and the remainder showed
+     up as a stutter at the top left corner, which is where an SVG rect
+     starts and ends its path. At 4.0 there are exactly 25 periods and the
+     seam has nowhere to be. */
+  stroke-dasharray:2.5 1.5;
   /* In em so the outline keeps its weight relative to the pill as the
      font-size clamp moves: 2px was a hairline once the button grew. */
   stroke-width:.115em;
@@ -334,7 +337,7 @@ h1{
    dashoffset advances the dashes along that direction. One period is 4 units,
    so shifting by exactly -4 per cycle makes the loop seamless; a full lap
    takes 50s, which is the slow drift asked for rather than a chase. */
-@keyframes ants{ to{stroke-dashoffset:-4.4} }
+@keyframes ants{ to{stroke-dashoffset:-4} }
 
 .is-in .cta{opacity:1;transform:translateY(0)}
 
@@ -399,13 +402,24 @@ h1{
    top. They live in .hero, not .overlay, for the same reason the pill does:
    they are positioned against the frame the video fills. */
 .social{
+  /* Parked in a corner rather than floating at a measured inset. Halfway
+     down the left edge they read as objects that had been placed there,
+     which invites the question of why there; in the corner they read as
+     what they are, which is chrome. */
+  /* Bottom centre, not a corner.
+
+     Both bottom corners are taken: the board sits at 17% of the frame and
+     the ball at 91%, so a corner puts the trinkets under a hotspot and
+     leaves an arrow pointing straight at them. The middle of the floor is
+     the one part of the bottom edge with nothing in it, and standing them
+     on it reads as more objects in the studio rather than as a widget. */
   position:absolute;z-index:3;
-  left:clamp(16px,4.5vw,92px);top:clamp(90px,17vh,190px);
-  display:flex;flex-direction:column;gap:clamp(8px,1.4vh,20px);
+  left:50%;transform:translateX(-50%);bottom:var(--pad);
+  display:flex;gap:clamp(10px,1.2vw,20px);align-items:flex-end;
   pointer-events:none;
 }
 .social a{
-  pointer-events:auto;display:block;width:clamp(42px,4.4vw,78px);aspect-ratio:1;
+  pointer-events:auto;display:block;width:clamp(30px,2.9vw,50px);aspect-ratio:1;
   opacity:0;transform:translateY(12px);
   transition:opacity .6s ease,transform .6s cubic-bezier(.16,1,.3,1);
 }
@@ -442,7 +456,7 @@ h1{
    one. The keyframes start and end level so `both` can hold the last frame
    without leaving the trinket stuck at a tilt. */
 .social a:hover img,.social a:focus-visible img{
-  animation:shake .5s cubic-bezier(.36,.07,.19,.97) 2 both;
+  animation:shake .46s cubic-bezier(.36,.07,.19,.97) 1 both;
 }
 @keyframes shake{
   0%  {transform:translate(  0,-6px) rotate(   0) scale(1.1)}
@@ -493,7 +507,7 @@ h1{
 .prop-ink{
   display:block;
   clip-path:inset(0 100% -18% 0);
-  transition:clip-path .62s cubic-bezier(.5,.05,.55,.95);
+  transition:clip-path .38s cubic-bezier(.45,.05,.5,.95);
 }
 .prop-tag.on .prop-ink{clip-path:inset(0 -8% -18% 0)}
 
@@ -511,7 +525,7 @@ h1{
 }
 .prop-curls path{
   stroke-dasharray:var(--len,200);stroke-dashoffset:var(--len,200);
-  transition:stroke-dashoffset .5s cubic-bezier(.4,0,.5,1) .24s;
+  transition:stroke-dashoffset .4s cubic-bezier(.4,0,.5,1) .13s;
 }
 .prop-curls path.on{stroke-dashoffset:0}
 
@@ -606,7 +620,9 @@ h1{
    direction back so the words themselves read normally. */
 .topnav{
   position:fixed;z-index:70;top:clamp(7px,1vh,14px);left:50%;
-  transform:translateX(-50%);
+  /* --off is half the difference between the two sides, so the face lands on
+     the centre of the screen whatever the menu is doing. */
+  transform:translateX(calc(-50% + var(--off,0px)));
   display:flex;align-items:center;
   background:#fff;border-radius:50px;padding:4px;
   box-shadow:var(--lift);
@@ -614,7 +630,7 @@ h1{
 }
 /* Out of the way for the one stretch that is a camera move rather than a
    page: it comes back when the monitor does. */
-.topnav.away{opacity:0;transform:translateX(-50%) translateY(-14px);pointer-events:none}
+.topnav.away{opacity:0;transform:translateX(calc(-50% + var(--off,0px))) translateY(-14px);pointer-events:none}
 
 .tn-face{
   appearance:none;border:0;padding:0;margin:0;cursor:pointer;flex:none;
@@ -635,8 +651,10 @@ h1{
 
 .tn-side{
   display:flex;align-items:center;gap:4px;overflow:hidden;flex:none;
-  /* width, not max-width. max-width only caps, so the shorter side stayed
-     short and the face sat 39px off the centre of the screen. */
+  /* Each side opens to its own content's width. Forcing both to the wider
+     one did centre the face, but it left the slack as a visible empty strip
+     inside the pill on the left. The face is centred by offsetting the whole
+     menu instead, which moves the gap out of the pill altogether. */
   width:0;
   transition:width .52s cubic-bezier(.16,1,.3,1);
 }
@@ -648,7 +666,8 @@ h1{
    the one thing a centred menu cannot do. The shorter side simply carries
    the slack, and because the left group is rtl its slack falls on the
    outside where nothing is looking. */
-.topnav.open .tn-side{width:var(--side,0)}
+.topnav.open .tn-left {width:var(--left,0)}
+.topnav.open .tn-right{width:var(--right,0)}
 
 .tn-side a{
   display:inline-flex;align-items:center;height:36px;padding:0 21px;
@@ -659,8 +678,33 @@ h1{
 }
 .topnav.open .tn-side a{opacity:.62;transition-delay:.12s}
 .topnav.open .tn-side a:hover,
-.topnav.open .tn-side a:focus-visible{opacity:1;background:var(--bg)}
-.tn-side a[aria-current="page"]{opacity:1;background:var(--bg)}
+.topnav.open .tn-side a:focus-visible{opacity:1}
+
+/* Hover flips each letter over, one after the next from the left, the way a
+   split-flap board lands a word. A filled pill did the job of saying "this
+   one" and nothing else; this says it and is also the only moment of
+   mechanism in an otherwise still menu.
+
+   Two copies of every character, one stacked above the other inside a box
+   the height of one line. Sliding the pair down by exactly one line swaps
+   which one is showing, and because the box clips, the swap is the only
+   thing visible. */
+.tn-side a{overflow:hidden}
+.tk{display:inline-flex}
+.tk-c{
+  position:relative;display:inline-block;overflow:hidden;
+  height:1.05em;line-height:1.05em;white-space:pre;
+}
+.tk-c > span{
+  display:block;
+  transition:transform .34s cubic-bezier(.32,0,.18,1);
+  transition-delay:calc(var(--i) * 24ms);
+}
+.tk-c > .b{position:absolute;left:0;top:0;transform:translateY(-100%)}
+.tn-side a:hover .tk-c > .a,
+.tn-side a:focus-visible .tk-c > .a{transform:translateY(100%)}
+.tn-side a:hover .tk-c > .b,
+.tn-side a:focus-visible .tk-c > .b{transform:translateY(0)}
 
 /* --bar is the face menu's footprint: it floats over the top of every
    panel, so a panel that asked for a whole screen would push its own last
@@ -804,16 +848,22 @@ h1{
 .montage.live .montage-stage{visibility:visible}
 .montage-frame{
   --grow:0;
+  /* Width and height are both interpolated, and there is no aspect-ratio.
+
+     With `aspect-ratio:16/9` the frame could never fill the screen: at 100%
+     of a 1440x900 window that is 1440x810, which leaves 90px of page under
+     it at the moment it is supposed to have taken over. It opens at 16:9 and
+     ends at exactly the viewport, and the clip inside is cover-cropped, so
+     the shape change is never visible as a stretch. */
   width:calc(30% + 70% * var(--grow));
-  aspect-ratio:16/9;
-  max-height:calc(100svh * (0.42 + 0.58 * var(--grow)));
+  height:calc(16.875vw + (100svh - 16.875vw) * var(--grow));
   /* At --grow 0 the frame is entirely under the fold, not peeking over it.
      78% left a 155px strip sitting on the About copy before a single pixel
      had been scrolled, which is why it read as appearing rather than
      growing: there was nothing to watch it come from. 110% of its own
      height clears the bottom edge at every size it takes. */
   transform:translateY(calc((1 - var(--grow)) * 110%));
-  border-radius:calc(28px - 12px * var(--grow));
+  border-radius:calc(28px - 28px * var(--grow));
   background:#e4e3e0;overflow:hidden;
   display:grid;place-items:center;
   color:#8d8b87;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
@@ -1693,21 +1743,41 @@ h1{
       const sy = ay + size * 0.42;
       let vx = ex - sx, vy = ey - sy;
       const L = Math.hypot(vx, vy) || 1;
-      // stop short of the object so the loop sits beside it, not on it
-      const stop = Math.min(Math.max(h, w) * 0.42 + size * 0.5, L * 0.55);
+      // stop at the object's edge rather than its centre, so the head points
+      // at it instead of landing on top of it
+      const stop = Math.min(Math.max(h, w) * 0.40, L * 0.5);
       const tx = ex - vx / L * stop, ty = ey - vy / L * stop;
       vx = tx - sx; vy = ty - sy;
       const nx = -vy / L, ny = vx / L;                 // unit normal
       const b = (d.bow || .28) * L;
       const c1x = sx + vx * .30 + nx * b, c1y = sy + vy * .30 + ny * b;
       const c2x = sx + vx * .70 + nx * b * .72, c2y = sy + vy * .70 + ny * b * .72;
-      const r = Math.max(6, size * 0.34);
-      // a near-complete arc: same start and end, so it reads as a hand loop
+      /* An arrowhead, not a loop. The loop was a guess at "the little swivel
+         line with the circle"; the reference has a head pointing at the
+         object, and a dangling circle at the end of a curve reads as the
+         line having failed to arrive.
+
+         The head is aligned to the curve's own tangent at its end, which for
+         a cubic is the direction from its second control point to its end
+         point, so it always points where the line is going rather than
+         where the object happens to be. */
+      const tanx = tx - c2x, tany = ty - c2y;
+      const tl = Math.hypot(tanx, tany) || 1;
+      const ux = tanx / tl, uy = tany / tl;
+      const head = Math.max(7, size * 0.40);
+      const A = 0.46;                    // half the head's spread, radians
+      const cosA = Math.cos(A), sinA = Math.sin(A);
+      // rotate the reversed tangent by +/-A to get the two barbs
+      const b1x = tx + head * (-ux * cosA - -uy * sinA);
+      const b1y = ty + head * (-ux * sinA + -uy * cosA);
+      const b2x = tx + head * (-ux * cosA + -uy * sinA);
+      const b2y = ty + head * ( ux * sinA + -uy * cosA);
       path.setAttribute('d',
         `M${sx.toFixed(1)},${sy.toFixed(1)} ` +
         `C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ` +
         `${tx.toFixed(1)},${ty.toFixed(1)} ` +
-        `a${r.toFixed(1)},${r.toFixed(1)} 0 1 ${b >= 0 ? 1 : 0} ${(r * 0.3).toFixed(1)},${(-r * 0.22).toFixed(1)}`);
+        `M${b1x.toFixed(1)},${b1y.toFixed(1)} L${tx.toFixed(1)},${ty.toFixed(1)} ` +
+        `L${b2x.toFixed(1)},${b2y.toFixed(1)}`);
       const len = path.getTotalLength();
       if (len) path.style.setProperty('--len', Math.ceil(len * 1.02));
     });
@@ -1783,17 +1853,70 @@ h1{
     if (!topnav) return;
     const sides = [...topnav.querySelectorAll('.tn-side')];
     if (!sides.length) return;
+    const was = topnav.classList.contains('open');
+    const off = topnav.style.getPropertyValue('--off');
     sides.forEach(el => { el.style.transition = 'none'; el.style.width = 'auto'; });
-    const wide = Math.max(...sides.map(el => el.getBoundingClientRect().width));
+    topnav.style.transition = 'none';
+    topnav.style.setProperty('--off', '0px');
+    topnav.classList.add('open');
+
+    const w = sides.map(el => Math.ceil(el.getBoundingClientRect().width));
+    /* The offset is MEASURED off the open menu with the offset cleared, and
+       against the screen rather than against the menu's own box.
+
+       Deriving it from the two side widths left the face 7.5px out, and so
+       did measuring it against the menu's centre: neither accounts for
+       `left:50%` resolving against a containing block that is not the same
+       width as the window. Comparing the face's real position with the real
+       centre cannot be wrong about any of that. */
+    const f = face.getBoundingClientRect();
+    const d = (f.left + f.right) / 2 - document.documentElement.clientWidth / 2;
+
     sides.forEach(el => { el.style.width = ''; });
-    topnav.style.setProperty('--side', Math.ceil(wide) + 'px');
-    requestAnimationFrame(() => sides.forEach(el => { el.style.transition = ''; }));
+    topnav.classList.toggle('open', was);
+    topnav.style.setProperty('--left',  w[0] + 'px');
+    topnav.style.setProperty('--right', w[1] + 'px');
+    topnav.style.setProperty('--offopen', (-d).toFixed(1) + 'px');
+    topnav.style.setProperty('--off', was ? (-d).toFixed(1) + 'px' : (off || '0px'));
+    requestAnimationFrame(() => {
+      sides.forEach(el => { el.style.transition = ''; });
+      topnav.style.transition = '';
+    });
   }
+
+  /* Every character becomes two stacked copies so hover can flip them. Built
+     here rather than written into the markup, because six links at a dozen
+     characters each is 150 spans nobody should have to read. */
+  function splitTicker(a){
+    const text = a.textContent;
+    const wrap = document.createElement('span');
+    wrap.className = 'tk';
+    [...text].forEach((ch, i) => {
+      const cell = document.createElement('span');
+      cell.className = 'tk-c';
+      cell.style.setProperty('--i', i);
+      const top = document.createElement('span');
+      top.className = 'a'; top.textContent = ch;
+      const bot = document.createElement('span');
+      bot.className = 'b'; bot.textContent = ch;
+      bot.setAttribute('aria-hidden', 'true');
+      cell.append(top, bot);
+      wrap.appendChild(cell);
+    });
+    a.textContent = '';
+    a.setAttribute('aria-label', text);
+    a.appendChild(wrap);
+  }
+  if (topnav) topnav.querySelectorAll('.tn-side a').forEach(splitTicker);
 
   let navOpen = false;
   function setNav(open){
     navOpen = open;
     topnav.classList.toggle('open', open);
+    /* The offset only applies while the sides are out. Closed, the menu is
+       just the face and belongs dead centre. */
+    topnav.style.setProperty('--off',
+      open ? (getComputedStyle(topnav).getPropertyValue('--offopen') || '0px') : '0px');
     face.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
   if (topnav){

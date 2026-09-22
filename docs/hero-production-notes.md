@@ -2120,3 +2120,58 @@ sitting on the About copy before a single pixel had been scrolled. There was
 nothing to watch it come from. 110% clears the bottom edge at every size it
 takes, and the growth is mapped over 1.25 screens rather than one, so it opens
 across the whole of the About screen while that screen is still leaving.
+
+## The round after the labels landed
+
+**Arrowheads, not loops.** "The little swivel line with the circle" was read as
+a loop at the end of the stroke, and a dangling circle reads as the line having
+failed to arrive. The reference has a head pointing at the object. Each curl now
+ends in one, built from the curve's own tangent at its end point, which for a
+cubic is the direction from its second control point to its end: the head always
+points where the line is going rather than at wherever the object happens to be,
+so it stays right when a coordinate moves. The line also stops at the object's
+edge now rather than short of it, because there is no longer a loop that needed
+room to sit beside it.
+
+Writing sped up to 380ms with the line 130ms behind it, from 620/240.
+
+**The pill's stutter was arithmetic.** The dashes are normalised with
+`pathLength="100"`, and the period was 4.4 units: 22.7 of them fit around the
+outline, so the pattern did not close and the remainder showed as a stutter at
+the top-left corner, which is exactly where an SVG rect starts and ends its
+path. The period has to divide 100. At 2.5/1.5 there are 25 of them and the seam
+has nowhere to be.
+
+**The menu's empty strip, and three wrong ways to centre a face.** Forcing both
+sides to the wider one did centre the face, but left the slack as a visible gap
+inside the pill. Each side now opens to its own width and the whole menu is
+offset instead, which moves the gap outside the pill where there is nothing to
+see. Getting that offset right took three attempts:
+
+1. Half the difference between the side widths, wrong sign. 85px out.
+2. Half the difference, right sign. 7.5px out.
+3. Measured off the menu's own box. Still 7.5px out.
+4. Measured off the face's real position against the real screen centre. 0.1px.
+
+The 7.5px is `left:50%` resolving against a containing block that is not the
+width of the window. Nothing derived from the menu's own geometry can see that.
+Measuring the thing you actually care about, against the thing you actually want
+it to line up with, cannot be wrong about it.
+
+**Hover on a menu item is a split-flap now**, not a filled pill. Two copies of
+every character stacked inside a one-line box, slid down by exactly one line,
+staggered 24ms apart from the left. Built in script: six links at a dozen
+characters each is 150 spans nobody should have to read in the markup. The link
+keeps an `aria-label` so the text survives being cut into cells.
+
+**The montage could never have filled the screen** while it carried
+`aspect-ratio:16/9`: 100% of a 1440x900 window is 1440x810, which leaves 90px of
+page under it at the moment it is supposed to have taken over. Width and height
+are both interpolated now and the aspect ratio is gone; the clip inside is
+cover-cropped so the shape change never shows as a stretch. Measured 1425x900
+against a 1440x900 window, the 15px being the reserved scrollbar gutter.
+
+**The trinkets are on the floor at bottom centre.** Both bottom corners are
+taken: the board sits at 17% of the frame and the ball at 91%, so a corner put
+them under a hotspot with an arrow pointing straight at them. One shake on
+hover, not two, and about 40% smaller.
