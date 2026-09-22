@@ -2056,3 +2056,67 @@ not fix that, because `--grow` was never the part that was wrong. The stage is
 now `position:fixed` with a `live` class toggled from the section's rect, and
 the frame carries `translateY((1 - grow) * 78%)` so it climbs into view as it
 opens. 0.17 at 150px of scroll, full frame by 900px.
+
+## The props, and three bugs that all came from stacking
+
+**Every object in the studio is now a hotspot with a handwritten label.** Five
+of them: the bike, the skis, the guitar, the board and the ball. The labels are
+Kaushan Script and off by default, because five permanent captions would fight
+the character for a frame that is already busy.
+
+The writing is a wipe, not a fade: `clip-path:inset(0 100% 0 0)` opening left to
+right over 620ms on a nearly linear ease. A fade makes the whole word arrive at
+once, which reads as a caption; a wipe reads as a hand moving. The line draws
+itself 240ms behind it on `stroke-dashoffset`, and finishes in a small loop.
+
+**The lines are computed in pixels, not in a normalised box.** The first version
+drew each curl as a path in a 0..100 viewBox stretched to fit the gap between
+the label and the object, with `preserveAspectRatio="none"`. That scales the two
+axes independently, so every loop came out as an ellipse squashed by whatever
+the gap happened to be. They are now built from the measured endpoints: a cubic
+bowed off the straight line by a per-prop factor, ending in an arc of fixed
+radius. Round at every size.
+
+**The lines also had to leave their labels.** A label carries a translate and a
+rotate, so anything inside it is drawn in a tilted space. All five lines share
+one untransformed `svg` over the hero instead.
+
+**Coordinates are percentages of the source frame, not the window.** The clip is
+16:9 cover-cropped, so at 1440x900 it renders 1600 wide with 80px lost off each
+side. Anything positioned against the window slides off the object it is
+labelling the moment the window changes shape. `frameRect()` rebuilds the real
+rect and everything is written from it, then labels near the edges are clamped
+back inside the window, because the frame is wider than the window and the ball
+and the board sit at 90% and 17%.
+
+The numbers in `PROPS` are read off a reference screenshot and are close, not
+exact. **`?props` on the query string turns the frame into a ruler**: click
+anywhere and it logs the frame percentage under the pointer. That is how to fix
+a label that sits wrong without another round of guessing.
+
+**Three bugs, one cause, and it was stacking order every time.**
+
+1. `.prop-sheet` is `display:grid`, which beats the `hidden` attribute. The
+   popup was invisible and still swallowing every click on the page.
+2. `.props` at `z-index:3` put the guitar's hotspot over the call to action.
+   The hotspots are large because the objects are, so they will overlap
+   anything else in the frame; the layer belongs under the overlay at 1.
+3. A `const hw` inside `placeProps` collided with one already in scope, which
+   is a `SyntaxError` at parse time, so the entire script never ran. Nothing
+   on the page worked and the symptom was "no hotspots", which looks like a
+   hotspot bug. Worth remembering: when several unrelated things fail at once,
+   read the console before reading the feature.
+
+**The menu opens symmetrically because both sides are set to one width.**
+`max-width` only caps, so the shorter side stayed short and the face sat 39px
+off the centre of the screen every time it opened, which is the one thing a
+centred menu cannot do. Both sides now take an explicit `width` measured from
+whichever holds the most type, and the left group's `rtl` puts its slack on the
+outside where nothing is looking. Measured 0px difference.
+
+**The montage was still appearing rather than growing**, because at `--grow` 0
+the frame was translated down by 78% of its own height, which left a 155px strip
+sitting on the About copy before a single pixel had been scrolled. There was
+nothing to watch it come from. 110% clears the bottom edge at every size it
+takes, and the growth is mapped over 1.25 screens rather than one, so it opens
+across the whole of the About screen while that screen is still leaving.

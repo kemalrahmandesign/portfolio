@@ -6,7 +6,7 @@
 <title>Kemal Rahman</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&family=Kaushan+Script&display=swap" rel="stylesheet">
 <style>
 :root{
   /* Page tone, taken from the Figma reference. */
@@ -37,6 +37,7 @@
   /* Two faces, per the style reference: a tight grotesque for display, Inter
      for everything that is UI. The reference names TWK Lausanne and lists
      Inter Tight as its substitute, which is on Google Fonts. */
+  --font-hand:'Kaushan Script','Brush Script MT',cursive;
   --font-display:'Inter Tight',Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
 
   /* Four low-opacity layers spreading past 100px, from the style reference.
@@ -282,10 +283,14 @@ h1{
 .cta{
   position:relative;
   pointer-events:auto;appearance:none;cursor:pointer;
-  font:inherit;font-weight:700;font-size:clamp(15px,1.5vw,31px);
-  letter-spacing:-.01em;color:var(--ink);background:transparent;
+  /* Measured off the reference: the word fills about half the pill's height
+     and sits close to the ends, so the type is heavier and larger and the
+     padding is tighter than the first pass, which had the text at 42% of the
+     height and floating in the middle of a long capsule. */
+  font:inherit;font-weight:800;font-size:clamp(16px,1.7vw,35px);
+  letter-spacing:-.018em;color:var(--ink);background:transparent;
   border:0;border-radius:999px;
-  padding:.7em 1.5em;display:inline-flex;align-items:center;gap:.6em;
+  padding:.52em .62em .52em 1.05em;display:inline-flex;align-items:center;gap:.5em;
   opacity:0;transform:translateY(14px);
   transition:opacity .55s ease .45s,transform .55s cubic-bezier(.16,1,.3,1) .45s,
              color .18s ease;
@@ -315,20 +320,21 @@ h1{
      padding or the clamp changes. */
   rx:var(--ring-r,1.27em);
   ry:var(--ring-r,1.27em);
-  /* ~25 dashes around the pill, matching the reference's density. With
-     pathLength="100" a dash is 2% of the perimeter whatever the button's real
-     size, so the density holds at every breakpoint. */
-  stroke-dasharray:2 2;
+  /* Longer dashes than gaps, and fewer of them: measured off the reference
+     at roughly 23 periods around the perimeter with the ink about 60% of
+     each period. With pathLength="100" that is a 4.4 unit period whatever
+     the button's real size, so the density holds at every breakpoint. */
+  stroke-dasharray:2.6 1.8;
   /* In em so the outline keeps its weight relative to the pill as the
      font-size clamp moves: 2px was a hairline once the button grew. */
-  stroke-width:.13em;
+  stroke-width:.115em;
   animation:ants 2s linear infinite;
 }
 /* Clockwise: an SVG rect is drawn clockwise from its top-left, and a negative
    dashoffset advances the dashes along that direction. One period is 4 units,
    so shifting by exactly -4 per cycle makes the loop seamless; a full lap
    takes 50s, which is the slow drift asked for rather than a chase. */
-@keyframes ants{ to{stroke-dashoffset:-4} }
+@keyframes ants{ to{stroke-dashoffset:-4.4} }
 
 .is-in .cta{opacity:1;transform:translateY(0)}
 
@@ -343,8 +349,14 @@ h1{
 .cta:hover,.cta:focus-visible{color:var(--ink)}
 .cta:hover .ring rect,.cta:focus-visible .ring rect{stroke-width:.18em}
 .cta:focus-visible{outline:none}
-.cta .arw{transition:transform .18s ease}
-.cta:hover .arw{transform:translateX(4px)}
+.cta .arw{
+  flex:none;display:grid;place-items:center;
+  width:1.34em;height:1.34em;border-radius:50%;
+  background:var(--ink);color:#fff;
+  transition:transform .18s cubic-bezier(.16,1,.3,1);
+}
+.cta .arw svg{width:.66em;height:.66em;display:block}
+.cta:hover .arw{transform:translateX(3px)}
 
 /* ---------- clearing the plate for the take ----------
    The headline and the call to action have done their job by the time he
@@ -440,6 +452,72 @@ h1{
   100%{transform:translate(  0,-6px) rotate(   0) scale(1.1)}
 }
 .social a:focus-visible{outline:2px solid var(--ink);outline-offset:6px;border-radius:12px}
+
+/* ---------- the props ----------
+   Every object in the studio is a thing he does, so each one gets a hotspot,
+   a handwritten label and a line pointing at it. The labels are off by
+   default: the frame is already busy and five permanent captions would fight
+   the character for it.
+
+   Everything is positioned against the VIDEO, not the viewport. The clip is
+   cover-cropped, so at a tall window the frame is wider than the box and the
+   left and right of it are off screen; a percentage of the viewport would
+   drift off the object it is labelling at every other aspect ratio. The
+   script computes the frame's real rect and writes these in pixels. */
+/* Below the overlay and the button, not above them. At z-index 3 the
+   guitar's hotspot sat over the call to action and swallowed the press:
+   the hotspots are big, because the objects are, and they will overlap
+   anything else placed in the frame. */
+.props{position:absolute;inset:0;z-index:1;pointer-events:none}
+.prop-hit{
+  position:absolute;appearance:none;border:0;background:transparent;padding:0;
+  pointer-events:auto;cursor:pointer;border-radius:50%;
+}
+.prop-hit:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+
+.prop-tag{
+  position:absolute;margin:0;pointer-events:none;
+  display:block;white-space:nowrap;
+  font-family:var(--font-hand);font-weight:400;
+  font-size:var(--tagsz,26px);line-height:1;
+  color:rgba(10,10,10,.62);
+  transform:translate(-50%,-50%) rotate(var(--tilt,-3deg));
+}
+/* The handwriting.
+
+   A wipe, not a fade: the text is clipped to nothing and the clip opens left
+   to right, which is the direction a hand moves. Fading it in would make the
+   whole word arrive at once, which is the thing that reads as a caption
+   rather than as writing. The ease is nearly linear because a hand writing
+   does not slow down at the end of a word. */
+.prop-ink{
+  display:block;
+  clip-path:inset(0 100% -18% 0);
+  transition:clip-path .62s cubic-bezier(.5,.05,.55,.95);
+}
+.prop-tag.on .prop-ink{clip-path:inset(0 -8% -18% 0)}
+
+/* The lines share one overlay rather than living inside their labels.
+
+   A label carries a translate and a rotate, and anything inside it inherits
+   both: the line would be drawn in a tilted coordinate space and the loop at
+   its end would come out as a tilted ellipse. One untransformed sheet over
+   the whole hero keeps every line in the same pixels the props are in. */
+.prop-curls{
+  position:absolute;inset:0;width:100%;height:100%;overflow:visible;
+  pointer-events:none;
+  stroke:rgba(10,10,10,.5);stroke-width:1.7;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+.prop-curls path{
+  stroke-dasharray:var(--len,200);stroke-dashoffset:var(--len,200);
+  transition:stroke-dashoffset .5s cubic-bezier(.4,0,.5,1) .24s;
+}
+.prop-curls path.on{stroke-dashoffset:0}
+
+/* Anything that makes the frame busy leaves with the frame. */
+.props{transition:opacity 420ms ease}
+.hero.is-leaving .props{opacity:0;pointer-events:none}
 
 /* ---------- what is under the hero ----------
    There is no page below the hero, so a scroll gesture has nothing to do.
@@ -556,18 +634,26 @@ h1{
 .tn-face{position:relative}
 
 .tn-side{
-  display:flex;align-items:center;overflow:hidden;
-  max-width:0;
-  transition:max-width .46s cubic-bezier(.16,1,.3,1);
+  display:flex;align-items:center;gap:4px;overflow:hidden;flex:none;
+  /* width, not max-width. max-width only caps, so the shorter side stayed
+     short and the face sat 39px off the centre of the screen. */
+  width:0;
+  transition:width .52s cubic-bezier(.16,1,.3,1);
 }
 .tn-left{direction:rtl}
 .tn-left > *{direction:ltr}
-.topnav.open .tn-side{max-width:42ch}
+/* Both sides open to the SAME width, measured from whichever holds the
+   most type. Left to their own content they differed by 78px, which pushed
+   the face 39px off the centre of the screen every time the menu opened:
+   the one thing a centred menu cannot do. The shorter side simply carries
+   the slack, and because the left group is rtl its slack falls on the
+   outside where nothing is looking. */
+.topnav.open .tn-side{width:var(--side,0)}
 
 .tn-side a{
-  display:inline-flex;align-items:center;height:34px;padding:0 14px;
-  border-radius:17px;white-space:nowrap;text-decoration:none;
-  font-size:15px;font-weight:500;letter-spacing:-.017em;
+  display:inline-flex;align-items:center;height:36px;padding:0 21px;
+  border-radius:18px;white-space:nowrap;text-decoration:none;
+  font-size:15px;font-weight:500;letter-spacing:-.006em;
   color:var(--ink);opacity:0;
   transition:opacity .2s ease,background-color .16s ease;
 }
@@ -718,11 +804,15 @@ h1{
 .montage.live .montage-stage{visibility:visible}
 .montage-frame{
   --grow:0;
-  width:calc(34% + 66% * var(--grow));
+  width:calc(30% + 70% * var(--grow));
   aspect-ratio:16/9;
   max-height:calc(100svh * (0.42 + 0.58 * var(--grow)));
-  margin-bottom:calc((1 - var(--grow)) * 8vh);
-  transform:translateY(calc((1 - var(--grow)) * 78%));
+  /* At --grow 0 the frame is entirely under the fold, not peeking over it.
+     78% left a 155px strip sitting on the About copy before a single pixel
+     had been scrolled, which is why it read as appearing rather than
+     growing: there was nothing to watch it come from. 110% of its own
+     height clears the bottom edge at every size it takes. */
+  transform:translateY(calc((1 - var(--grow)) * 110%));
   border-radius:calc(28px - 12px * var(--grow));
   background:#e4e3e0;overflow:hidden;
   display:grid;place-items:center;
@@ -730,6 +820,34 @@ h1{
   will-change:width,transform;
 }
 .montage-frame video,.montage-frame img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ---------- what a prop opens ---------- */
+/* display:grid beats the hidden attribute, so it has to be restated: the
+   sheet was invisible and still swallowing every click on the page. */
+.prop-sheet[hidden]{display:none}
+.prop-sheet{
+  position:fixed;inset:0;z-index:80;display:grid;place-items:end center;
+  background:rgba(10,10,10,0);transition:background .3s ease;
+}
+.prop-sheet.open{background:rgba(10,10,10,.22)}
+.ps-card{
+  width:min(560px,calc(100% - 32px));margin-bottom:clamp(16px,4vh,56px);
+  background:#fff;border-radius:20px;padding:clamp(22px,3vw,34px);
+  box-shadow:var(--lift);position:relative;
+  transform:translateY(18px);opacity:0;
+  transition:transform .32s cubic-bezier(.16,1,.3,1),opacity .32s ease;
+}
+.prop-sheet.open .ps-card{transform:none;opacity:1}
+.ps-close{
+  position:absolute;top:14px;right:14px;width:32px;height:32px;
+  appearance:none;border:0;border-radius:50%;background:var(--bg);
+  font-size:20px;line-height:1;color:var(--ink);cursor:pointer;
+}
+.ps-title{
+  margin:0 0 .35em;font-family:var(--font-hand);font-weight:400;
+  font-size:clamp(26px,3vw,38px);line-height:1;
+}
+.ps-body{margin:0;font-size:16px;line-height:1.55;color:rgba(10,10,10,.6)}
 
 /* ---------- the wall that drops you back to the hero ----------
    Two phases on one element: it falls in from above to cover the screen, the
@@ -780,20 +898,21 @@ h1{
 </head>
 <body>
 
-<nav class="topnav" id="topnav" aria-label="Sections">
+<nav class="topnav away" id="topnav" aria-label="Sections">
   <!-- rtl lays this group out from the right, so the DOM order is the
-       reverse of the reading order: About sits nearest the face. -->
+       reverse of the reading order: the item nearest the face comes first. -->
   <div class="tn-side tn-left">
-    <a href="#about" data-go="about">About</a>
-    <a href="#top" data-go="hero">The studio</a>
+    <a href="#reel" data-go="reel">work</a>
+    <a href="#about" data-go="about">about</a>
+    <a href="#top" data-go="hero">the studio</a>
   </div>
   <button class="tn-face" id="tnFace" type="button" aria-expanded="false" aria-label="Menu">
     <img alt="" src="" id="tnFaceImg">
   </button>
   <div class="tn-side tn-right">
-    <a href="#reel" data-go="reel">Work</a>
-    <a href="#experience" data-go="experience">Experience</a>
-    <a href="#contact" data-go="contact">Contact</a>
+    <a href="#experience" data-go="experience">experience</a>
+    <a href="#cases" data-go="cases">case studies</a>
+    <a href="#contact" data-go="contact">contact</a>
   </div>
 </nav>
 
@@ -824,9 +943,15 @@ h1{
         <svg class="ring" aria-hidden="true" focusable="false">
           <rect width="100%" height="100%" pathLength="100"/>
         </svg>
-        Cool Sh*t <span class="arw">&rarr;</span>
+        Cool Sh*t
+        <span class="arw" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+        </span>
       </button>
   </div>
+
+  <div class="props" id="props" aria-hidden="false"></div>
 
   <div class="social" id="social">
     <a href="#" aria-label="Instagram"><img alt="" src="" data-k="ig"></a>
@@ -912,6 +1037,20 @@ h1{
     <div></div>
   </section>
 
+  <section class="panel roster" id="cases">
+    <div></div>
+    <div class="panel-body">
+      <h2 class="sec-head">Case studies</h2>
+      <ol class="cv">
+        <li><span class="cv-yr">01</span><span class="cv-ro">Case study one</span><span class="cv-co">Coming</span></li>
+        <li><span class="cv-yr">02</span><span class="cv-ro">Case study two</span><span class="cv-co">Coming</span></li>
+        <li><span class="cv-yr">03</span><span class="cv-ro">Case study three</span><span class="cv-co">Coming</span></li>
+      </ol>
+      <p class="cv-note">Draft. Point me at the write-ups and I will build these out.</p>
+    </div>
+    <div></div>
+  </section>
+
   <!-- ---------- contact ----------
        He waves you off the same way he waved you in. The clip slot sits above
        the line so the character is the last thing on the page, not a footer. -->
@@ -926,6 +1065,14 @@ h1{
   </section>
 
 </main>
+
+<div class="prop-sheet" id="propSheet" hidden>
+  <div class="ps-card" role="dialog" aria-modal="true" aria-labelledby="psTitle">
+    <button class="ps-close" type="button" aria-label="Close">&times;</button>
+    <h3 class="ps-title" id="psTitle"></h3>
+    <p class="ps-body"></p>
+  </div>
+</div>
 
 <div id="wall" aria-hidden="true"></div>
 
@@ -1430,6 +1577,184 @@ h1{
   drawUnderside();
   addEventListener('resize', drawUnderside);
 
+  /* ---- the props ----
+     Coordinates are percentages of the SOURCE FRAME, not of the window. The
+     clip is 16:9 and cover-cropped, so at 1440x900 it renders 1600 wide with
+     80px lost off each side; anything measured against the window slides off
+     its object the moment the window changes shape. frameRect() rebuilds the
+     real rect and everything is written from that.
+
+     These are read off the reference screenshot and are close, not exact.
+     Load the page with ?props on the query string and click the frame: it
+     prints the coordinate under the pointer, which is how to fix any that
+     sit wrong without guessing at the numbers.
+
+       hit  [x, y, w, h]   the clickable object, as frame percentages
+       tag  [x, y]         where the writing sits
+       curl  path in a 0..1 box from the tag toward the object */
+  const PROPS = [
+    { k:'moto',  label:'ka chow',        hit:[24.1, 63.7, 19, 26], tag:[16.5, 41.0], tilt:-5, bow: .52 },
+    { k:'skis',  label:'powder plower',  hit:[41.6, 54.8,  6, 30], tag:[28.9, 31.9], tilt:-3, bow:-.46 },
+    { k:'gtr',   label:'reverb + loops', hit:[67.8, 61.7, 11, 30], tag:[72.4, 33.1], tilt:-2, bow: .44 },
+    { k:'ball',  label:'goaaaaaaal',     hit:[90.6, 85.6,  7, 10], tag:[86.0, 66.0], tilt:-4, bow: .40 },
+    { k:'board', label:'do a kickflip',  hit:[17.4, 90.5, 15,  8], tag:[36.3, 90.1], tilt:-2, bow: .42 },
+  ];
+
+  const props = document.getElementById('props');
+  const nodes = [];
+  let curls = null;
+  if (props){
+    curls = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    curls.setAttribute('class', 'prop-curls');
+    curls.setAttribute('aria-hidden', 'true');
+    props.appendChild(curls);
+    PROPS.forEach(d => {
+      const hit = document.createElement('button');
+      hit.type = 'button';
+      hit.className = 'prop-hit';
+      hit.dataset.k = d.k;
+      hit.setAttribute('aria-label', d.label);
+
+      const tag = document.createElement('figure');
+      tag.className = 'prop-tag';
+      tag.style.setProperty('--tilt', d.tilt + 'deg');
+      const ink = document.createElement('span');
+      ink.className = 'prop-ink';
+      ink.textContent = d.label;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      curls.appendChild(path);
+      tag.append(ink);
+
+      props.append(hit, tag);
+      nodes.push({ d, hit, tag, path });
+
+      /* Pointer and keyboard both, and the tag itself is inert, so moving
+         onto the writing cannot toggle it off. */
+      const on  = () => { tag.classList.add('on');    path.classList.add('on'); };
+      const off = () => { tag.classList.remove('on'); path.classList.remove('on'); };
+      hit.addEventListener('pointerenter', on);
+      hit.addEventListener('pointerleave', off);
+      hit.addEventListener('focus', on);
+      hit.addEventListener('blur', off);
+      hit.addEventListener('click', () => openProp(d));
+    });
+  }
+
+  /* The video is 16:9 and cover-cropped into the stage, so the rect it
+     actually paints into is wider than the stage at most window shapes. */
+  function frameRect(){
+    const r = stage.getBoundingClientRect();
+    const AR = 16 / 9;
+    let w = r.width, h = w / AR;
+    if (h < r.height){ h = r.height; w = h * AR; }
+    return { x: (r.width - w) / 2, y: (r.height - h) / 2, w, h };
+  }
+
+  function placeProps(){
+    if (!props || !nodes.length) return;
+    const f = frameRect();
+    const px = p => f.x + f.w * p / 100;
+    const py = p => f.y + f.h * p / 100;
+    /* The writing scales with the frame rather than with the window, so it
+       keeps its size relative to the objects it is labelling. */
+    const size = Math.max(15, Math.min(f.w * 0.019, 34));
+    nodes.forEach(({ d, hit, tag, path }) => {
+      const [hx, hy, hw, hh] = d.hit;
+      const w = f.w * hw / 100, h = f.h * hh / 100;
+      hit.style.left   = (px(hx) - w / 2) + 'px';
+      hit.style.top    = (py(hy) - h / 2) + 'px';
+      hit.style.width  = w + 'px';
+      hit.style.height = h + 'px';
+
+      tag.style.setProperty('--tagsz', size.toFixed(1) + 'px');
+      tag.style.top  = py(d.tag[1]) + 'px';
+      /* Written against the frame, then clamped to the window. The frame is
+         wider than the window at most shapes, so a label sitting near its
+         edge, which is exactly where the ball and the board are, would be
+         written half off screen. */
+      tag.style.left = px(d.tag[0]) + 'px';
+      const half = (tag.getBoundingClientRect().width || size * 5) / 2;
+      const room = stage.getBoundingClientRect().width;
+      const want = px(d.tag[0]);
+      tag.style.left = Math.min(Math.max(want, half + 14), room - half - 14) + 'px';
+
+      /* The line is built in pixels rather than in a normalised box that
+         gets stretched to fit. A 0..100 path scaled independently on each
+         axis turns the loop at its end into an ellipse, and the loop is the
+         whole charm of the thing.
+
+         It leaves from the edge of the writing nearest the object, bows to
+         one side, and finishes in a small round loop of a fixed radius that
+         sits just off the object. */
+      const tw = tag.getBoundingClientRect().width || size * 5;
+      const ex = px(hx), ey = py(hy);
+      const ax = parseFloat(tag.style.left), ay = py(d.tag[1]);
+      const sx = ax + (ex > ax ? 1 : -1) * (tw / 2 + size * 0.28);
+      const sy = ay + size * 0.42;
+      let vx = ex - sx, vy = ey - sy;
+      const L = Math.hypot(vx, vy) || 1;
+      // stop short of the object so the loop sits beside it, not on it
+      const stop = Math.min(Math.max(h, w) * 0.42 + size * 0.5, L * 0.55);
+      const tx = ex - vx / L * stop, ty = ey - vy / L * stop;
+      vx = tx - sx; vy = ty - sy;
+      const nx = -vy / L, ny = vx / L;                 // unit normal
+      const b = (d.bow || .28) * L;
+      const c1x = sx + vx * .30 + nx * b, c1y = sy + vy * .30 + ny * b;
+      const c2x = sx + vx * .70 + nx * b * .72, c2y = sy + vy * .70 + ny * b * .72;
+      const r = Math.max(6, size * 0.34);
+      // a near-complete arc: same start and end, so it reads as a hand loop
+      path.setAttribute('d',
+        `M${sx.toFixed(1)},${sy.toFixed(1)} ` +
+        `C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ` +
+        `${tx.toFixed(1)},${ty.toFixed(1)} ` +
+        `a${r.toFixed(1)},${r.toFixed(1)} 0 1 ${b >= 0 ? 1 : 0} ${(r * 0.3).toFixed(1)},${(-r * 0.22).toFixed(1)}`);
+      const len = path.getTotalLength();
+      if (len) path.style.setProperty('--len', Math.ceil(len * 1.02));
+    });
+  }
+  addEventListener('resize', placeProps);
+  placeProps();
+  /* Again once the handwriting has loaded: the line is drawn from the tag's
+     measured box, and before the face arrives that box is the wrong width. */
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeProps);
+
+  /* Clicking a prop is meant to open the story behind it. The stories are not
+     written yet, so this opens the shell with a placeholder rather than
+     leaving five buttons that do nothing when pressed. */
+  const propSheet = document.getElementById('propSheet');
+  function openProp(d){
+    if (!propSheet) return;
+    propSheet.querySelector('.ps-title').textContent = d.label;
+    propSheet.querySelector('.ps-body').textContent =
+      'This one is still to be written. Tell me what you want it to say.';
+    propSheet.hidden = false;
+    requestAnimationFrame(() => propSheet.classList.add('open'));
+  }
+  function closeProp(){
+    if (!propSheet) return;
+    propSheet.classList.remove('open');
+    setTimeout(() => { propSheet.hidden = true; }, 320);
+  }
+  if (propSheet){
+    propSheet.addEventListener('click', e => {
+      if (e.target === propSheet || e.target.closest('.ps-close')) closeProp();
+    });
+    addEventListener('keydown', e => { if (e.key === 'Escape' && !propSheet.hidden) closeProp(); });
+  }
+
+  /* Calibration. ?props on the query string turns the frame into a ruler:
+     click anywhere and it prints the frame percentage under the pointer, so a
+     label that sits wrong can be fixed with a number instead of a guess. */
+  if (location.search.includes('props')){
+    hero.style.cursor = 'crosshair';
+    hero.addEventListener('click', e => {
+      const f = frameRect(), r = hero.getBoundingClientRect();
+      const x = ((e.clientX - r.left - f.x) / f.w * 100).toFixed(1);
+      const y = ((e.clientY - r.top  - f.y) / f.h * 100).toFixed(1);
+      console.log(`[${x}, ${y}]`);
+    }, true);
+  }
+
   /* ---- the face menu ----
      --bar is how far down the screen the menu ends. Panels pad themselves by
      it so their last row is not underneath it. Measured off the menu, not
@@ -1441,7 +1766,9 @@ h1{
     work.style.setProperty('--bar', Math.ceil(r.bottom + 10) + 'px');
   }
   sizeBar();
-  addEventListener('resize', sizeBar);
+  sizeSides();
+  addEventListener('resize', () => { sizeBar(); sizeSides(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeSides);
 
   /* Open on hover for a pointer, on click for a finger. Closing on
      pointerleave rather than on mouseout means crossing between the face and
@@ -1449,6 +1776,20 @@ h1{
      the sides are inside it. focusin/focusout keep it usable from a keyboard,
      and closing on Escape gives the keyboard a way out that is not tabbing
      through every link. */
+  /* Measured with the menu forced open and the transition off, so the value
+     is the content's real width rather than whatever the animation happened
+     to be passing through. */
+  function sizeSides(){
+    if (!topnav) return;
+    const sides = [...topnav.querySelectorAll('.tn-side')];
+    if (!sides.length) return;
+    sides.forEach(el => { el.style.transition = 'none'; el.style.width = 'auto'; });
+    const wide = Math.max(...sides.map(el => el.getBoundingClientRect().width));
+    sides.forEach(el => { el.style.width = ''; });
+    topnav.style.setProperty('--side', Math.ceil(wide) + 'px');
+    requestAnimationFrame(() => sides.forEach(el => { el.style.transition = ''; }));
+  }
+
   let navOpen = false;
   function setNav(open){
     navOpen = open;
@@ -1477,6 +1818,7 @@ h1{
     if (walling || !revealed) return;
     walling = true;
     setNav(false);
+    topnav.classList.add('away');       // the studio has no menu over it
     wall.classList.remove('gone');
     wall.classList.add('down');
     setTimeout(() => {
@@ -1552,9 +1894,13 @@ h1{
   function growMontage(){
     if (!montage || !frame || !innerHeight) return;
     const r = montage.getBoundingClientRect();
-    frame.style.setProperty('--grow',
-      Math.min(1, Math.max(0, (innerHeight - r.top) / innerHeight)).toFixed(4));
-    montage.classList.toggle('live', r.top < innerHeight && r.bottom > innerHeight * 0.34);
+    /* Over 1.25 screens rather than one. The first pixel of scroll is still
+       the first pixel of growth, but it takes the whole of the About screen
+       to reach full frame, which is the point: it grows over that section
+       while the section is still leaving. */
+    const t = Math.min(1, Math.max(0, (innerHeight - r.top) / (innerHeight * 1.25)));
+    frame.style.setProperty('--grow', t.toFixed(4));
+    montage.classList.toggle('live', t > 0 && r.bottom > innerHeight * 0.34);
   }
   addEventListener('scroll', growMontage, { passive: true });
   addEventListener('resize', growMontage);
