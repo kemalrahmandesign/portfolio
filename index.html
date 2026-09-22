@@ -11,6 +11,13 @@
 :root{
   /* Page tone, taken from the Figma reference. */
   --bg:#f1f0ee;
+  /* One primary. It carries the About block and marks whatever the reader is
+     on in the experience list, and it is the only saturated thing on the
+     site, which is what makes it read as a marker rather than as decoration.
+     Warm, because everything else here is a warm near-white and a cold
+     accent would look pasted on. Change this line and the scheme moves. */
+  --primary:#e2553c;
+  --on-primary:#fff6f2;
   --ink:#0a0a0a;
 
   /* Video is not lifted any more, and the 1.085 that used to sit here was a
@@ -75,7 +82,13 @@
    instead of the full window. The jump it was there to prevent happens at
    the reveal, which is the one moment of the whole sequence that is behind a
    full-screen cover. */
-html.scrolls{scrollbar-gutter:stable}
+/* No reserved gutter. It was added to stop the layout jumping when the page
+   became scrollable, then gated to the moment that actually happens, which
+   is the reveal. The reveal is behind a full-screen cover, so the jump was
+   already invisible, and the reservation was buying nothing while showing a
+   15px strip of page colour down the edge of the About block, which is full
+   bleed and coloured. The hero cannot scroll at all, so no scrollbar can
+   appear there to shove anything sideways. */
 /* Belt and braces: while the hero is up there is nothing to scroll, so no
    scrollbar can appear to shove anything sideways. */
 html:not(.scrolls) body{overflow:hidden}
@@ -746,77 +759,63 @@ h1{
 .panel{min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;
        padding-top:var(--bar)}
 .panel-body{align-self:center}
-.intro{
-  max-width:26ch;margin:0 auto;text-align:center;
-  font-family:var(--font-display);
-  font-size:clamp(26px,3.4vw,52px);font-weight:800;
-  letter-spacing:-.03em;line-height:1.1;
-}
-.intro .close{
-  display:block;margin-top:1.7em;
-  font-family:Inter,sans-serif;font-size:clamp(15px,1.35vw,21px);
-  font-weight:500;letter-spacing:-.017em;line-height:1.5;
-  color:rgba(10,10,10,.5);max-width:100%;
-}
-.intro .dim{color:rgba(10,10,10,.34)}
 
-/* The lines rise in once the camera has landed, rather than being there
-   already. Transitions live on the base rule, not on .in: a transition
-   introduced by the same style change that sets the new value does not run,
-   which is the bug that made the monitor push-in teleport. */
-.intro .line{
-  display:block;opacity:0;transform:translateY(20px);
-  transition:opacity .75s ease,transform .75s cubic-bezier(.16,1,.3,1);
-}
-.intro .line:nth-child(2){transition-delay:.14s}
-.intro .line:nth-child(3){transition-delay:.28s}
-.work.in .intro .line{opacity:1;transform:none}
 
-.scroll-cta{
-  justify-self:center;align-self:end;
-  appearance:none;border:0;cursor:pointer;font:inherit;
-  display:inline-flex;align-items:center;gap:.6em;
-  height:46px;padding:0 10px 0 22px;border-radius:50px;
-  margin-bottom:clamp(18px,3.4vh,44px);
-  background:#fff;color:var(--ink);
-  font-size:15px;font-weight:600;letter-spacing:-.017em;
-  box-shadow:var(--lift);
-  opacity:0;transform:translateY(10px);
-  transition:opacity .6s ease .6s,transform .6s cubic-bezier(.16,1,.3,1) .6s;
-}
-.work.in .scroll-cta{opacity:1;transform:none}
-.scroll-cta svg{width:20px;height:20px;animation:nudge 1.8s ease-in-out infinite}
 @keyframes nudge{0%,100%{transform:translateY(0);opacity:.55} 50%{transform:translateY(4px);opacity:1}}
 
-/* ---------- the ramp ----------
-   A quarterpipe drawn as one stroke across the bottom of the About screen:
-   steep on the left, flattening to the right, so the eye rolls down it into
-   the scroll cue. The path is generated from the measured box rather than
-   from a fixed viewBox, because a viewBox stretched to fit would thicken the
-   stroke unevenly along its length.
 
-   .skater is the slot the clip drops into. Empty, it costs nothing and the
-   curve stands on its own. */
-.ramp{position:relative;height:clamp(96px,17vh,190px);margin:0 calc(var(--pad) * -1)}
-.ramp svg{display:block;width:100%;height:100%}
-.ramp-floor{
-  stroke:var(--ink);stroke-width:2;stroke-linecap:round;opacity:.22;
-  stroke-dasharray:var(--len,1200);stroke-dashoffset:var(--len,1200);
+/* ---------- about: the colour block ----------
+   Full bleed out of the work column. A colour that stops at the text margin
+   reads as a card, and the point of this one is to be a room: the hero and
+   the monitor are both near white, so the first thing under the arrival has
+   to say "somewhere else" before it says anything at all. */
+.about{
+  background:var(--primary);color:var(--on-primary);
+  /* Not a .panel: that class lays out three rows and would drop the copy in
+     the first one, which leaves align-items nothing to work with. */
+  margin:0 calc(var(--pad) * -1);
+  padding:calc(var(--bar) + 4vh) var(--pad) 8vh;
+  min-height:100svh;display:grid;align-items:center;
 }
-.work.in .ramp-floor{transition:stroke-dashoffset 1.5s cubic-bezier(.22,1,.3,1) .5s;stroke-dashoffset:0}
- /* The skater is a canvas over the whole ramp rather than a box parked on
-    it: the routine travels the ramp's width, so the thing that needs to be
-    the ramp's size is the stage, not the character.
+/* The measure. 30ch at this size put the statement on four short lines and
+   the body in a column narrower than the statement, which reads as a
+   phone layout that wandered onto a desktop. */
+.about-body{width:100%;max-width:min(28ch,100%);margin:0 auto}
+@media (min-width:900px){ .about-body{max-width:44ch} }
+@media (min-width:1400px){ .about-body{max-width:50ch} }
+.lede{
+  margin:0;font-family:var(--font-display);
+  font-size:clamp(26px,3.4vw,52px);font-weight:700;
+  letter-spacing:-.03em;line-height:1.14;
+}
+.lede-tag{
+  display:block;margin-bottom:1.6em;
+  font-family:Inter,sans-serif;font-size:13px;font-weight:500;
+  letter-spacing:.16em;opacity:.6;
+}
+.lede-line{
+  display:block;
+  opacity:0;transform:translateY(16px);
+  transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1);
+}
+/* Everything after the first line drops to body size. One statement, then
+   the detail under it, rather than three paragraphs shouting equally. */
+.lede-line + .lede-line{
+  margin-top:1.1em;font-size:.38em;font-weight:500;max-width:46ch;
+  letter-spacing:-.011em;line-height:1.55;
+}
+.about.seen .lede-line{opacity:1;transform:none}
+.about.seen .lede-line + .lede-line{opacity:.86}
+.lede-line:nth-of-type(2){transition-delay:.1s}
+.lede-line:nth-of-type(3){transition-delay:.2s}
 
-    It is 2.2x taller than the ramp so a pop has headroom above the line,
-    and it sits behind nothing, because nothing else lives down here. */
-.skater{
-  position:absolute;left:0;bottom:0;width:100%;height:220%;
-  pointer-events:none;display:block;
-}
-/* No mesh, no canvas. The ramp is a perfectly good thing on its own, so a
-   missing asset costs the section nothing. */
-.skater:not(.live){display:none}
+/* ---------- experience ----------
+   Everything is dimmed except the row nearest the middle of the screen, and
+   the marker is the same primary the About block is made of, so the two read
+   as one idea rather than as a highlight bolted on afterwards. */
+.cvsec{display:block;min-height:auto;padding:clamp(60px,12vh,160px) 0 clamp(40px,8vh,120px)}
+.cv-head{margin-bottom:clamp(28px,5vh,64px)}
+.cv-head .lede-tag{margin:0;opacity:.42;color:var(--ink)}
 
 /* ---------- experience ---------- */
 .sec-head{
@@ -825,22 +824,79 @@ h1{
   color:rgba(10,10,10,.42);margin:0 0 clamp(20px,3vh,40px);
 }
 .cv{list-style:none;margin:0;padding:0;border-top:1px solid rgba(10,10,10,.12)}
-.cv li{
-  display:grid;grid-template-columns:minmax(96px,14%) 1fr minmax(120px,26%);
-  gap:clamp(12px,2vw,32px);align-items:baseline;
-  padding:clamp(16px,2.4vh,28px) 0;border-bottom:1px solid rgba(10,10,10,.12);
+.cv-row{
+  display:grid;grid-template-columns:minmax(120px,16%) 1fr;
+  gap:clamp(12px,3vw,48px);
+  padding:clamp(26px,4.6vh,58px) 0;border-bottom:1px solid rgba(10,10,10,.12);
+  /* Dimmed rather than hidden: the shape of the whole list has to stay
+     readable or the focus has nothing to be a focus within. */
+  opacity:.16;
+  transition:opacity .45s ease;
 }
-.cv-yr{font-size:15px;color:rgba(10,10,10,.42);font-variant-numeric:tabular-nums}
-.cv-ro{
-  font-family:var(--font-display);font-weight:700;letter-spacing:-.025em;
-  font-size:clamp(20px,2.4vw,34px);
+.cv-row.on{opacity:1}
+.cv-when{
+  margin:0;font-size:14px;letter-spacing:-.006em;
+  color:rgba(10,10,10,.45);font-variant-numeric:tabular-nums;
+  transition:color .45s ease;
 }
-.cv-co{font-size:15px;color:rgba(10,10,10,.5);text-align:right}
-.cv-note{margin:clamp(18px,2.6vh,30px) 0 0;font-size:14px;color:rgba(10,10,10,.38)}
-@media (max-width:760px){
-  .cv li{grid-template-columns:1fr auto}
-  .cv-ro{grid-column:1/-1;order:-1}
-  .cv-co{text-align:right}
+.cv-row.on .cv-when{color:var(--primary)}
+.cv-who{
+  margin:0 0 .22em;font-family:var(--font-display);font-weight:700;
+  letter-spacing:-.03em;line-height:1.02;
+  font-size:clamp(26px,3.9vw,56px);
+  transition:color .45s ease;
+}
+.cv-row.on .cv-who{color:var(--primary)}
+.cv-what{margin:0 0 1em;font-size:clamp(14px,1.3vw,18px);color:rgba(10,10,10,.55)}
+.cv-notes{margin:0;padding:0;list-style:none;max-width:62ch}
+.cv-notes li{
+  position:relative;padding-left:1.1em;margin-bottom:.55em;
+  font-size:clamp(14px,1.15vw,17px);line-height:1.55;color:rgba(10,10,10,.62);
+}
+.cv-notes li::before{
+  content:"";position:absolute;left:0;top:.62em;
+  width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.42;
+}
+@media (max-width:760px){ .cv-row{grid-template-columns:1fr;gap:10px} }
+
+/* ---------- case studies ----------
+   The picture drifts against the page while the card's own edge does not, so
+   the two disagree by a few percent and the card reads as a window rather
+   than a panel with a picture in it. */
+.cases{padding:clamp(40px,8vh,120px) 0 clamp(60px,12vh,160px)}
+.case{
+  display:grid;grid-template-columns:1fr;gap:clamp(16px,2.4vw,32px);
+  text-decoration:none;color:var(--ink);
+  margin-bottom:clamp(40px,8vh,110px);
+  opacity:0;transform:translateY(26px);
+  transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1);
+}
+.case.seen{opacity:1;transform:none}
+.case-shot{
+  position:relative;overflow:hidden;border-radius:20px;
+  aspect-ratio:16/9;background:#e4e3e0;box-shadow:var(--lift);
+}
+/* Taller than its frame by the amount it is allowed to travel, so the drift
+   never exposes an edge. */
+.case-img{
+  position:absolute;left:0;right:0;top:-12%;height:124%;
+  transform:translateY(calc(var(--par,0) * 10%));
+  will-change:transform;
+}
+.case-img[data-tint="1"]{background:linear-gradient(140deg,#2b3550,#6d7ea8 62%,#c3cede)}
+.case-img[data-tint="2"]{background:linear-gradient(140deg,#3c2f4d,#8a6ea8 62%,#d8cde6)}
+.case-img[data-tint="3"]{background:linear-gradient(140deg,#243f38,#5e8f7e 62%,#c6ded4)}
+.case-img[data-tint="4"]{background:linear-gradient(140deg,#4d3623,#a5794c 62%,#e5d3bd)}
+.case-meta{display:grid;gap:.2em;max-width:62ch;align-content:center}
+.case-title{
+  margin:0;font-family:var(--font-display);font-weight:700;
+  letter-spacing:-.03em;font-size:clamp(24px,3.1vw,46px);line-height:1.05;
+}
+.case-sub{margin:0;font-size:14px;color:rgba(10,10,10,.45)}
+.case-line{margin:.6em 0 0;font-size:clamp(14px,1.2vw,18px);line-height:1.55;color:rgba(10,10,10,.6)}
+.cases-note{margin:0;font-size:14px;color:rgba(10,10,10,.38)}
+@media (min-width:1000px){
+  .case{grid-template-columns:1.35fr 1fr;align-items:center;gap:clamp(28px,4vw,64px)}
 }
 
 /* ---------- goodbye ----------
@@ -908,7 +964,8 @@ h1{
   background:#e4e3e0;overflow:hidden;
   display:grid;place-items:center;
   color:#8d8b87;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
-  will-change:width,transform;
+  opacity:var(--fade,1);
+  will-change:width,transform,opacity;
 }
 .montage-frame video,.montage-frame img{width:100%;height:100%;object-fit:cover;display:block}
 
@@ -939,6 +996,34 @@ h1{
   font-size:clamp(26px,3vw,38px);line-height:1;
 }
 .ps-body{margin:0;font-size:16px;line-height:1.55;color:rgba(10,10,10,.6)}
+
+/* ---------- the cursor ----------
+   A soft dot that trails the pointer, swells on anything clickable, and
+   carries a word when there is one to carry. It only ever exists on a device
+   that has a real pointer: `hover: hover` and `pointer: fine` together rule
+   out a phone, a tablet and a laptop being driven by touch, which is what
+   `@media (hover: hover)` alone does not.
+
+   The system cursor is hidden only once ours is actually running, so a
+   browser that cannot do this is never left with no pointer at all. */
+.cur{
+  position:fixed;left:0;top:0;z-index:200;pointer-events:none;
+  width:var(--d,16px);height:var(--d,16px);margin:calc(var(--d,16px) / -2);
+  border-radius:50%;background:var(--primary);
+  display:grid;place-items:center;
+  font:600 12px/1 Inter,sans-serif;letter-spacing:.04em;color:var(--on-primary);
+  transform:translate3d(var(--x,-100px),var(--y,-100px),0);
+  transition:width .26s cubic-bezier(.16,1,.3,1),height .26s cubic-bezier(.16,1,.3,1),
+             margin .26s cubic-bezier(.16,1,.3,1),background-color .26s ease,opacity .2s ease;
+  will-change:transform;
+  mix-blend-mode:normal;
+}
+.cur span{opacity:0;transition:opacity .2s ease;white-space:nowrap}
+.cur.big{--d:72px}
+.cur.big span{opacity:1}
+.cur.tap{--d:40px}
+.cur.hide{opacity:0}
+html.cursored,html.cursored *{cursor:none !important}
 
 /* ---------- the wall that drops you back to the hero ----------
    Two phases on one element: it falls in from above to cover the screen, the
@@ -978,14 +1063,9 @@ h1{
   .montage-frame{transform:none}
   .cta .ring rect{animation:none}
   .stage video.zoom{animation:none}
-  .intro .line,.scroll-cta,.tagline span{transition:none;opacity:1;transform:none}
-  .ramp-floor{stroke-dashoffset:0}
-  .word > span{transition:none;transform:none}
-  .cta{transition:none;opacity:1;transform:none}
-  #cover.take{animation:none;opacity:1}
-  #headline,.cta,.skip{transition:none}
-}
-</style>
+  .tagline span{transition:none;opacity:1;transform:none}
+  .lede-line,.cv-row,.case{transition:none;opacity:1;transform:none}
+  </style>
 </head>
 <body>
 
@@ -993,14 +1073,14 @@ h1{
   <!-- rtl lays this group out from the right, so the DOM order is the
        reverse of the reading order: the item nearest the face comes first. -->
   <div class="tn-side tn-left">
-    <a href="#reel" data-go="reel">work</a>
+    <a href="#experience" data-go="experience">experience</a>
     <a href="#about" data-go="about">about</a>
   </div>
   <button class="tn-face" id="tnFace" type="button" aria-expanded="false" aria-label="Back to the studio">
     <img alt="" src="" id="tnFaceImg">
   </button>
   <div class="tn-side tn-right">
-    <a href="#experience" data-go="experience">experience</a>
+    <a href="#reel" data-go="reel">work</a>
     <a href="#contact" data-go="contact">contact</a>
   </div>
 </nav>
@@ -1075,35 +1155,92 @@ h1{
 
 <main class="work" id="work" hidden>
   <!-- ---------- about ----------
-       The statement the camera lands on, and the section the menu calls
-       About: one screen, not two, because the push-in ends here and a second
-       full screen of prose before the work would undo the arrival.
-
-       The ramp is the floor of it. One curve, drawn from the element's
-       measured box for the same reason the overscroll arc is, with the
-       skater riding it left to right. Until that clip exists the slot is
-       empty and the curve is just a line, which is a fine thing to be. -->
-  <section class="panel ramp-panel" id="about">
-    <div></div>
-    <p class="intro panel-body">
-      <span class="line">Product designer, four&nbsp;years in,
-      obsessed with visual storytelling.</span>
-      <span class="line dim">Most of the work is deciding what not to build,
-      then making what&rsquo;s left feel obvious.</span>
-      <span class="line close">Honoured you made it this far. The work is
-      just below.</span>
-    </p>
-    <div class="ramp" id="ramp" aria-hidden="true">
-      <svg id="rampSvg"><path class="ramp-floor" id="rampFloor" fill="none"/></svg>
-      <canvas class="skater" id="skater"></canvas>
+       A colour block, full bleed. The hero and the monitor are both near
+       white, so the first thing below the arrival has to say "different
+       room" before it says anything else. -->
+  <section class="about" id="about">
+    <div class="about-body">
+      <p class="lede">
+        <span class="lede-tag">( about )</span>
+        <span class="lede-line">I am a product designer who works end to
+        end.</span>
+        <span class="lede-line">Research, interface, motion, and the build
+        conversations in between. Four years of it, most recently on trading
+        products used by millions of people, where the job is deciding what
+        somebody needs to see in the second before they act.</span>
+        <span class="lede-line">I am obsessed with visual storytelling, and
+        with the part most people skip: making a thing feel obvious once it
+        is finished.</span>
+      </p>
     </div>
-    <button class="scroll-cta" id="scrollCta" type="button">
-      Scroll to continue
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 5v14M6 13l6 6 6-6"/>
-      </svg>
-    </button>
+  </section>
+
+  <!-- ---------- experience ----------
+       Everything is faded except whatever is nearest the middle of the
+       screen, which the scroll handler marks. It is a list you read one row
+       at a time rather than a wall of dates. -->
+  <section class="cvsec" id="experience">
+    <div class="cv-head"><span class="lede-tag">( experience )</span></div>
+    <ol class="cv" id="cv">
+      <li class="cv-row">
+        <p class="cv-when">Jan 2026 &ndash; present</p>
+        <h3 class="cv-who">Own studio</h3>
+        <p class="cv-what">Design lead, multiple clients</p>
+        <ul class="cv-notes">
+          <li>Running my own practice, working directly with founders and
+          product teams across the whole arc of a project.</li>
+        </ul>
+      </li>
+      <li class="cv-row">
+        <p class="cv-when">Sep 2024 &ndash; Dec 2025</p>
+        <h3 class="cv-who">Osmosis Labs &mdash; Polaris</h3>
+        <p class="cv-what">Product Designer &amp; UI/UX Researcher</p>
+        <ul class="cv-notes">
+          <li>Led user research with crypto traders across experience levels,
+          and turned the findings into scalable research systems in Airtable
+          and Notion.</li>
+          <li>Designed the news feed, the For You discovery feed and the
+          article architecture, giving traders one surface for sentiment,
+          market movement and trending assets.</li>
+          <li>Redesigned trading workflows end to end, cutting friction out of
+          execution.</li>
+          <li>Built portfolio tracking and wallet asset views, including
+          transaction history and a privacy mode.</li>
+          <li>Produced trading data visualisation and charts, and partnered
+          with engineering on QA so what shipped matched the intent.</li>
+        </ul>
+      </li>
+      <li class="cv-row">
+        <p class="cv-when">May 2024 &ndash; Nov 2025</p>
+        <h3 class="cv-who">Osmosis Labs &mdash; Osmosis DEX</h3>
+        <p class="cv-what">Product Designer &amp; UI/UX Researcher</p>
+        <ul class="cv-notes">
+          <li>Drove UX across a decentralised exchange with more than two
+          million users in the Cosmos ecosystem.</li>
+          <li>Redesigned the core trading interface, improving clarity around
+          swaps, asset selection and real time pricing.</li>
+          <li>Co-designed one click trading and streamlined liquidity pool
+          flows to cut steps out of execution.</li>
+          <li>Built financial charts and market visualisations for faster,
+          more confident reading of a market.</li>
+          <li>Partnered with engineering on QA and UI refinement ahead of
+          release.</li>
+        </ul>
+      </li>
+      <li class="cv-row">
+        <p class="cv-when">Jul 2020 &ndash; Apr 2021</p>
+        <h3 class="cv-who">Brainfood</h3>
+        <p class="cv-what">Product Designer &amp; UI/UX Researcher</p>
+        <ul class="cv-notes">
+          <li>Designed and prototyped an education platform built around
+          short form, structured learning.</li>
+          <li>Built the interfaces and interaction flows behind lesson
+          progression, content discovery and repeat engagement.</li>
+          <li>Worked concept through delivery on several projects at once,
+          holding the experience consistent across them.</li>
+        </ul>
+      </li>
+    </ol>
   </section>
 
   <section class="montage" id="reel">
@@ -1112,23 +1249,56 @@ h1{
     </div>
   </section>
 
-  <section class="panel roster" id="experience">
-    <div></div>
-    <div class="panel-body">
-      <h2 class="sec-head">Experience</h2>
-      <ol class="cv">
-        <li><span class="cv-yr">2024&ndash;now</span><span class="cv-ro">Product designer</span><span class="cv-co">Placeholder Co.</span></li>
-        <li><span class="cv-yr">2023&ndash;24</span><span class="cv-ro">Product designer</span><span class="cv-co">Placeholder Co.</span></li>
-        <li><span class="cv-yr">2022&ndash;23</span><span class="cv-ro">Designer</span><span class="cv-co">Placeholder Co.</span></li>
-      </ol>
-      <p class="cv-note">Draft. Send me the real roles and dates and I will set them.</p>
-    </div>
-    <div></div>
+  <!-- ---------- case studies ----------
+       Four cards stacked down the page. The image inside each one drifts
+       against the scroll, which is the whole parallax: the card edge is
+       fixed to the page and the picture is not, so the two disagree by a few
+       percent and the card reads as a window rather than a panel. -->
+  <section class="cases" id="cases">
+    <div class="cv-head"><span class="lede-tag">( selected work )</span></div>
+    <a class="case" href="#" data-case="polaris">
+      <div class="case-shot"><div class="case-img" data-tint="1"></div></div>
+      <div class="case-meta">
+        <h3 class="case-title">Polaris</h3>
+        <p class="case-sub">Osmosis Labs &middot; 2024</p>
+        <p class="case-line">A news and discovery surface for traders, built
+        so sentiment, movement and trending assets read in one glance.</p>
+      </div>
+    </a>
+    <a class="case" href="#" data-case="dex">
+      <div class="case-shot"><div class="case-img" data-tint="2"></div></div>
+      <div class="case-meta">
+        <h3 class="case-title">Osmosis DEX</h3>
+        <p class="case-sub">Osmosis Labs &middot; 2024</p>
+        <p class="case-line">The core trading interface of a decentralised
+        exchange with two million users, rebuilt for clarity under pressure.</p>
+      </div>
+    </a>
+    <a class="case" href="#" data-case="portfolio">
+      <div class="case-shot"><div class="case-img" data-tint="3"></div></div>
+      <div class="case-meta">
+        <h3 class="case-title">Portfolio &amp; wallet</h3>
+        <p class="case-sub">Osmosis Labs &middot; 2025</p>
+        <p class="case-line">Holdings, transaction history and a privacy mode,
+        for people who check a number more often than they trade.</p>
+      </div>
+    </a>
+    <a class="case" href="#" data-case="brainfood">
+      <div class="case-shot"><div class="case-img" data-tint="4"></div></div>
+      <div class="case-meta">
+        <h3 class="case-title">Brainfood</h3>
+        <p class="case-sub">Brainfood &middot; 2020</p>
+        <p class="case-line">Short form structured learning, designed around
+        finishing a lesson rather than starting one.</p>
+      </div>
+    </a>
+    <p class="cases-note">Placeholder imagery. Send me the shots and I will
+    set them.</p>
   </section>
 
   <!-- ---------- contact ----------
-       He waves you off the same way he waved you in. The clip slot sits above
-       the line so the character is the last thing on the page, not a footer. -->
+       He waved you in, so he waves you out. The clip slot sits above the
+       line, which puts the character last rather than a footer. -->
   <section class="panel bye" id="contact">
     <div></div>
     <div class="panel-body bye-body">
@@ -1140,6 +1310,8 @@ h1{
   </section>
 
 </main>
+
+<div class="cur" id="cur" aria-hidden="true"><span></span></div>
 
 <div class="prop-sheet" id="propSheet" hidden>
   <div class="ps-card" role="dialog" aria-modal="true" aria-labelledby="psTitle">
@@ -1516,8 +1688,6 @@ h1{
        frame it becomes visible means there is no previous state to animate
        from, and the lines would simply appear. */
     sizeBar();
-    drawRamp();
-    wantSkater();
     growMontage();
     topnav.classList.remove('away');
     requestAnimationFrame(() => requestAnimationFrame(() => work.classList.add('in')));
@@ -1901,7 +2071,7 @@ h1{
     if (!propSheet) return;
     propSheet.querySelector('.ps-title').textContent = d.label;
     propSheet.querySelector('.ps-body').textContent =
-      'This one is still to be written. Tell me what you want it to say.';
+      d.note || 'This one is still to be written. Tell me what you want it to say.';
     propSheet.hidden = false;
     requestAnimationFrame(() => propSheet.classList.add('open'));
   }
@@ -2172,225 +2342,92 @@ h1{
     hardCut();
     setTimeout(land, 260);
   }
+  /* Nothing to open yet. A link that silently jumps to the top of the page
+     is worse than one that admits it is not built. */
+  document.querySelectorAll('.case').forEach(a => {
+    a.addEventListener('click', e => { e.preventDefault(); openProp({
+      label: a.querySelector('.case-title').textContent,
+      note: 'Case study still to be written. Send me the shots and the story.'
+    }); });
+  });
+
   document.querySelectorAll('.topnav [data-go]').forEach(a => {
     a.addEventListener('click', e => { e.preventDefault(); goTo(a.dataset.go); });
   });
 
-  /* ---- the ramp ----
-     One curve across the bottom of the About screen: steep on the left,
-     flattening to the right. Drawn from the measured box rather than from a
-     fixed viewBox, because scaling a viewBox to fit scales the stroke with
-     it and the line thins out at one end. */
-  const ramp = document.getElementById('ramp');
-  function drawRamp(){
-    if (!ramp) return;
-    const w = ramp.clientWidth, h = ramp.clientHeight;
-    if (!w || !h) return;
-    const svg = ramp.querySelector('svg');
-    const floor = ramp.querySelector('#rampFloor');
-    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-    const top = h * 0.10, base = h * 0.86;
-    floor.setAttribute('d',
-      `M0,${top} C${w * 0.20},${top} ${w * 0.30},${base} ${w * 0.62},${base} L${w},${base}`);
-    const len = floor.getTotalLength();
-    floor.style.setProperty('--len', Math.ceil(len));
+  /* ---- the cursor ---- */
+  const cur = document.getElementById('cur');
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (cur && fine && !reduced){
+    document.documentElement.classList.add('cursored');
+    const label = cur.querySelector('span');
+    /* Lerped toward the pointer rather than pinned to it. A dot that tracks
+       exactly is a cursor with a costume on; the lag is the whole character
+       of the thing. */
+    let tx = -100, ty = -100, x = tx, y = ty, running = false;
+    function tick(){
+      x += (tx - x) * 0.18;
+      y += (ty - y) * 0.18;
+      cur.style.setProperty('--x', x.toFixed(1) + 'px');
+      cur.style.setProperty('--y', y.toFixed(1) + 'px');
+      if (Math.abs(tx - x) > 0.1 || Math.abs(ty - y) > 0.1) requestAnimationFrame(tick);
+      else running = false;
+    }
+    addEventListener('pointermove', e => {
+      tx = e.clientX; ty = e.clientY;
+      if (!running){ running = true; requestAnimationFrame(tick); }
+      /* What is under the pointer decides the shape. `closest` rather than a
+         list of selectors on the element itself, because every one of these
+         has children and the pointer is usually over one of them. */
+      const hit = e.target.closest('[data-cursor],a,button');
+      const word = hit && (hit.dataset.cursor || (hit.matches('.case') ? 'view' : ''));
+      cur.classList.toggle('big', !!word);
+      cur.classList.toggle('tap', !!hit && !word);
+      if (word && label.textContent !== word) label.textContent = word;
+    }, { passive: true });
+    addEventListener('pointerdown', () => cur.classList.add('tap'));
+    addEventListener('pointerup',   () => cur.classList.remove('tap'));
+    /* Off the screen means off: a dot parked at the last known position while
+       the pointer is in another window is a stuck pixel. */
+    document.addEventListener('pointerleave', () => cur.classList.add('hide'));
+    document.addEventListener('pointerenter', () => cur.classList.remove('hide'));
   }
 
-  /* ---- the skater ----------------------------------------------------
-     A GLB of him on a board, rolling the length of the ramp, cut from the
-     same character as everything else. Three things make this affordable
-     rather than indulgent:
+  /* ---- what is on screen ----
+     One observer for everything that arrives on scroll. Three separate ones
+     doing the same job is three sets of thresholds to keep in step. */
+  const seen = new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('seen'); seen.unobserve(e.target); } });
+  }, { threshold: 0.18 });
+  document.querySelectorAll('.about,.case').forEach(el => seen.observe(el));
 
-     1. three.js is not loaded unless the mesh is actually there. The page
-        fetches media/skater.glb first and only a real file buys the
-        dependency, so a missing asset costs nothing at all rather than
-        600KB of renderer with nothing to render. The same bytes are then
-        handed to the loader, so the probe is not an extra request: a HEAD
-        would have been, and some servers answer one badly enough that the
-        browser reports it as an abort.
-     2. It runs once, when the section arrives, and then holds. There is no
-        loop burning a GPU under copy nobody is looking at any more.
-     3. The routine is transforms on a static mesh, not a rigged
-        performance. The animation library has no skate clips, so the
-        movement lives here.
-
-     WHAT THE CURRENT MESH CAN AND CANNOT DO. It was lifted from an image of
-     him already standing on a board, so the board is part of the same mesh
-     and cannot be moved independently. That covers rolling, the manual, the
-     tail scrape and the 180. It rules out a kickflip, because the board
-     would spin with him. The fix is a rider generated WITHOUT a board plus
-     the procedural silver board below, which is one more mesh and no more
-     than that: the board itself is geometry, not an asset. */
-  const skater = document.getElementById('skater');
-  const SKATER = {
-    src:   'media/skater.glb',
-    /* The generation's own URL, tried when the local file is not there yet.
-
-       Worth having and not worth trusting. The clips proved both halves of
-       that: they loaded fine from this CDN right up until one was deleted
-       and started returning 403, which is what moved everything local in the
-       first place. A GLB is also fetched rather than pointed at by an
-       element, so it needs CORS where a <video> does not, and that cannot be
-       checked from this container. So: try it, and if it fails, the ramp is
-       simply a ramp until the file is committed. */
-    cdn:   'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/' +
-           'hf_20260922_060933_b07b7fec-c7de-4035-88e5-20a8948c124a.glb',
-    /* The mesh comes out of image-to-3D with no agreed orientation, so it
-       is normalised here: measured, centred on its own feet, scaled to a
-       height in ramp units, and turned to face the way it travels. Nudge
-       `yaw` by a quarter turn if he comes out sideways. */
-    yaw:   Math.PI / 2,    // verified: this is the profile travelling right
-    /* His height as a fraction of the canvas, and it means it: the mesh is
-       scaled against what the camera can actually see at its distance
-       rather than to a bare world unit. At 0.62 he was two thirds of the
-       ramp stage, which is a character piece; he is meant to be someone
-       going past. */
-    height: 0.40,
-    dist:  3.6,            // camera distance, in his own heights
-    hold:  1.0,            // seconds held at the end
-  };
-
-  let skaterStarted = false;
-  function wantSkater(){
-    if (skaterStarted || !skater || reduced) return;
-    skaterStarted = true;
-    /* A missing mesh is silent, because that is the normal state of this
-       page until the file is committed. Anything else is not: one catch
-       around both halves swallowed a broken scene as if it were an absent
-       one, and an absent scene looks exactly like a working one that has
-       not scrolled into view yet. */
-    const grab = url => fetch(url)
-      .then(r => (r.ok ? r.arrayBuffer() : null))
-      .catch(() => null);
-
-    grab(SKATER.src)
-      .then(buf => (buf && buf.byteLength > 4 ? buf : grab(SKATER.cdn)))
-      .then(buf => {
-        if (!buf || buf.byteLength <= 4) return;
-        return startSkater(buf).catch(e => console.warn('skater:', e));
-      });
-  }
-
-  async function startSkater(buf){
-    /* Served from this repo, not from a CDN. The renderer is the one piece
-       of this page that is somebody else's code, and a third party going
-       down should not be able to take a section of the site with it. It is
-       only ever fetched when there is a mesh to render, so the cost lands on
-       the one screen that uses it. */
-    const THREE = await import('./vendor/three.module.js');
-    const { GLTFLoader } = await import('./vendor/GLTFLoader.js');
-
-    const gltf = await new Promise((res, rej) =>
-      new GLTFLoader().parse(buf, '', res, rej));
-    const rider = gltf.scene;
-
-    const scene = new THREE.Scene();
-    /* Lit the way the studio is: a broad soft key and a fill, no rim, no
-       shadow. The clips have no cast shadows either, and one here would
-       announce that this is a different kind of object. */
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d6d2, 2.1));
-    const key = new THREE.DirectionalLight(0xffffff, 1.5);
-    key.position.set(2, 4, 3);
-    scene.add(key);
-
-    /* Normalise: centre on the footprint, sit the feet on y=0, scale to a
-       known height, and face the direction of travel. */
-    const box = new THREE.Box3().setFromObject(rider);
-    const size = new THREE.Vector3(), mid = new THREE.Vector3();
-    box.getSize(size); box.getCenter(mid);
-    rider.position.set(-mid.x, -box.min.y, -mid.z);
-    const pivot = new THREE.Group();
-    pivot.add(rider);
-    pivot.rotation.y = SKATER.yaw;      // scale is set in resize, off the frame
-    const cart = new THREE.Group();        // travels and leans
-    cart.add(pivot);
-    scene.add(cart);
-    const view = { w: 1, h: 1 };           // what the camera sees at the origin
-
-    const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 100);
-    const renderer = new THREE.WebGLRenderer({
-      canvas: skater, alpha: true, antialias: true,
+  /* ---- the experience list, and the case study parallax ----
+     Both are read off the same scroll, because both are answers to the same
+     question: where is this element relative to the middle of the screen. */
+  const cvRows = [...document.querySelectorAll('.cv-row')];
+  const caseImgs = [...document.querySelectorAll('.case-img')];
+  function onScroll(){
+    if (!innerHeight) return;
+    const mid = innerHeight * 0.44;
+    let best = null, bestD = Infinity;
+    cvRows.forEach(r => {
+      const b = r.getBoundingClientRect();
+      const d = Math.abs((b.top + b.bottom) / 2 - mid);
+      if (d < bestD){ bestD = d; best = r; }
     });
-    renderer.setClearAlpha(0);
-    /* Capped at 2: this is a small figure on a wide canvas and a 3x phone
-       would be rendering four times the pixels for no visible gain. */
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    cvRows.forEach(r => r.classList.toggle('on', r === best && bestD < innerHeight * 0.75));
 
-    function resize(){
-      const w = skater.clientWidth, h = skater.clientHeight;
-      if (!w || !h) return;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      /* Framed off the canvas height so he keeps his size relative to the
-         ramp rather than to the window. */
-      camera.position.set(0, 0.42, SKATER.dist);
-      camera.lookAt(0, 0.34, 0);
-      camera.updateProjectionMatrix();
-      /* What the camera can see at the origin, in world units. Everything
-         else is expressed against this, so the framing holds at any canvas
-         shape instead of drifting with the aspect ratio. */
-      view.h = 2 * SKATER.dist * Math.tan(camera.fov * Math.PI / 360);
-      view.w = view.h * camera.aspect;
-      pivot.scale.setScalar(SKATER.height * view.h / (size.y || 1));
-    }
-    resize();
-    addEventListener('resize', resize);
-
-    /* The routine, in seconds. Travel is in world units across the ramp;
-       the camera's framing makes 1 unit his own height. */
-    const RUN = 6.8;
-    const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
-    const seg  = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
-
-    function pose(t){
-      /* 0.00-0.52  roll in from the left
-         0.52-0.68  drop into a manual, tail down
-         0.68-0.86  hold the manual through a 180 to the left
-         0.86-1.00  settle, facing back the way he came, and hold */
-      const roll   = seg(t, 0, .52);
-      const intoM  = seg(t, .52, .68);
-      const spin   = seg(t, .68, .86);
-      const settle = seg(t, .86, 1);
-
-      /* Measured off the frame, not hard-coded: he enters just past the
-         left edge and finishes inside the right one, whatever shape the
-         canvas is. Hard numbers put him half off the screen at the end of
-         the routine on a wide ramp. */
-      const inset = SKATER.height * view.h * 0.75;
-      const A = -view.w / 2 - inset, B = view.w / 2 - inset;
-      cart.position.x = A + (B - A) * (ease(roll) * .74 + .26 * ease(spin));
-      /* The manual: pitched nose-up so the tail rides the line. It comes in
-         over the drop and comes out over the settle, so the board is never
-         suddenly flat. */
-      const tilt = (intoM - settle) * 0.34;
-      cart.rotation.z = -tilt;
-      cart.position.y = tilt * SKATER.height * view.h * 0.09;   // tail on the line
-      pivot.rotation.y = SKATER.yaw + Math.PI * ease(spin);
-    }
-
-    let t0 = 0, raf = 0;
-    function frame(now){
-      if (!t0) t0 = now;
-      const t = Math.min(1, (now - t0) / (RUN * 1000));
-      pose(t);
-      renderer.render(scene, camera);
-      if (t < 1) raf = requestAnimationFrame(frame);
-      else       raf = 0;                // held: nothing more to draw
-    }
-
-    skater.classList.add('live');
-    resize();
-    pose(0);
-    renderer.render(scene, camera);
-
-    /* Starts when the ramp is genuinely on screen, not when the section
-       technically intersects by a pixel. */
-    new IntersectionObserver((es, ob) => {
-      if (!es.some(e => e.intersectionRatio > .5)) return;
-      ob.disconnect();
-      if (!raf) raf = requestAnimationFrame(frame);
-    }, { threshold: [.5] }).observe(ramp);
+    caseImgs.forEach(img => {
+      const b = img.parentElement.getBoundingClientRect();
+      /* -1 when the card is entering from the bottom, +1 when it is leaving
+         off the top. The picture travels the opposite way, which is what
+         makes the card look like it has depth behind it. */
+      const t = ((b.top + b.height / 2) - innerHeight / 2) / (innerHeight / 2 + b.height / 2);
+      img.style.setProperty('--par', Math.max(-1, Math.min(1, t)).toFixed(3));
+    });
   }
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', onScroll);
 
   /* ---- the montage ----
      The stage is fixed to the viewport, so --grow is the only thing deciding
@@ -2408,16 +2445,18 @@ h1{
        while the section is still leaving. */
     const t = Math.min(1, Math.max(0, (innerHeight - r.top) / (innerHeight * 1.25)));
     frame.style.setProperty('--grow', t.toFixed(4));
-    montage.classList.toggle('live', t > 0 && r.bottom > innerHeight * 0.34);
+    /* And an exit. It used to be switched off the moment its section passed a
+       threshold, which at full frame meant a whole screen of picture
+       vanishing between one scroll event and the next. It now fades over the
+       last 45% of a screen on the way out, so the montage hands over to
+       whatever is under it instead of being deleted. */
+    const out = Math.min(1, Math.max(0, (r.bottom - innerHeight * 0.1) / (innerHeight * 0.45)));
+    frame.style.setProperty('--fade', out.toFixed(3));
+    montage.classList.toggle('live', t > 0 && out > 0.01);
   }
   addEventListener('scroll', growMontage, { passive: true });
   addEventListener('resize', growMontage);
-  addEventListener('resize', drawRamp);
 
-  const scrollCta = document.getElementById('scrollCta');
-  if (scrollCta) scrollCta.addEventListener('click', () => {
-    montage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
 
   cta.addEventListener('click', enter);
   /* Fast forward: run the clip faster, do not jump over it.
