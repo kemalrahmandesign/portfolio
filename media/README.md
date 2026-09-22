@@ -159,25 +159,26 @@ prohibition still spends attention on the thing it forbids, so leading with
 "not surprised" is a way to get a surprised face.
 ## skater.glb
 
-The About section's ramp has a 3D skater on it. The mesh is a GLB and the file
-goes here, next to the clips, for the same reason they do: the result CDN is
-blocked from the agent's container, so it is downloaded by hand and committed.
+The About section's ramp carries a 3D skater. **The file is committed**, so
+there is nothing to download: 0.91MB, in this directory, next to the clips.
 
-Nothing breaks if it is missing. The page fetches it before it loads a
-renderer, so an absent mesh costs no dependency, draws no canvas and logs
-nothing beyond the browser's own 404. The ramp is a fine thing on its own.
+It arrived at 4.29MB, of which 3.66MB was one 2048x2048 JPEG on a figure that
+renders about 130px tall. `tools/shrink-glb.js` re-encoded it to 1024 at
+quality 0.82, which is 0.28MB, and rebuilt the binary chunk around it. That
+last part is the work: every bufferView indexes into one shared buffer, so
+shrinking one moves every view after it, and the buffer has to be re-laid with
+the offsets rewritten. Re-rendered afterwards and compared: no visible
+difference at the size he appears.
 
-- `skater.glb`
-  https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/hf_20260922_060933_b07b7fec-c7de-4035-88e5-20a8948c124a.glb
+    node tools/shrink-glb.js in.glb out.glb 1024 0.82
 
-The page already tries that URL by itself when the local file is not there, so
-the skater may well appear without anyone downloading anything. Do not leave it
-that way. It is the arrangement the clips were on when one of them was deleted
-and started returning 403, which is what moved all of this local to begin with.
-A generation URL is a preview, not a host.
+Source, if it is ever needed again:
+https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/hf_20260922_060933_b07b7fec-c7de-4035-88e5-20a8948c124a.glb
 
 Generated with `image_to_3d`, textured, 12000 triangles, no rigging, from a
-side view of him riding: cheap on purpose, because he is small and passing by.
+side view of him riding. The page still falls back to that URL if the local
+file ever goes missing, but it is a preview, not a host: it is the arrangement
+the clips were on when one was deleted and began returning 403.
 
 **What this mesh can do.** It was lifted from an image of him already standing
 on a board, so the board is part of the same mesh. That covers rolling, the
@@ -185,6 +186,6 @@ manual, the tail scrape and the 180. It rules out a kickflip, because the board
 would spin with him.
 
 **What it would take to add the kickflip.** One more mesh: him in the same pose
-with no board, 30 credits. The board itself should then be built in code, which
-is free, reads as silver without a chrome texture at this size, and can be
-spun, popped and scraped independently. That is the whole upgrade.
+with no board, 30 credits. The board is then built in code, which is free,
+reads as silver without a chrome texture at this size, and can be spun, popped
+and scraped on its own.

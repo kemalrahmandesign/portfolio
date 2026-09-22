@@ -2360,3 +2360,41 @@ for the first time. The estimates were not close: the ball was 7 points out
 horizontally, the board 14 points vertically, and the skis' hotspot was more
 than 8 points high. Worth remembering against the temptation to derive
 coordinates from a screenshot with an assumed crop.
+
+## Seeing the skater, and three things that hid it
+
+The mesh is good. Cartoon, plaid pyjamas, white tee, the hair and the glasses,
+on a board with trucks and wheels that read at size. `SKATER.yaw = Math.PI / 2`
+was right first time, confirmed by rendering all four quarter turns side by
+side rather than guessing: that is the profile travelling right.
+
+**Getting to the point of seeing it took undoing three separate hides.**
+
+1. jsdelivr is blocked from this container, so three.js could not be fetched
+   and the render could not be tested at all. **npm is not blocked.**
+   `npm pack three@0.169.0` got it, which also made vendoring it the obvious
+   move: the renderer is now served from this repo, so a CDN going down cannot
+   take a section of the site with it.
+2. `GLTFLoader.js` imports `BufferGeometryUtils.js`, which was not copied, and
+   a missing static import of a dynamically imported module reports as
+   "failed to fetch dynamically imported module" against the parent. The 404
+   in the network log named the real file.
+3. A WebGL canvas is cleared after compositing, so a screenshot of one comes
+   back blank unless `preserveDrawingBuffer` is set. Two rounds were spent
+   thinking the scene was broken when `gl.readPixels` showed 15047 opaque
+   pixels, 3.13% of the canvas, exactly as it should have been. The test build
+   sets that flag; the shipped one does not.
+
+**The framing was wrong in a way only a picture shows.** He was two thirds of
+the ramp's height and ran off the right edge at the end of the routine.
+`SKATER.height` claimed to be a fraction of the canvas and was only setting the
+camera distance. It means it now: the visible extent at the camera's distance
+is computed once per resize and the mesh is scaled against it, and the travel
+runs between the frame's own edges rather than between two hard-coded numbers
+that happened to suit one canvas shape.
+
+**The texture was 85% of the file.** 3.66MB of 2048x2048 JPEG on a figure that
+renders about 130px tall. `tools/shrink-glb.js` re-encodes it at 1024 and
+rebuilds the binary chunk: every bufferView indexes into one shared buffer, so
+shrinking one moves all of them and the offsets have to be re-laid. 4.29MB to
+0.91MB, re-rendered and compared, no visible difference.
