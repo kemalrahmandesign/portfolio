@@ -414,7 +414,7 @@ h1{
      the one part of the bottom edge with nothing in it, and standing them
      on it reads as more objects in the studio rather than as a widget. */
   position:absolute;z-index:3;
-  left:50%;transform:translateX(-50%);bottom:var(--pad);
+  left:50%;transform:translateX(-50%);bottom:clamp(8px,1.4vh,22px);
   display:flex;gap:clamp(10px,1.2vw,20px);align-items:flex-end;
   pointer-events:none;
 }
@@ -529,6 +529,11 @@ h1{
 }
 .prop-curls path.on{stroke-dashoffset:0}
 
+/* Calibration only: the hotspots are invisible by design, and you cannot
+   drag what you cannot see. */
+.props.calibrating .prop-hit{outline:1px dashed rgba(10,10,10,.45);border-radius:0}
+.props.calibrating .prop-tag{outline:1px dashed rgba(10,10,10,.25)}
+
 /* Anything that makes the frame busy leaves with the frame. */
 .props{transition:opacity 420ms ease}
 .hero.is-leaving .props{opacity:0;pointer-events:none}
@@ -620,9 +625,7 @@ h1{
    direction back so the words themselves read normally. */
 .topnav{
   position:fixed;z-index:70;top:clamp(7px,1vh,14px);left:50%;
-  /* --off is half the difference between the two sides, so the face lands on
-     the centre of the screen whatever the menu is doing. */
-  transform:translateX(calc(-50% + var(--off,0px)));
+  transform:translateX(-50%);
   display:flex;align-items:center;
   background:#fff;border-radius:50px;padding:4px;
   box-shadow:var(--lift);
@@ -630,7 +633,7 @@ h1{
 }
 /* Out of the way for the one stretch that is a camera move rather than a
    page: it comes back when the monitor does. */
-.topnav.away{opacity:0;transform:translateX(calc(-50% + var(--off,0px))) translateY(-14px);pointer-events:none}
+.topnav.away{opacity:0;transform:translateX(-50%) translateY(-14px);pointer-events:none}
 
 .tn-face{
   appearance:none;border:0;padding:0;margin:0;cursor:pointer;flex:none;
@@ -651,10 +654,6 @@ h1{
 
 .tn-side{
   display:flex;align-items:center;gap:4px;overflow:hidden;flex:none;
-  /* Each side opens to its own content's width. Forcing both to the wider
-     one did centre the face, but it left the slack as a visible empty strip
-     inside the pill on the left. The face is centred by offsetting the whole
-     menu instead, which moves the gap out of the pill altogether. */
   width:0;
   transition:width .52s cubic-bezier(.16,1,.3,1);
 }
@@ -666,11 +665,20 @@ h1{
    the one thing a centred menu cannot do. The shorter side simply carries
    the slack, and because the left group is rtl its slack falls on the
    outside where nothing is looking. */
-.topnav.open .tn-left {width:var(--left,0)}
-.topnav.open .tn-right{width:var(--right,0)}
+.topnav.open .tn-side{width:var(--side,0)}
 
 .tn-side a{
-  display:inline-flex;align-items:center;height:36px;padding:0 21px;
+  /* Every item is the width of the widest one, and centred in it.
+
+     Letting each item take its own width made the two sides different
+     lengths, which put the face off the centre of the screen. Offsetting the
+     menu to compensate fixed the position but introduced a shake: a custom
+     property does not interpolate, so the offset snapped while the two sides
+     were still animating their widths, and the face slid and settled. One
+     width for every item removes the difference rather than correcting for
+     it, so there is nothing to compensate and nothing to race. */
+  display:inline-flex;align-items:center;justify-content:center;
+  width:var(--item,auto);height:36px;padding:0 10px;
   border-radius:18px;white-space:nowrap;text-decoration:none;
   font-size:15px;font-weight:500;letter-spacing:-.006em;
   color:var(--ink);opacity:0;
@@ -1591,7 +1599,9 @@ h1{
     raw += e.deltaY;
     setPull(damp(raw), false);
     clearTimeout(releaseT);
-    releaseT = setTimeout(() => { raw = 0; release(); }, 140);
+    /* 140ms sent it back almost the moment the wheel stopped, which left
+       no time to read the line that is the entire point of pulling. */
+    releaseT = setTimeout(() => { raw = 0; release(); }, 850);
   }
   heroShell.addEventListener('wheel', onWheel, { passive: false });
 
@@ -1643,11 +1653,11 @@ h1{
        tag  [x, y]         where the writing sits
        curl  path in a 0..1 box from the tag toward the object */
   const PROPS = [
-    { k:'moto',  label:'ka chow',        hit:[24.1, 63.7, 19, 26], tag:[16.5, 41.0], tilt:-5, bow: .52 },
-    { k:'skis',  label:'powder plower',  hit:[41.6, 54.8,  6, 30], tag:[28.9, 31.9], tilt:-3, bow:-.46 },
-    { k:'gtr',   label:'reverb + loops', hit:[67.8, 61.7, 11, 30], tag:[72.4, 33.1], tilt:-2, bow: .44 },
-    { k:'ball',  label:'goaaaaaaal',     hit:[90.6, 85.6,  7, 10], tag:[86.0, 66.0], tilt:-4, bow: .40 },
-    { k:'board', label:'do a kickflip',  hit:[17.4, 90.5, 15,  8], tag:[36.3, 90.1], tilt:-2, bow: .42 },
+    { k:'moto',  label:'ka chow',        hit:[24.8, 58.0, 26, 30], tag:[16.0, 39.6], tilt:-5, bow: .50 },
+    { k:'skis',  label:'powder plower',  hit:[41.2, 50.0,  5, 33], tag:[29.3, 32.0], tilt:-3, bow:-.44 },
+    { k:'gtr',   label:'reverb + loops', hit:[65.8, 56.2,  8, 34], tag:[70.0, 33.0], tilt:-2, bow: .42 },
+    { k:'ball',  label:'goaaaaaaal',     hit:[87.1, 75.4,  6, 10], tag:[87.1, 60.0], tilt:-4, bow: .38 },
+    { k:'board', label:'do a kickflip',  hit:[18.3, 79.0, 15,  8], tag:[36.3, 78.8], tilt:-2, bow: .40 },
   ];
 
   const props = document.getElementById('props');
@@ -1741,17 +1751,27 @@ h1{
       const ax = parseFloat(tag.style.left), ay = py(d.tag[1]);
       const sx = ax + (ex > ax ? 1 : -1) * (tw / 2 + size * 0.28);
       const sy = ay + size * 0.42;
+      /* The head has to point AT the object, and the bow is what kept it
+         from doing so: the tangent at the end of a bowed cubic runs off at
+         whatever angle the bow left it at, which can be 30 degrees or more
+         away from the thing being pointed at.
+
+         Fixing it is a matter of where the second control point goes. Put it
+         on the line between the object and the curve's end, behind the end,
+         and the tangent there is that line by construction. The bow then
+         only shapes the first half of the curve, which is the half doing
+         the hand-drawn work anyway. */
       let vx = ex - sx, vy = ey - sy;
       const L = Math.hypot(vx, vy) || 1;
-      // stop at the object's edge rather than its centre, so the head points
-      // at it instead of landing on top of it
-      const stop = Math.min(Math.max(h, w) * 0.40, L * 0.5);
-      const tx = ex - vx / L * stop, ty = ey - vy / L * stop;
+      const aimx = vx / L, aimy = vy / L;
+      // land on the object's edge rather than its centre
+      const stop = Math.min(Math.max(h, w) * 0.42, L * 0.55);
+      const tx = ex - aimx * stop, ty = ey - aimy * stop;
       vx = tx - sx; vy = ty - sy;
-      const nx = -vy / L, ny = vx / L;                 // unit normal
+      const nx = -aimy, ny = aimx;                      // unit normal
       const b = (d.bow || .28) * L;
-      const c1x = sx + vx * .30 + nx * b, c1y = sy + vy * .30 + ny * b;
-      const c2x = sx + vx * .70 + nx * b * .72, c2y = sy + vy * .70 + ny * b * .72;
+      const c1x = sx + vx * .34 + nx * b, c1y = sy + vy * .34 + ny * b;
+      const c2x = tx - aimx * L * .26,    c2y = ty - aimy * L * .26;
       /* An arrowhead, not a loop. The loop was a guess at "the little swivel
          line with the circle"; the reference has a head pointing at the
          object, and a dangling circle at the end of a curve reads as the
@@ -1761,10 +1781,10 @@ h1{
          a cubic is the direction from its second control point to its end
          point, so it always points where the line is going rather than
          where the object happens to be. */
-      const tanx = tx - c2x, tany = ty - c2y;
-      const tl = Math.hypot(tanx, tany) || 1;
-      const ux = tanx / tl, uy = tany / tl;
-      const head = Math.max(7, size * 0.40);
+      /* By construction the tangent at the end is the aim vector, so the
+         head is built straight off it. */
+      const ux = aimx, uy = aimy;
+      const head = Math.max(9, size * 0.50);
       const A = 0.46;                    // half the head's spread, radians
       const cosA = Math.cos(A), sinA = Math.sin(A);
       // rotate the reversed tangent by +/-A to get the two barbs
@@ -1772,12 +1792,28 @@ h1{
       const b1y = ty + head * (-ux * sinA + -uy * cosA);
       const b2x = tx + head * (-ux * cosA + -uy * sinA);
       const b2y = ty + head * ( ux * sinA + -uy * cosA);
+      /* The loop goes back in, but small and on the way rather than dangling
+         off the end. It sits a little before the tip, so the stroke reads
+         swoop, curl, arrive: which is how the reference draws it, and is
+         also what a hand does when it doubles back before pointing. */
+      const lr = Math.max(6, size * 0.30);
+      /* Far enough back that the loop and the head read as two marks rather
+         than as one knot: two radii of loop plus a head and a bit. */
+      const back = lr * 2 + head * 1.5;
+      const lx = tx - aimx * back, ly = ty - aimy * back;
+      // the main curve now finishes at the loop rather than at the tip
+      const k1x = sx + vx * .34 + nx * b, k1y = sy + vy * .34 + ny * b;
+      const k2x = lx - aimx * L * .22,    k2y = ly - aimy * L * .22;
       path.setAttribute('d',
         `M${sx.toFixed(1)},${sy.toFixed(1)} ` +
-        `C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ` +
-        `${tx.toFixed(1)},${ty.toFixed(1)} ` +
+        `C${k1x.toFixed(1)},${k1y.toFixed(1)} ${k2x.toFixed(1)},${k2y.toFixed(1)} ` +
+        `${lx.toFixed(1)},${ly.toFixed(1)} ` +
+        `a${lr.toFixed(1)},${lr.toFixed(1)} 0 1 ${b >= 0 ? 1 : 0} ` +
+        `${(aimx * lr * 0.5).toFixed(1)},${(aimy * lr * 0.5).toFixed(1)} ` +
+        `L${tx.toFixed(1)},${ty.toFixed(1)} ` +
         `M${b1x.toFixed(1)},${b1y.toFixed(1)} L${tx.toFixed(1)},${ty.toFixed(1)} ` +
         `L${b2x.toFixed(1)},${b2y.toFixed(1)}`);
+      void c1x; void c1y; void c2x; void c2y;
       const len = path.getTotalLength();
       if (len) path.style.setProperty('--len', Math.ceil(len * 1.02));
     });
@@ -1812,17 +1848,61 @@ h1{
     addEventListener('keydown', e => { if (e.key === 'Escape' && !propSheet.hidden) closeProp(); });
   }
 
-  /* Calibration. ?props on the query string turns the frame into a ruler:
-     click anywhere and it prints the frame percentage under the pointer, so a
-     label that sits wrong can be fixed with a number instead of a guess. */
-  if (location.search.includes('props')){
-    hero.style.cursor = 'crosshair';
-    hero.addEventListener('click', e => {
-      const f = frameRect(), r = hero.getBoundingClientRect();
-      const x = ((e.clientX - r.left - f.x) / f.w * 100).toFixed(1);
-      const y = ((e.clientY - r.top  - f.y) / f.h * 100).toFixed(1);
-      console.log(`[${x}, ${y}]`);
-    }, true);
+  /* Calibration. ?props on the query string makes the whole set draggable.
+
+     Printing the coordinate under the pointer was not much better than
+     guessing: it still meant reading five pairs of numbers off a console and
+     typing them back in. Dragging the things themselves and having the page
+     write the table out is the same job in about thirty seconds, and it
+     cannot transcribe a number wrong. */
+  if (location.search.includes('props') && props){
+    props.style.pointerEvents = 'auto';
+    props.classList.add('calibrating');
+    document.querySelectorAll('.prop-tag').forEach(t => {
+      t.classList.add('on'); t.style.pointerEvents = 'auto'; t.style.cursor = 'move';
+    });
+    document.querySelectorAll('.prop-curls path').forEach(t => t.classList.add('on'));
+
+    let drag = null;
+    const start = (e, node, which) => {
+      e.preventDefault();
+      const f = frameRect();
+      drag = { node, which, f, id: e.pointerId };
+      e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId);
+    };
+    nodes.forEach(n => {
+      n.hit.addEventListener('pointerdown', e => start(e, n, 'hit'));
+      n.tag.addEventListener('pointerdown', e => start(e, n, 'tag'));
+    });
+    addEventListener('pointermove', e => {
+      if (!drag) return;
+      const r = hero.getBoundingClientRect(), f = drag.f;
+      const x = +(((e.clientX - r.left - f.x) / f.w) * 100).toFixed(1);
+      const y = +(((e.clientY - r.top  - f.y) / f.h) * 100).toFixed(1);
+      if (drag.which === 'hit'){ drag.node.d.hit[0] = x; drag.node.d.hit[1] = y; }
+      else                     { drag.node.d.tag[0] = x; drag.node.d.tag[1] = y; }
+      placeProps();
+    });
+    addEventListener('pointerup', () => { drag = null; dump(); });
+
+    /* Resizing a hotspot: shift-scroll for width, plain scroll for height. */
+    nodes.forEach(n => n.hit.addEventListener('wheel', e => {
+      e.preventDefault();
+      const i = e.shiftKey ? 2 : 3;
+      n.d.hit[i] = Math.max(1, +(n.d.hit[i] - Math.sign(e.deltaY) * 0.5).toFixed(1));
+      placeProps(); dump();
+    }, { passive: false }));
+
+    function dump(){
+      const rows = PROPS.map(d =>
+        `    { k:'${d.k}',${' '.repeat(Math.max(0, 6 - d.k.length))} ` +
+        `label:'${d.label}',${' '.repeat(Math.max(0, 16 - d.label.length))} ` +
+        `hit:[${d.hit.join(', ')}], tag:[${d.tag[0]}, ${d.tag[1]}], ` +
+        `tilt:${d.tilt}, bow:${d.bow} },`).join('\n');
+      console.clear();
+      console.log('Drag the objects and the writing. Paste this back into PROPS:\n\n' + rows);
+    }
+    dump();
   }
 
   /* ---- the face menu ----
@@ -1854,34 +1934,20 @@ h1{
     const sides = [...topnav.querySelectorAll('.tn-side')];
     if (!sides.length) return;
     const was = topnav.classList.contains('open');
-    const off = topnav.style.getPropertyValue('--off');
+    const links = [...topnav.querySelectorAll('.tn-side a')];
+    /* Measured with the menu forced open and every transition off, so these
+       are the content's real widths rather than whatever the animation
+       happened to be passing through. */
+    topnav.style.setProperty('--item', 'auto');
     sides.forEach(el => { el.style.transition = 'none'; el.style.width = 'auto'; });
-    topnav.style.transition = 'none';
-    topnav.style.setProperty('--off', '0px');
     topnav.classList.add('open');
-
-    const w = sides.map(el => Math.ceil(el.getBoundingClientRect().width));
-    /* The offset is MEASURED off the open menu with the offset cleared, and
-       against the screen rather than against the menu's own box.
-
-       Deriving it from the two side widths left the face 7.5px out, and so
-       did measuring it against the menu's centre: neither accounts for
-       `left:50%` resolving against a containing block that is not the same
-       width as the window. Comparing the face's real position with the real
-       centre cannot be wrong about any of that. */
-    const f = face.getBoundingClientRect();
-    const d = (f.left + f.right) / 2 - document.documentElement.clientWidth / 2;
-
+    const item = Math.ceil(Math.max(...links.map(a => a.getBoundingClientRect().width)));
+    topnav.style.setProperty('--item', item + 'px');
+    const side = Math.ceil(Math.max(...sides.map(el => el.getBoundingClientRect().width)));
     sides.forEach(el => { el.style.width = ''; });
     topnav.classList.toggle('open', was);
-    topnav.style.setProperty('--left',  w[0] + 'px');
-    topnav.style.setProperty('--right', w[1] + 'px');
-    topnav.style.setProperty('--offopen', (-d).toFixed(1) + 'px');
-    topnav.style.setProperty('--off', was ? (-d).toFixed(1) + 'px' : (off || '0px'));
-    requestAnimationFrame(() => {
-      sides.forEach(el => { el.style.transition = ''; });
-      topnav.style.transition = '';
-    });
+    topnav.style.setProperty('--side', side + 'px');
+    requestAnimationFrame(() => sides.forEach(el => { el.style.transition = ''; }));
   }
 
   /* Every character becomes two stacked copies so hover can flip them. Built
@@ -1913,10 +1979,6 @@ h1{
   function setNav(open){
     navOpen = open;
     topnav.classList.toggle('open', open);
-    /* The offset only applies while the sides are out. Closed, the menu is
-       just the face and belongs dead centre. */
-    topnav.style.setProperty('--off',
-      open ? (getComputedStyle(topnav).getPropertyValue('--offopen') || '0px') : '0px');
     face.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
   if (topnav){
