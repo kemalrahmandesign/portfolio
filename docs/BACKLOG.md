@@ -67,12 +67,28 @@ show as pinching at the hips and knees.
 `Big_Wave_Hello` is clip id 28 and is a real rigged animation, so the contact
 section's goodbye can be done properly whenever the rigging route is taken.
 
-## 3. Smaller, still open
+## 3. The contact section
+
+The bottom of the page is currently a line of type and an email address, which
+is a placeholder, not a design. It wants a real contact form and Kemal has said
+explicitly that it should not be a basic one. He is finding a reference; build
+nothing until it arrives, because "not basic" without a picture is an invitation
+to invent something and be wrong about it, which is exactly what happened with
+the About block.
+
+What is already in place to build on: the goodbye clip slot (`#byeStage`) is
+wired and empty, and `Big_Wave_Hello` is a real rigged animation clip if the
+mesh route is ever taken, so the character can wave you out of the page the way
+he waves you in.
+
+## 4. Smaller, still open
 
 - **The prop arrows** still need work. Kemal's coordinates are in and correct;
   the geometry of the curl is what he is unhappy with.
 - **Real social URLs.** Every link in the hero is still `href="#"`.
 - **"Cool Sh\*t" or "My work".** Floated, never decided. Copy comes last.
+- **The agency's name.** The experience list says "Own agency" because there is
+  no name to put there yet.
 - **Case study content.** Four image blocks with placeholder gradients. They
   need the real shots. There is deliberately no title or caption on them: in
   the reference the work carries its own name inside the picture.
