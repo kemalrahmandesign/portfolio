@@ -2491,3 +2491,33 @@ it is a bullet; the arrow silhouette with its corners taken off is what makes
 it read as one. Ink fill, page-colour stroke so it survives a dark image
 under it, a drop shadow for the same reason, and a label pill that rides
 beside it the way a name tag does on a shared canvas.
+
+## Four alignment bugs, one of them mine twice
+
+**The montage was never full width, and negating the padding was not the fix.**
+`.work` is capped at `--stage-max` and centred, so on anything wider than
+1800px the montage stopped where the column did and sat between two bars of
+page. It now breaks out with `--vw`, which is `document.documentElement
+.clientWidth` written to a custom property on resize. Not `100vw`: that counts
+the scrollbar and would overflow the page by its width. Measured 1440/1440 and
+2200/2200 with zero horizontal overflow at both.
+
+**The year was pushing the company name off centre.** In the flow, the
+superscript added its own width to the name's box, so the thing being centred
+was "name plus date" and the name itself sat left of centre — while the role
+underneath sat on the true centre. Two lines that should share an axis,
+disagreeing by half the width of a date, which is exactly what Kemal saw.
+The date is now absolutely positioned off the name's right edge and takes part
+in nothing. Measured: all three rows centre at 720 of a 1440 window, name and
+role alike. It goes back under the name below 640px, where there is no room to
+hang it.
+
+**The About paragraph was ranged left in a column that was itself left.** It is
+centred as a block now and still ranged left inside it: the text wants a left
+edge to read down, the block wants to sit in the middle of the window.
+
+**Two Osmosis rows said the same thing twice.** Polaris and the DEX ran over
+the same dates in the same role, in a list whose entire job is to be read
+quickly. One row, "Polaris", with Osmosis Labs in the role line.
+
+Case blocks went from 16:10 to 21:9.
