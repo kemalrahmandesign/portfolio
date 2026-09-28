@@ -59,7 +59,15 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-**Session 4, fourth pass (latest).** Kemal did not like any entrance motion
+**Session 4, fifth pass (latest).** Desktop menu: no home pill (the face
+is home), pills fly out two left and two right of the face at equal widths;
+the row is pointer-events:none so the face stays clickable. Phones keep the
+card with home. New "Currently building" section (Alexandria Car Clinic,
+Tokiwa Matcha) as disabled, striped, taped cards; the line in contact is
+gone. Hero videos lost their CSS filter to fix choppy playback (unverified by
+eye).
+
+**Session 4, fourth pass.** Kemal did not like any entrance motion
 on About (reel smears, then spring hops). About is now **read by scrolling**:
 the section is 220svh, the paragraph pins, words go from pale to ink with
 scroll progress, the hello starts lit, and a handwritten "keep scrolling"

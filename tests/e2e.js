@@ -79,16 +79,17 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('menu arrives with the monitor', (await E(()=>getComputedStyle(document.getElementById('topnav')).opacity))==='1');
   await p.hover('#tnFace'); await p.waitForTimeout(700);
   const order = await E(()=>[...document.querySelectorAll('.tn-drop a')]
+      .filter(a=>getComputedStyle(a).display!=='none')
       .sort((a,c)=>a.getBoundingClientRect().left-c.getBoundingClientRect().left).map(a=>a.getAttribute('aria-label')));
-  ok('hover drops pills: home, about, experience, work, contact',
-     order.join(',')==='home,about,experience,work,contact', order.join(','));
+  ok('hover opens about, experience | work, contact (no home pill)',
+     order.join(',')==='about,experience,work,contact', order.join(','));
   ok('menu is lowercase', order.every(t=>t===t.toLowerCase()));
   const pills = await E(()=>{const f=document.getElementById('tnFace').getBoundingClientRect();
-    const as=[...document.querySelectorAll('.tn-drop a')].map(a=>a.getBoundingClientRect());
-    const l=Math.min(...as.map(r=>r.left)), r=Math.max(...as.map(r=>r.right));
-    return {row:new Set(as.map(r=>Math.round(r.top))).size, below:as.every(r=>r.top>f.bottom),
-      centre:Math.round((l+r)/2-(f.left+f.right)/2), op:getComputedStyle(document.querySelector('.tn-drop a')).opacity};});
-  ok('pills sit in one row under the face, centred', pills.row===1 && pills.below && Math.abs(pills.centre)<3 && pills.op==='1', JSON.stringify(pills));
+    const as=[...document.querySelectorAll('.tn-drop a')].filter(a=>getComputedStyle(a).display!=='none').map(a=>a.getBoundingClientRect());
+    const fc=(f.left+f.right)/2;
+    return {left:as.filter(r=>r.right<f.left).length, right:as.filter(r=>r.left>f.right).length,
+      sym:Math.round((fc-as[0].left)-(as[3].right-fc)), mid:Math.round((as[0].top+as[0].bottom)/2-(f.top+f.bottom)/2)};});
+  ok('two pills each side of the face, level and symmetric', pills.left===2 && pills.right===2 && Math.abs(pills.sym)<3 && Math.abs(pills.mid)<3, JSON.stringify(pills));
   const flip = await E(()=>document.querySelectorAll('.tn-drop a .tk-c').length);
   ok('links split into flip cells', flip>20, flip+' cells');
   await p.mouse.move(700,700); await p.waitForTimeout(500);
@@ -155,9 +156,10 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('experience cards land', xp.shown);
   ok('no reel chrome left', (await E(()=>!document.querySelector('.chrome,.ch-k,.xp-dot'))));
   const hello = await E(()=>({fields:[...document.querySelectorAll('#contact form input:not(.hp)')].map(i=>i.name),
-    send:!!document.querySelector('#contact .send'), now:document.querySelector('.hello-now').textContent}));
+    send:!!document.querySelector('#contact .send')}));
   ok('contact is just name, email and a button', hello.fields.join()==='name,email' && hello.send, JSON.stringify(hello));
-  ok('contact names the next clients', hello.now.includes('Alexandria Car Clinic') && hello.now.includes('Tokiwa Matcha'));
+  const build = await E(()=>[...document.querySelectorAll('#building .build')].map(b=>({n:b.querySelector('.case-name').textContent, link:!!b.closest('a')||b.tagName==='A'})));
+  ok('currently building shows both clients, not clickable', build.length===2 && build.map(b=>b.n).join()==='Alexandria Car Clinic,Tokiwa Matcha' && build.every(b=>!b.link), JSON.stringify(build));
   const cases = await E(()=>({n:document.querySelectorAll('.case').length,
     titles:document.querySelectorAll('.case-title,.case-meta').length}));
   ok('three case studies, each linking to its page', cases.n===3 && (await E(()=>[...document.querySelectorAll('.case')].map(c=>c.getAttribute('href')).join())) === 'work/osmosis.html,work/polaris.html,work/loco.html', JSON.stringify(cases));

@@ -92,6 +92,13 @@ he waves you in.
 
 ## 4. Smaller, still open
 
+- **Case study layout.** Kemal floated trying something other than three
+  cards stacked ("just a future thought"). No direction yet.
+- **The walk still choppy?** Session 4 removed the CSS filter on the hero
+  videos (the likeliest cause visible in code). If it still stutters, the
+  next suspects are the walk's 24fps re-render and the clips still being
+  served from the Higgsfield CDN rather than `media/`.
+
 - **Commit the four hero clips** into `media/`. The live site is being served
   from the Higgsfield CDN through the fallback map, which lasts only as long as
   the generations do. Kemal can drop the files into the chat.
