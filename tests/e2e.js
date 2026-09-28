@@ -109,8 +109,8 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('about is one paragraph at one size', (await E(()=>{
     const p=document.querySelectorAll('.about .lede'); if (p.length!==1) return false;
     return document.querySelectorAll('.about .lede-line').length===0;})));
-  ok('about copy mentions end to end', (await E(()=>
-    document.querySelector('.lede').textContent.includes('end to end'))));
+  ok('about copy says who he is', (await E(()=>
+    document.querySelector('.lede').textContent.includes('product designer'))));
   ok('no ramp, no scroll cue', (await E(()=>!document.getElementById('rampFloor') && !document.getElementById('scrollCta'))));
   ok('no skater canvas', (await E(()=>!document.getElementById('skater'))));
 
@@ -146,7 +146,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
 
   // the reel: about and experience
   ok('about words keep their spaces', (await E(()=>
-    document.querySelector('.lede').textContent.replace(/\s+/g,' ').includes('A product designer of four years,'))));
+    document.querySelector('.lede').textContent.replace(/\s+/g,' ').includes('I’m a product designer who spent'))));
   /* Scrolled back to first: leaving a section puts it back to its starting
      state so it plays again, and the montage checks above left it. */
   await p.evaluate(()=>scrollTo(0, document.getElementById('about').getBoundingClientRect().top + scrollY));
@@ -158,7 +158,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   const xp = await E(()=>({cards:[...document.querySelectorAll('.xp-card')].map(c=>c.querySelector('.xp-who').textContent),
     fam:[...document.querySelectorAll('.xp-fam .xp-who')].map(c=>c.textContent),
     shown:[...document.querySelectorAll('.xp-card')].every(c=>getComputedStyle(c).opacity==='1')}));
-  ok('four places, Osmosis and Polaris as one family', xp.cards.length===4 && xp.fam.join()==='Osmosis,Polaris', JSON.stringify(xp));
+  ok('four places, Osmosis and Polaris as one family', xp.cards.length===4 && xp.fam.join()==='Polaris,Osmosis DEX', JSON.stringify(xp));
   ok('experience cards land', xp.shown);
   ok('no reel chrome left', (await E(()=>!document.querySelector('.chrome,.ch-k,.xp-dot'))));
   const hello = await E(()=>({form:!!document.querySelector('#contact form input[type=email]'),

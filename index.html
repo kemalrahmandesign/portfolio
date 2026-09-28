@@ -762,11 +762,33 @@ h1{
 @keyframes nudge{0%,100%{transform:translateY(0);opacity:.55} 50%{transform:translateY(4px);opacity:1}}
 
 
+/* The phone menu: a card that rolls down under the face. */
+.tn-drop{
+  position:absolute;top:calc(100% + 10px);left:50%;
+  display:grid;min-width:190px;padding:8px;
+  background:#fff;border-radius:26px;box-shadow:var(--lift);
+  transform:translateX(-50%) translateY(-10px) scale(.7);transform-origin:50% 0;
+  opacity:0;pointer-events:none;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .2s ease;
+}
+.topnav.dropped .tn-drop{opacity:1;pointer-events:auto;transform:translateX(-50%)}
+.tn-drop a{
+  display:block;padding:14px 20px;border-radius:18px;text-align:center;
+  font:700 19px/1 var(--font-display);letter-spacing:-.02em;color:var(--ink);text-decoration:none;
+  opacity:0;transform:translateY(-8px);
+  transition:opacity .25s ease,transform .45s cubic-bezier(.34,1.56,.64,1),background .2s ease;
+}
+.tn-drop a:first-child{background:var(--ink);color:var(--bg)}
+.topnav.dropped .tn-drop a{opacity:1;transform:none}
+.topnav.dropped .tn-drop a:nth-child(2){transition-delay:.04s}
+.topnav.dropped .tn-drop a:nth-child(3){transition-delay:.08s}
+.topnav.dropped .tn-drop a:nth-child(4){transition-delay:.12s}
+.topnav.dropped .tn-drop a:nth-child(5){transition-delay:.16s}
+@media (hover:hover){ .tn-drop{display:none} }
+
 /* ---------- about ----------
-   The kinetic type beat from the reel. The paragraph arrives phrase by
-   phrase, each phrase entering with one of the reel's moves: a slide from
-   the side that smears and snaps, a rise that stretches and settles, a drop
-   that tumbles and lands. The words keep their place in the paragraph. */
+   A hello, in his own voice. The words hop into place a phrase at a time
+   (see the script at the bottom); they keep their place in the paragraph. */
 .about{min-height:100svh;display:grid;align-items:center;padding:calc(var(--bar) + 6vh) 0 10vh}
 .about-body{width:100%;margin:0}
 .lede{
@@ -775,12 +797,6 @@ h1{
   letter-spacing:-.03em;line-height:1.18;
   /* Centred as a block, ranged left inside it. */
   max-width:min(30em,100%);margin-inline:auto;
-}
-/* Inline, indented, and small: a margin note the paragraph starts after. */
-.lede-tag{
-  font-family:Inter,sans-serif;font-size:12px;font-weight:500;
-  letter-spacing:.16em;opacity:.42;
-  margin-right:1.6em;vertical-align:.55em;white-space:nowrap;
 }
 /* A word is the smallest thing that moves. Inline-block so it can be
    transformed, one per word so the paragraph still wraps between them. */
@@ -1142,6 +1158,15 @@ html.cursored,html.cursored *{cursor:none !important}
   <button class="tn-face" id="tnFace" type="button" aria-expanded="false" aria-label="Back to the studio">
     <img alt="" src="" id="tnFaceImg">
   </button>
+  <!-- On a touch screen there is no hover to open the sides, so a tap on
+       the face rolls this list down instead, with home written out. -->
+  <div class="tn-drop" id="tnDrop">
+    <a href="#top" data-go="hero">home</a>
+    <a href="#about" data-go="about">about</a>
+    <a href="#experience" data-go="experience">experience</a>
+    <a href="#reel" data-go="reel">work</a>
+    <a href="#contact" data-go="contact">contact</a>
+  </div>
   <div class="tn-side tn-right">
     <a href="#reel" data-go="reel">work</a>
     <a href="#contact" data-go="contact">contact</a>
@@ -1224,11 +1249,7 @@ html.cursored,html.cursored *{cursor:none !important}
        plain text: the phrases are the only markup it needs. -->
   <section class="about" id="about">
     <div class="about-body">
-      <p class="lede"><span class="lede-tag">( about )</span> <span class="ph">A product
-      designer of four years,</span> <span class="ph">working end to end</span> <span class="ph">from
-      research through to the last call with engineering,</span> <span class="ph">mostly on
-      crypto trading products</span> <span class="ph">used by millions of people,</span> <span class="ph">and
-      quietly obsessed with visual storytelling.</span></p>
+      <p class="lede"><span class="ph">Hi, I&rsquo;m Kemal!</span> <span class="ph">I&rsquo;m a product designer</span> <span class="ph">who spent the last few years</span> <span class="ph">making crypto feel a lot less scary</span> <span class="ph">for millions of people.</span> <span class="ph">Now I run my own little studio,</span> <span class="ph">building websites and brands</span> <span class="ph">that tell a story.</span></p>
     </div>
   </section>
 
@@ -1243,8 +1264,8 @@ html.cursored,html.cursored *{cursor:none !important}
     <ul class="xp-list" id="cv">
       <li class="xp-card now">
         <span class="xp-mono" aria-hidden="true">K</span>
-        <div><h3 class="xp-who">My own studio</h3>
-          <p class="xp-what">Founder. Brand, product and web for a handful of clients</p></div>
+        <div><h3 class="xp-who">Kemal Rahman Design</h3>
+          <p class="xp-what">My agency. Brand, product and web for a handful of clients</p></div>
         <span class="xp-when"><i class="live"></i>2026 &ndash; now</span>
       </li>
       <li class="xp-fam">
@@ -1252,16 +1273,16 @@ html.cursored,html.cursored *{cursor:none !important}
         <span class="xp-fam-note">same family, two products</span>
         <ul>
           <li class="xp-card">
-            <span class="xp-mono" aria-hidden="true">O</span>
-            <div><h3 class="xp-who">Osmosis</h3>
-              <p class="xp-what">Product Designer &amp; UX Researcher. The DEX of the interchain, 2M users</p></div>
-            <span class="xp-when">2024 &ndash; 25</span>
-          </li>
-          <li class="xp-card">
             <span class="xp-mono" aria-hidden="true">P</span>
             <div><h3 class="xp-who">Polaris</h3>
               <p class="xp-what">Product Designer &amp; UX Researcher. Every token, every chain, one app</p></div>
-            <span class="xp-when">2024 &ndash; 25</span>
+            <span class="xp-when">2025</span>
+          </li>
+          <li class="xp-card">
+            <span class="xp-mono" aria-hidden="true">O</span>
+            <div><h3 class="xp-who">Osmosis DEX</h3>
+              <p class="xp-what">Product Designer &amp; UX Researcher. The exchange of the interchain, 2M users</p></div>
+            <span class="xp-when">2024</span>
           </li>
         </ul>
       </li>
@@ -2300,7 +2321,7 @@ html.cursored,html.cursored *{cursor:none !important}
   if (topnav){
     topnav.addEventListener('pointerenter', e => { if (e.pointerType !== 'touch') setNav(true); });
     topnav.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') setNav(false); });
-    topnav.addEventListener('focusin',  () => setNav(true));
+    topnav.addEventListener('focusin',  () => { if (!matchMedia('(hover: none)').matches) setNav(true); });
     topnav.addEventListener('focusout', e => {
       if (!topnav.contains(e.relatedTarget)) setNav(false);
     });
@@ -2308,10 +2329,20 @@ html.cursored,html.cursored *{cursor:none !important}
        the hover, so a click can only mean the one thing; on a touch screen
        there is no hover, so the first tap opens the menu and the second one
        goes home, which keeps both reachable from a finger. */
+    /* No hover on a phone, and Safari's click carries no pointerType, so
+       the device is asked once instead of each tap. A tap on the face rolls
+       the list down; a tap on a line in it goes there; anywhere else rolls
+       it back up. */
+    const touchy = matchMedia('(hover: none)').matches;
+    const drop = document.getElementById('tnDrop');
+    const setDrop = open => { topnav.classList.toggle('dropped', open);
+      face.setAttribute('aria-expanded', open ? 'true' : 'false'); };
     face.addEventListener('click', e => {
-      if (!navOpen && e.pointerType === 'touch'){ setNav(true); return; }
+      if (touchy){ setDrop(!topnav.classList.contains('dropped')); return; }
       goTo('hero');
     });
+    if (drop) drop.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setDrop(false)));
+    document.addEventListener('click', e => { if (!topnav.contains(e.target)) setDrop(false); });
     addEventListener('keydown', e => { if (e.key === 'Escape' && navOpen) setNav(false); });
   }
 
@@ -2391,15 +2422,6 @@ html.cursored,html.cursored *{cursor:none !important}
     hardCut();
     setTimeout(land, 260);
   }
-  /* Nothing to open yet. A link that silently jumps to the top of the page
-     is worse than one that admits it is not built. */
-  document.querySelectorAll('.case').forEach(a => {
-    a.addEventListener('click', e => { e.preventDefault(); openProp({
-      label: a.querySelector('.case-title').textContent,
-      note: 'Case study still to be written. Send me the shots and the story.'
-    }); });
-  });
-
   document.querySelectorAll('.topnav [data-go]').forEach(a => {
     a.addEventListener('click', e => { e.preventDefault(); goTo(a.dataset.go); });
   });
@@ -2537,18 +2559,9 @@ html.cursored,html.cursored *{cursor:none !important}
     }), { threshold: 0 }).observe(target.closest('section'));
   }
 
-  /* ---- about: kinetic type ----
-     Four entrances from the reel's type beat, one per phrase, in turn:
-       slide  "IN."    in from the right, smearing, snapping to a stop
-       rise   "EASE"   up from below, stretched tall, settling to size
-       slide  "OUT."   the same from the left
-       drop   "NEVER"  tumbling in from above and landing
-     The smear is the reel's motion blur done as echoes: copies of the word
-     trailing behind it, spaced by how far it moved this frame, so they
-     stretch out at speed and collapse into the word as it stops. */
+  /* ---- about: words that hop into place ---- */
   const about = document.getElementById('about');
   const lede = about && about.querySelector('.lede');
-  const tag = lede && lede.querySelector('.lede-tag');
   const phrases = lede ? [...lede.querySelectorAll('.ph')].map(ph => {
     const words = ph.textContent.trim().split(/\s+/);
     ph.textContent = '';
@@ -2562,68 +2575,59 @@ html.cursored,html.cursored *{cursor:none !important}
   }) : [];
   const allWords = phrases.flat();
 
-  function smear(el, prop){
-    let last = null;
-    return () => {
-      const v = G.getProperty(el, prop);
-      const d = last === null ? 0 : v - last;
-      last = v;
-      const m = Math.min(Math.abs(d), 70);
-      if (m < 0.4){ el.style.textShadow = ''; return; }
-      const s = -Math.sign(d) * m * 0.55;
-      el.style.textShadow = [1, 2, 3].map(k =>
-        (prop === 'x' ? `${(s * k).toFixed(1)}px 0` : `0 ${(s * k).toFixed(1)}px`) +
-        ` 0 rgba(10,10,10,${(0.3 / k).toFixed(2)})`).join(',');
-    };
-  }
-  const settle = el => () => { el.style.textShadow = ''; };
-
-  const ENTER = [
-    (ws, at, tl) => ws.forEach((w, i) => {       // in from the right
-      tl.fromTo(w, { x: innerWidth * 0.6, scaleX: 1.35, opacity: 0 },
-        { x: 0, scaleX: 1, opacity: 1, duration: 0.62, ease: 'expo.out',
-          onUpdate: smear(w, 'x'), onComplete: settle(w) }, at + i * 0.018);
-    }),
-    (ws, at, tl) => ws.forEach((w, i) => {       // up from below, stretched
-      tl.fromTo(w, { y: 1.2 * em, scaleY: 1.9, opacity: 0, transformOrigin: '50% 100%' },
-        { y: 0, scaleY: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.6)',
-          onUpdate: smear(w, 'y'), onComplete: settle(w) }, at + i * 0.045);
-    }),
-    (ws, at, tl) => ws.forEach((w, i) => {       // in from the left
-      tl.fromTo(w, { x: -innerWidth * 0.6, scaleX: 1.35, opacity: 0 },
-        { x: 0, scaleX: 1, opacity: 1, duration: 0.62, ease: 'expo.out',
-          onUpdate: smear(w, 'x'), onComplete: settle(w) }, at + i * 0.018);
-    }),
-    (ws, at, tl) => ws.forEach((w, i) => {       // tumbling in from above
-      tl.fromTo(w, { y: -1.5 * em, rotation: (i % 2 ? 1 : -1) * 16, opacity: 0, transformOrigin: '50% 100%' },
-        { y: 0, rotation: 0, opacity: 1, duration: 0.55, ease: 'back.out(2.4)',
-          onUpdate: smear(w, 'y'), onComplete: settle(w) }, at + i * 0.05);
-    }),
-  ];
-
-  let aboutTl = null, em = 40;
-  /* Reset with plain styles, not GSAP. Handed an element inside the
-     still-hidden #work, GSAP lifts it out of the page to measure its
-     transform and puts it back before the next element, which skips the
-     text node in between: every space in the paragraph ended up at the
-     front of its phrase and the words ran together. */
+  /* Friendly, not serious: every word hops up out of the line like it
+     was called on, overshoots a little and settles, one phrase to a beat.
+     The first phrase ("Hi, I'm Kemal!") gets a bigger bounce and a little
+     wave of a tilt, because it is a hello. */
+  let aboutTl = null;
   function armAbout(){
     if (aboutTl){ aboutTl.kill(); aboutTl = null; }
     allWords.forEach(w => { w.style.cssText = 'opacity:0'; });
-    if (tag) tag.style.cssText = 'opacity:0';
   }
   function playAbout(){
     armAbout();
-    em = parseFloat(getComputedStyle(lede).fontSize) || 40;
     const tl = aboutTl = G.timeline();
-    tl.fromTo(tag, { opacity: 0, x: -12 }, { opacity: 0.42, x: 0, duration: 0.3, ease: 'expo.out' }, 0);
-    phrases.forEach((ws, i) => ENTER[i % ENTER.length](ws, 0.12 + i * 0.3, tl));
-    tl.add(() => { allWords.forEach(w => { w.style.cssText = ''; }); if (tag) tag.style.cssText = ''; });
+    phrases.forEach((ws, i) => {
+      const hello = i === 0;
+      ws.forEach((w, j) => {
+        tl.fromTo(w,
+          { opacity: 0, y: hello ? 60 : 34, scale: hello ? 0.4 : 0.6, rotation: (j % 2 ? 1 : -1) * (hello ? 14 : 7), transformOrigin: '50% 100%' },
+          { opacity: 1, y: 0, scale: 1, rotation: 0, duration: hello ? 1.1 : 0.8,
+            ease: hello ? 'elastic.out(1.1,0.45)' : 'back.out(2.6)' },
+          0.1 + i * 0.22 + j * 0.05);
+      });
+    });
+    /* And the hello waves once it has landed. */
+    if (phrases[0]) tl.to(phrases[0], { rotation: -6, duration: 0.14, yoyo: true, repeat: 3, ease: 'sine.inOut',
+      transformOrigin: '50% 90%', stagger: 0.03 }, 0.95);
+    tl.add(() => { allWords.forEach(w => { w.style.cssText = ''; }); });
   }
   if (lede){
     if (still){ /* drawn as it stands */ }
     else { armAbout(); onView(lede, 0.4, playAbout, armAbout); }
   }
+
+  /* ---- section titles: a bounce and a scribble ----
+     Each big title hops in word by word and its handwritten note swings
+     in after it, like a sticky note being slapped on. */
+  document.querySelectorAll('.sec-head').forEach(h => {
+    const t = h.querySelector('.sec-title'), n = h.querySelector('.sec-note');
+    if (!t || still) return;
+    const ws = t.textContent.split(' ');
+    t.textContent = '';
+    const spans = ws.map((w, i) => { if (i) t.append(' ');
+      const s = document.createElement('span'); s.className = 'w'; s.style.display = 'inline-block';
+      s.textContent = w; t.append(s); return s; });
+    const arm = () => { spans.forEach(s => { s.style.opacity = '0'; }); if (n) n.style.opacity = '0'; };
+    const play = () => {
+      const tl = G.timeline();
+      spans.forEach((s, i) => tl.fromTo(s, { opacity: 0, y: 50, scale: 0.5, rotation: i % 2 ? 10 : -10 },
+        { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.9, ease: 'elastic.out(1,0.5)' }, i * 0.08));
+      if (n) tl.fromTo(n, { opacity: 0, scale: 0.3, rotation: -30 },
+        { opacity: 0.8, scale: 1, rotation: -6, duration: 0.8, ease: 'back.out(3)' }, '-=0.5');
+    };
+    arm(); onView(h, 0.6, play, arm);
+  });
 
   /* ---- experience: cards on a spring ----
      Each card drops in a little tilted and overshoots into place, like a
