@@ -59,7 +59,19 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-**Session 4, fifth pass (latest).** Desktop menu: no home pill (the face
+**Session 4, sixth pass (latest).** Case pages now carry the same face menu
+(`work/case.css`+`case.js`; links go to `../index.html#section`, and the main
+page treats a section hash as a deep link that skips the greeting). Loco page
+opens on a full-window scrubbed hero with the site's own lockup; the
+storyboard is two frames over three, each carrying the site's real text
+(cycling beats for the services and reviews). Polaris is described as what it
+is, a token portal / aggregator (Osmosis Labs, Sept 2024); Toyota/Lexus was an
+analogy for the assistant and must never appear on the site. Nav: the face has
+a hover state and a "home" tag, pills fill black and the others dim. Cursor:
+a spring-loaded link state (arrow tips, ring blooms); disabled cards say
+"soon". Hero tagline is Instrument Serif italic. Tests: `tests/pages.js`.
+
+**Session 4, fifth pass.** Desktop menu: no home pill (the face
 is home), pills fly out two left and two right of the face at equal widths;
 the row is pointer-events:none so the face stays clickable. Phones keep the
 card with home. New "Currently building" section (Alexandria Car Clinic,
@@ -139,7 +151,7 @@ it should be **friendly, not serious**. Kept: the About kinetic type. Built:
 | Contact | form + next clients; built without a reference, on request |
 | Cursor | a pointer arrow with a label pill, FigJam-like |
 | Mobile | letterboxed 16:9; **the 9:16 regeneration is in `BACKLOG.md`** |
-| Tests | `tests/e2e.js` 61 passing, `tests/mobile.js` 5 passing |
+| Tests | `tests/e2e.js` 61, `tests/mobile.js` 5, `tests/pages.js` 15 |
 
 ## Working with Kemal
 

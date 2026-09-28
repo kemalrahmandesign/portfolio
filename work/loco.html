@@ -11,29 +11,53 @@
 <link rel="stylesheet" href="case.css">
 </head>
 <body>
-<header class="top"><a class="back" href="../index.html#cases"><img src="../media/face.webp" alt="">Back to the studio</a></header>
+<nav class="topnav" id="topnav" aria-label="Sections">
+  <button class="tn-face" id="tnFace" type="button" aria-expanded="false" aria-label="Back to the studio"><img alt="" src="../media/face.webp"></button>
+  <span class="tn-tip" aria-hidden="true">home</span>
+  <div class="tn-drop" id="tnDrop">
+    <a href="../index.html">home</a>
+    <a href="../index.html#about">about</a>
+    <a href="../index.html#experience">experience</a>
+    <a href="../index.html#cases">work</a>
+    <a href="../index.html#contact">contact</a>
+  </div>
+</nav>
+<header class="scrub scrub-hero" id="top">
+  <div class="scrub-stage">
+    <div class="hero-film">
+      <video muted playsinline preload="auto" poster="../media/loco/hero-poster.jpg" src="../media/loco/hero.mp4" data-portrait="../media/loco/hero-portrait.mp4" data-portrait-poster="../media/loco/hero-portrait-poster.jpg" aria-hidden="true"></video>
+      <div class="hl">
+        <p class="hl-tag">Loudoun County Exotics &middot; Sterling, Virginia</p>
+        <h1 class="hl-name">Loco Exotics</h1>
+        <p class="hl-sub">Luxury &amp; exotic car repair</p>
+        <a class="hl-cta" href="https://kemalrahmandesign.github.io/Loco-exotic/">Visit the live site <span aria-hidden="true">&rarr;</span></a>
+      </div>
+      <p class="hl-case">Case study &middot; client site &middot; 2026</p>
+      <p class="hl-cue" aria-hidden="true">scroll to play the film</p>
+    </div>
+  </div>
+</header>
 <main class="wrap">
-  <section class="hero-c">
-    <p class="kicker">Case study &middot; client site &middot; 2026</p>
-    <h1 class="big">Loco Exotics</h1>
+  <section class="hero-c intro">
     <p class="deck">Loudoun County Exotics fixes Ferraris, Porsches and Lamborghinis in Sterling, Virginia. The site had to feel the way the cars do, so I built it as a short film you scroll through.</p>
-    <ul class="meta"><li><b>2026</b><span>year</span></li><li><b>Luxury car repair</b><span>client</span></li><li><b>Story, art direction</b><span>film and build</span></li><li><b><a href="https://kemalrahmandesign.github.io/Loco-exotic/">Visit the live site &rarr;</a></b><span></span></li></ul>
+    <ul class="meta"><li><b>2026</b><span>year</span></li><li><b>Luxury car repair</b><span>client</span></li><li><b>Story, art direction</b><span>film and build</span></li><li><a href="https://kemalrahmandesign.github.io/Loco-exotic/">Visit the live site &rarr;</a></li></ul>
   </section>
-  <figure class="shot cover"><video autoplay muted loop playsinline poster="../media/loco/hero-poster.jpg" src="../media/loco/hero.mp4"></video></figure>
   <section class="blk rise">
     <div class="blk-head"><span class="num">01</span><h2>Not a body shop. An atelier.</h2><br><span class="note">the brief</span></div>
     <div class="blk-body"><p>Most repair shop sites sell on a price list and a stock photo of a spanner. This shop works on machines that punish shortcuts, for owners who notice everything.</p><p>So the goal was a feeling, before a single word gets read: these people are obsessive, in the best way. Everything on the site serves that one story.</p></div>
   </section>
   <section class="rise" style="padding:clamp(40px,8vh,90px) 0 0">
     <div style="text-align:center"><span class="num">02</span><h2 style="margin:0;font:800 clamp(30px,3.6vw,54px)/1 var(--display);letter-spacing:-.045em">Told in five scenes</h2><span class="note">the storyboard</span></div>
-    <div class="board"><figure class="frame"><img loading="lazy" alt="" src="../media/loco/hero-poster.jpg"><figcaption><b><i>1</i>Arrival</b><span>A black 911 floating on its own reflection. Quiet, expensive, patient. The first thing you see, and the promise of everything after.</span></figcaption></figure><figure class="frame"><video muted loop playsinline preload="none" data-auto poster="../media/loco/lift-poster.jpg" src="../media/loco/lift.mp4"></video><figcaption><b><i>2</i>The atelier</b><span>A Ferrari up on the lift, lit like a stage. The shop as a place of craft, not a garage.</span></figcaption></figure><figure class="frame"><img loading="lazy" alt="" src="../media/loco/gear.webp"><figcaption><b><i>3</i>The craft</b><span>A single gear, machined and lit like jewellery. Precision you can almost feel.</span></figcaption></figure><figure class="frame"><video muted loop playsinline preload="none" data-auto poster="../media/loco/brake-poster.jpg" src="../media/loco/brake.mp4"></video><figcaption><b><i>4</i>Stopping power</b><span>A brake disc spinning like a turntable, with the scroll driving the spin. Services, told as a moment.</span></figcaption></figure><figure class="frame"><video muted loop playsinline preload="none" data-auto poster="../media/loco/tail-poster.jpg" src="../media/loco/tail.mp4"></video><figcaption><b><i>5</i>The details</b><span>A tail light glowing in the dark, the last shot before the reviews. Care, down to the smallest part.</span></figcaption></figure></div>
+    <div class="board"><figure class="frame"><div class="fm"><video muted loop playsinline preload="none" data-auto poster="../media/loco/hero-poster.jpg" src="../media/loco/hero.mp4"></video><div class="ov"><span class="lb">Loudoun County Exotics &middot; Sterling, Virginia</span><span class="hd hd-xl">Loco Exotics</span><span class="sb">Luxury &amp; exotic car repair</span></div></div><figcaption><b><i>1</i>Arrival</b><span>A black 911 floating on its own reflection. Quiet, expensive, patient. The first thing you see, and the promise of everything after.</span></figcaption></figure><figure class="frame"><div class="fm"><img loading="lazy" alt="" src="../media/loco/gear.webp"><div class="ov"><div class="beats" style="--n:4"><div class="beat b4" style="--i:0"><span class="lb">01</span><span class="hd">German car repair</span><span class="sb">BMW &middot; Mercedes-Benz &middot; Porsche</span></div><div class="beat b4" style="--i:1"><span class="lb">02</span><span class="hd">Italian car repair</span><span class="sb">Ferrari &middot; Lamborghini &middot; Maserati &middot; Alfa Romeo</span></div><div class="beat b4" style="--i:2"><span class="lb">03</span><span class="hd">Luxury &amp; exotic service</span><span class="sb">Bentley &middot; Aston Martin &middot; McLaren &amp; more</span></div><div class="beat b4" style="--i:3"><span class="lb">04</span><span class="hd">Diagnostics &amp; maintenance</span><span class="sb">Factory-level equipment, honest counsel</span></div></div></div></div><figcaption><b><i>2</i>The craft</b><span>A single gear, machined and lit like jewellery, with the four services stepping through it. Precision you can almost feel.</span></figcaption></figure><figure class="frame"><div class="fm"><video muted loop playsinline preload="none" data-auto poster="../media/loco/brake-poster.jpg" src="../media/loco/brake.mp4"></video><div class="ov"><span class="lb">Brakes &middot; Rotors &middot; Calipers</span><span class="hd">Stopping power, restored to spec.</span></div></div><figcaption><b><i>3</i>Stopping power</b><span>A brake disc spinning like a turntable, with the scroll driving the spin. Services, told as a moment.</span></figcaption></figure><figure class="frame"><div class="fm"><video muted loop playsinline preload="none" data-auto poster="../media/loco/tail-poster.jpg" src="../media/loco/tail.mp4"></video><div class="ov"><span class="lb">Bodywork &middot; Paint &middot; Detail</span><ol class="rows"><li><i>01</i>Paint correction</li><li><i>02</i>Paint protection film</li><li><i>03</i>Ceramic coating</li><li><i>04</i>Wheel &amp; trim refinishing</li></ol></div></div><figcaption><b><i>4</i>The details</b><span>A tail light glowing in the dark while the finishing services roll past. Care, down to the smallest part.</span></figcaption></figure><figure class="frame"><div class="fm"><video muted loop playsinline preload="none" data-auto poster="../media/loco/lift-poster.jpg" src="../media/loco/lift.mp4"></video><div class="ov"><div class="beats" style="--n:3"><div class="beat b3" style="--i:0"><span class="lb">Reviews &middot; What people are saying about us.</span><span class="qt">&ldquo;The dealer quoted six weeks. LoCo did it in nine days and documented every torque value.&rdquo;</span><span class="sb">Dana R., Ferrari 488 GTB &middot; Major service</span></div><div class="beat b3" style="--i:1"><span class="lb">Reviews &middot; What people are saying about us.</span><span class="qt">&ldquo;The panel gaps are tighter than when it left Stuttgart. Obsessive in the best way.&rdquo;</span><span class="sb">Marcus T., Porsche 911 Turbo S &middot; PPF &amp; paint correction</span></div><div class="beat b3" style="--i:2"><span class="lb">Reviews &middot; What people are saying about us.</span><span class="qt">&ldquo;They found what two other shops missed. My only shop from now on.&rdquo;</span><span class="sb">Victor A., Lamborghini Hurac&aacute;n &middot; Clutch &amp; diagnostics</span></div></div></div></div><figcaption><b><i>5</i>The lift</b><span>A Ferrari rising on the lift as you scroll, with real reviews popping up over the film. The proof, after the feeling.</span></figcaption></figure></div>
   </section>
   <section class="blk rise">
     <div class="blk-head"><span class="num">03</span><h2>The scroll is the playhead</h2><br><span class="note">try it below</span></div>
     <div class="blk-body"><p>Nothing on the site just autoplays at you. Each film is scrubbed by the scroll, so the visitor directs the pace: scroll slowly and the brake disc turns slowly, flick and it spins.</p><p>Scenes hand over to each other through a tunnel transition instead of a hard cut, so the page reads as one continuous take. That transition took four attempts to get right, and it was worth every one.</p></div>
   </section>
   <section class="scrub">
-    <div class="scrub-stage"><div class="scrub-card"><video muted playsinline preload="auto" poster="../media/loco/brake-poster.jpg" src="../media/loco/brake.mp4"></video><span class="scrub-tag">Scroll to spin</span><i class="scrub-bar"></i></div></div>
+    <div class="scrub-stage"><div class="scrub-card"><video muted playsinline preload="auto" poster="../media/loco/brake-poster.jpg" src="../media/loco/brake.mp4"></video>
+      <div class="ov"><span class="lb">Brakes &middot; Rotors &middot; Calipers</span><span class="hd">Stopping power, restored to spec.</span></div>
+      <span class="scrub-tag">Scroll to spin</span><i class="scrub-bar"></i></div></div>
   </section>
   <section class="blk rise">
     <div class="blk-head"><span class="num">04</span><h2>Stills before motion</h2><br><span class="note">the golden rule</span></div>

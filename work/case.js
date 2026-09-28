@@ -44,4 +44,43 @@
     v.addEventListener('loadedmetadata', read);
     read(); requestAnimationFrame(tick);
   });
+
+  /* Portrait phones get the portrait cut of the opening film. */
+  document.querySelectorAll('video[data-portrait]').forEach(v => {
+    if (matchMedia('(max-aspect-ratio: 1/1)').matches){
+      v.src = v.dataset.portrait;
+      if (v.dataset.portraitPoster) v.poster = v.dataset.portraitPoster;
+    }
+  });
+
+  /* ---- the menu: the same as the main site ----
+     A pointer opens the pills on hover and the face goes home; a finger taps
+     the face to roll the card down. */
+  const nav = document.getElementById('topnav');
+  if (nav){
+    const face = document.getElementById('tnFace');
+    const touchy = matchMedia('(hover: none)').matches;
+    if (!touchy){
+      document.querySelectorAll('.tn-drop a').forEach(a => {
+        const text = a.textContent; a.setAttribute('aria-label', text); a.textContent = '';
+        const wrap = document.createElement('span'); wrap.className = 'tk';
+        [...text].forEach((ch, i) => {
+          const c = document.createElement('span'); c.className = 'tk-c'; c.style.setProperty('--i', i);
+          const t = document.createElement('span'); t.className = 'a'; t.textContent = ch;
+          const b = document.createElement('span'); b.className = 'b'; b.textContent = ch; b.setAttribute('aria-hidden', 'true');
+          c.append(t, b); wrap.append(c);
+        });
+        a.append(wrap);
+      });
+      nav.addEventListener('pointerenter', () => nav.classList.add('open'));
+      nav.addEventListener('pointerleave', () => nav.classList.remove('open'));
+      nav.addEventListener('focusin', () => nav.classList.add('open'));
+      nav.addEventListener('focusout', e => { if (!nav.contains(e.relatedTarget)) nav.classList.remove('open'); });
+      face.addEventListener('click', () => { location.href = '../index.html'; });
+    } else {
+      const set = o => { nav.classList.toggle('dropped', o); face.setAttribute('aria-expanded', o ? 'true' : 'false'); };
+      face.addEventListener('click', () => set(!nav.classList.contains('dropped')));
+      document.addEventListener('click', e => { if (!nav.contains(e.target)) set(false); });
+    }
+  }
 })();
