@@ -24,8 +24,8 @@ four case study images, Contact. A face menu (his cartoon head, centred at the
 top) appears only once inside the monitor.
 
 Live: **https://kemalrahmandesign.github.io/portfolio/**
-Deploy = merge into `claude/portfolio-hero-brainstorm-oonxku` and push. The last
-session developed on `claude/eager-bardeen-yde4ng`; both are in step.
+Deploy = merge into `claude/portfolio-hero-brainstorm-oonxku` and push. Session 4
+developed on `claude/magical-davinci-0ntnlw`; both are in step.
 
 ## Next up: motion design for the second scene
 
@@ -59,8 +59,35 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-Kemal's last word on it: build **Experience** first, show him, then roll the
-system out to the other four. He has not yet seen any of it built.
+**Built so far (session 4): About and Experience**, deployed. Kemal asked for
+those two only; the montage, the case studies and contact are still to do,
+with the same system.
+
+- **The reel system** (`.tape` sections, the second `<script>` at the bottom of
+  `index.html`): each section is a full-window frame measured off a 1920x1080
+  reel frame in `--u` units (a 760-wide frame on phones). The chrome is built
+  by script: corner brackets, `KEMAL RAHMAN · PORTFOLIO – 2026`, the chapter
+  from `data-chap`, a timecode and beat counter driven by scroll (one screen =
+  one second), and a progress line over the whole of `#work`. A section plays
+  when it comes into view and resets once it is fully out, so it replays.
+- **Experience** is the easing race: number, mono name and role, a curve glyph
+  drawn from the same ease the dot uses, and a line from start year to end
+  year. Dots fly in from the upper left, then race 0.94s (the reel's figure)
+  on elastic, expo-out and back-out, with velocity motion blur and ghost rings
+  and ticks behind them. The title "Four years, from A to B." and the caption
+  are placeholders written this session; Kemal has not approved them.
+- **About** is the kinetic type beat: six phrases in `.ph` spans, each entering
+  with one of the reel's moves in turn (slide from the right with an echo
+  smear, rise stretched from below, slide from the left, tumble from above).
+- GSAP 3.15 is vendored at `vendor/gsap.min.js`. Fonts: JetBrains Mono for the
+  chrome and labels, Instrument Serif italic for the Experience title (closest
+  Google Fonts matches to the reel; the test copies are in `tests/fonts/`).
+- **Trap:** do not hand GSAP an element inside `#work` while it is hidden. It
+  lifts the element out to measure its transform and reinserts it before the
+  next element, skipping text nodes, which moved every space in the About
+  paragraph to the front of its phrase. Reset with plain styles instead.
+- Kemal has not seen it yet: everything above rests on headless screenshots
+  at 1440, 1920 and 390 wide.
 
 ## State
 
@@ -74,14 +101,14 @@ system out to the other four. He has not yet seen any of it built.
 | Overscroll | done, black arc with curved note, holds 850ms |
 | Fast forward | done, speeds the take to 4x, resets between runs |
 | Face menu | done: about, experience, work, contact; the face goes home; split-flap hover |
-| About | one paragraph, black on white, `( about )` inline; copy approved-ish |
-| Experience | three rows centred: Own agency (2026 to now), Polaris (2024 to 25), Brainfood (2020 to 21); **agency name unknown** |
+| About | one paragraph, black on white, `( about )` inline; copy approved-ish; **kinetic type entrance + reel chrome** |
+| Experience | the easing race, three rows: Own agency (2026 to now), Polaris (2024 to 25), Brainfood (2020 to 21); **agency name unknown; title copy unapproved** |
 | Montage | sticky, full window width, grey placeholder; **no reel yet** |
 | Case studies | four 21:9 images with parallax and a "view" cursor; **placeholder gradients** |
 | Contact | placeholder; **waiting on a design reference from Kemal** |
 | Cursor | a pointer arrow with a label pill, FigJam-like |
 | Mobile | letterboxed 16:9; **the 9:16 regeneration is in `BACKLOG.md`** |
-| Tests | `tests/`, 59 passing; see `tests/README.md` |
+| Tests | `tests/`, 63 passing; see `tests/README.md` |
 
 ## Working with Kemal
 

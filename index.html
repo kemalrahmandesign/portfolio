@@ -6,7 +6,7 @@
 <title>Kemal Rahman</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&family=Kaushan+Script&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500;700&family=Kaushan+Script&display=swap" rel="stylesheet">
 <style>
 :root{
   /* Page tone, taken from the Figma reference. */
@@ -762,84 +762,173 @@ h1{
 @keyframes nudge{0%,100%{transform:translateY(0);opacity:.55} 50%{transform:translateY(4px);opacity:1}}
 
 
-/* ---------- about: the colour block ----------
-   Full bleed out of the work column. A colour that stops at the text margin
-   reads as a card, and the point of this one is to be a room: the hero and
-   the monitor are both near white, so the first thing under the arrival has
-   to say "somewhere else" before it says anything at all. */
-.about{
-  /* Not a .panel: that class lays out three rows and would drop the copy in
-     the first one, which leaves align-items nothing to work with. */
-  padding:calc(var(--bar) + 6vh) 0 10vh;
-  min-height:76svh;display:grid;align-items:center;
+/* ---------- the reel ----------
+   The sections behind the monitor move like the motion-graphics reel Kemal
+   sent: the motion, not the colour. Everything here is black on the page
+   tone. The reel runs on coral, blue and lime, and none of that comes across.
+
+   Every measurement in this block is taken off a 1920x1080 frame of the
+   reel and written in --u, one 1920th of the window, so the frame scales the
+   way the video does. A phone gets a 760-wide frame instead, or the dots and
+   labels come out the size of full stops. */
+.tape{
+  --u:calc(var(--vw,100vw) / 1920);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --serif:'Instrument Serif',Georgia,serif;
+  --grey:rgba(10,10,10,.5);
+  position:relative;min-height:100svh;
+  width:var(--vw,100%);
+  margin-left:calc((var(--vw,100%) - 100%) / -2);
+  margin-right:calc((var(--vw,100%) - 100%) / -2);
+  /* The elastic dot overshoots the end of its line and off the frame, which
+     is the point of it; it must not widen the page on the way. */
+  overflow:clip;
 }
-/* One paragraph, one size, the label sitting inline at the head of it the
-   way the reference does. The previous version set the first line huge and
-   the rest small, which turned one thought into a headline with footnotes
-   stapled underneath. */
-/* The measure is set on the type, in its own ems, not in a character count
-   on the wrapper. In the reference the paragraph is about thirty times its
-   own font size wide and runs four lines; a ch-based cap gave a column two
-   words across and eleven lines deep. */
+@media (max-width:760px){ .tape{--u:calc(var(--vw,100vw) / 760)} }
+
+/* The chrome. Corner brackets, tiny mono labels, a running timecode and a
+   progress line: half of why the reel reads as a reel. It ticks with the
+   scroll rather than with a clock, so standing still stops the tape. */
+.chrome{
+  position:absolute;inset:0;pointer-events:none;z-index:2;
+  font:500 max(9px,calc(14 * var(--u)))/1 var(--mono);
+  letter-spacing:.2em;text-transform:uppercase;color:var(--ink);
+}
+.ch-k{
+  position:absolute;width:calc(20 * var(--u));height:calc(20 * var(--u));
+  border:0 solid var(--ink);
+}
+.ch-k.tl{left:calc(44 * var(--u));top:calc(44 * var(--u));border-width:2px 0 0 2px}
+.ch-k.tr{right:calc(44 * var(--u));top:calc(44 * var(--u));border-width:2px 2px 0 0}
+.ch-k.bl{left:calc(44 * var(--u));bottom:calc(44 * var(--u));border-width:0 0 2px 2px}
+.ch-k.br{right:calc(44 * var(--u));bottom:calc(44 * var(--u));border-width:0 2px 2px 0}
+.ch-row{position:absolute;display:flex;align-items:center;gap:calc(44 * var(--u));white-space:nowrap}
+.ch-row.t{top:calc(68 * var(--u))}
+.ch-row.b{bottom:calc(67 * var(--u))}
+.ch-row.l{left:calc(80 * var(--u))}
+.ch-row.r{right:calc(80 * var(--u))}
+.ch-b{font-weight:700}
+.ch-g{color:var(--grey)}
+.ch-tc{font-variant-numeric:tabular-nums}
+.ch-sq{display:flex;gap:calc(5 * var(--u));margin-left:calc(-16 * var(--u))}
+.ch-sq i{
+  width:max(7px,calc(12 * var(--u)));height:max(7px,calc(12 * var(--u)));
+  border:1.5px solid var(--ink);box-sizing:border-box;
+}
+.ch-sq i.on{background:var(--ink)}
+.ch-line{
+  position:absolute;left:calc(44 * var(--u));bottom:calc(29 * var(--u));
+  height:2px;background:var(--ink);
+  width:calc((100% - 88 * var(--u)) * var(--prog,0));
+}
+@media (max-width:760px){
+  .ch-row.b.r .ch-g, .ch-row.t.l .ch-g{display:none}
+}
+
+/* ---------- about ----------
+   The kinetic type beat. The paragraph arrives phrase by phrase, each
+   phrase entering the way a word does in the reel: a slide from the side
+   that smears and snaps, a rise that stretches and settles, a drop that
+   tumbles and lands. The words keep their place in the paragraph; only the
+   way they get there changes. */
+.about{display:grid;align-items:center;padding:calc(var(--bar) + 6vh) var(--pad) 10vh}
 .about-body{width:100%;margin:0}
 .lede{
   margin:0;font-family:var(--font-display);
   font-size:clamp(23px,2.7vw,46px);font-weight:700;
   letter-spacing:-.03em;line-height:1.18;
-  /* Centred as a block, ranged left inside it. The text wants a left edge to
-     read down; the block wants to sit in the middle of the window. */
+  /* Centred as a block, ranged left inside it. */
   max-width:min(30em,100%);margin-inline:auto;
-  opacity:0;transform:translateY(16px);
-  transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1);
 }
-.about.seen .lede{opacity:1;transform:none}
-/* Inline, indented, and small: a margin note that the paragraph starts
-   after, not a heading it sits under. */
+/* Inline, indented, and small: a margin note the paragraph starts after. */
 .lede-tag{
   font-family:Inter,sans-serif;font-size:12px;font-weight:500;
   letter-spacing:.16em;opacity:.42;
   margin-right:1.6em;vertical-align:.55em;white-space:nowrap;
 }
+/* A word is the smallest thing that moves. Inline-block so it can be
+   transformed, one per word so the paragraph still wraps between them. */
+.lede .w{display:inline-block}
 
 /* ---------- experience ----------
-   Centred, quiet, and dimmed to almost nothing except the row nearest the
-   middle of the screen. The dimming is opacity on black, not a colour: the
-   reference has one dark row in a column of pale ones and that is the whole
-   effect. */
-.cvsec{display:block;min-height:auto;padding:clamp(40px,8vh,110px) 0 clamp(60px,12vh,150px)}
-.cv{list-style:none;margin:0;padding:0;text-align:center}
+   The easing race. In the reel it is six dots on six curves covering the
+   same distance in the same time; here it is one dot per role, travelling
+   from the year it started to the year it ended, each on its own curve. */
+.xp{display:grid;align-items:center}
+.xp-body{
+  margin:0 calc(220 * var(--u)) 0 calc(150 * var(--u));
+  padding:calc(var(--bar) + 40 * var(--u)) 0 calc(120 * var(--u));
+}
+.xp-head{display:flex;align-items:baseline;justify-content:space-between;gap:24px;
+  margin-bottom:calc(88 * var(--u))}
+.xp-title{
+  margin:0;font:italic 400 max(30px,calc(74 * var(--u)))/1 var(--serif);
+  letter-spacing:-.012em;
+}
+.xp-cap{
+  margin:0;font:500 max(9px,calc(14 * var(--u)))/1 var(--mono);
+  letter-spacing:.12em;text-transform:uppercase;color:var(--grey);white-space:nowrap;
+}
+.cv{list-style:none;margin:0;padding:0}
 .cv-row{
-  padding:clamp(14px,2.4vh,30px) 0;
-  opacity:.14;
-  transition:opacity .5s ease;
+  display:grid;align-items:center;
+  grid-template-columns:calc(44 * var(--u)) calc(266 * var(--u)) calc(60 * var(--u)) calc(140 * var(--u)) 1fr;
+  height:calc(118 * var(--u));
 }
-.cv-row.on{opacity:1}
-.cv-who{
-  margin:0;font-family:var(--font-display);font-weight:700;
-  letter-spacing:-.032em;line-height:1.04;
-  font-size:clamp(28px,5vw,74px);
-  /* An inline-block so the year can hang off its right edge without being
-     part of the box that gets centred. */
-  display:inline-block;position:relative;
+.xp-n{font:700 max(9px,calc(14 * var(--u)))/1 var(--mono);color:var(--grey)}
+.xp-who{margin:0;font:400 max(13px,calc(22 * var(--u)))/1.1 var(--mono);text-transform:lowercase}
+.xp-role{
+  display:block;margin-top:calc(9 * var(--u));
+  font-size:max(9px,calc(13 * var(--u)));line-height:1.35;color:var(--grey);
+  padding-right:calc(20 * var(--u));
 }
-/* Taken out of the flow. In the flow it added its own width to the name's
-   box, so the centred thing was "name plus year" and the name itself sat
-   left of centre while the role underneath sat on it: two lines that should
-   share an axis, disagreeing by half the width of a date. */
-.cv-when{
-  position:absolute;left:100%;top:.06em;
-  font-size:.24em;font-weight:500;letter-spacing:0;
-  margin-left:.6em;opacity:.5;
-  font-variant-numeric:tabular-nums;white-space:nowrap;
+.xp-glyph{width:calc(60 * var(--u));height:calc(58 * var(--u));overflow:visible;display:block}
+.xp-glyph .ax{fill:none;stroke:rgba(10,10,10,.28);stroke-width:1.5}
+.xp-glyph .as{fill:none;stroke:rgba(10,10,10,.35);stroke-width:1.2;stroke-dasharray:1.5 3}
+.xp-glyph .cu{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.xp-glyph .gd{fill:var(--ink)}
+.xp-track{position:relative;height:calc(43 * var(--u));grid-column:5}
+.xp-line{
+  position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;
+  background:rgba(10,10,10,.16);transform-origin:0 50%;
 }
-/* On a phone there is no room to hang it, so it goes back under the name. */
-@media (max-width:640px){
-  .cv-who{display:block}
-  .cv-when{position:static;display:block;margin:.5em 0 0;font-size:.26em}
+.xp-end{
+  position:absolute;top:50%;width:2px;height:calc(24 * var(--u));
+  transform:translate(-1px,-50%);background:rgba(10,10,10,.42);
 }
-.cv-what{
-  margin:.5em 0 0;font-size:clamp(13px,1.1vw,16px);
-  letter-spacing:-.006em;color:rgba(10,10,10,.55);
+.xp-end.a{left:0}
+.xp-end.b{left:100%}
+.xp-date{
+  position:absolute;top:calc(100% + 10 * var(--u));
+  font:700 max(9px,calc(13 * var(--u)))/1 var(--mono);letter-spacing:.12em;
+  text-transform:uppercase;white-space:nowrap;
+}
+.xp-date.a{left:0;transform:translateX(-50%)}
+.xp-date.b{left:100%;transform:translateX(-50%)}
+/* The dot sits with its centre on the start of the line and finishes with
+   its centre on the end, the way the reel's dots sit on A and B. */
+.xp-dot,.xp-ghost{
+  position:absolute;left:0;top:50%;
+  width:calc(43 * var(--u));height:calc(43 * var(--u));
+  margin:calc(-21.5 * var(--u)) 0 0 calc(-21.5 * var(--u));
+  border-radius:50%;
+}
+.xp-dot{background:var(--ink);will-change:transform,filter;z-index:1}
+.xp-ghost{border:2px solid rgba(10,10,10,.13);box-sizing:border-box;pointer-events:none}
+.xp-tick{
+  position:absolute;top:50%;width:2px;height:calc(12 * var(--u));
+  margin:calc(-29 * var(--u)) 0 0 -1px;background:rgba(10,10,10,.55);pointer-events:none;
+}
+@media (max-width:760px){
+  .xp-body{margin:0 calc(40 * var(--u)) 0 calc(40 * var(--u))}
+  .xp-head{flex-direction:column;align-items:flex-start;gap:12px}
+  .cv-row{
+    grid-template-columns:calc(44 * var(--u)) 1fr calc(60 * var(--u));
+    grid-template-rows:auto auto;row-gap:calc(40 * var(--u));
+    height:auto;padding:calc(30 * var(--u)) 0 calc(56 * var(--u));
+  }
+  .xp-gap{display:none}
+  .xp-track{grid-column:1 / -1;margin:0 calc(22 * var(--u))}
 }
 
 /* ---------- case studies ----------
@@ -1052,7 +1141,7 @@ html.cursored,html.cursored *{cursor:none !important}
   .cta .ring rect{animation:none}
   .stage video.zoom{animation:none}
   .tagline span{transition:none;opacity:1;transform:none}
-  .lede-line,.cv-row,.case{transition:none;opacity:1;transform:none}
+  .case{transition:none;opacity:1;transform:none}
   </style>
 </head>
 <body>
@@ -1143,44 +1232,60 @@ html.cursored,html.cursored *{cursor:none !important}
 
 <main class="work" id="work" hidden>
   <!-- ---------- about ----------
-       A colour block, full bleed. The hero and the monitor are both near
-       white, so the first thing below the arrival has to say "different
-       room" before it says anything else. -->
-  <section class="about" id="about">
+       The kinetic type beat of the reel. Each .ph is a phrase that arrives
+       on its own beat; the script splits them into words and gives each
+       phrase one of the reel's entrances. The copy is edited here, as
+       plain text: the phrases are the only markup it needs. -->
+  <section class="about tape" id="about" data-chap="01 &ndash; About">
     <div class="about-body">
-      <p class="lede"><span class="lede-tag">( about )</span> A product
-      designer of four years, working end to end from research through to the
-      last call with engineering, mostly on crypto trading products used by
-      millions of people, and quietly obsessed with visual storytelling.</p>
+      <p class="lede"><span class="lede-tag">( about )</span> <span class="ph">A product
+      designer of four years,</span> <span class="ph">working end to end</span> <span class="ph">from
+      research through to the last call with engineering,</span> <span class="ph">mostly on
+      crypto trading products</span> <span class="ph">used by millions of people,</span> <span class="ph">and
+      quietly obsessed with visual storytelling.</span></p>
     </div>
   </section>
 
   <!-- ---------- experience ----------
-       Everything is faded except whatever is nearest the middle of the
-       screen, which the scroll handler marks. It is a list you read one row
-       at a time rather than a wall of dates. -->
-  <!-- ---------- experience ----------
-       Company, role, years. Nothing else. The long version belongs on a CV
-       and this is not one: the list exists so somebody can see the shape of
-       four years in about four seconds. -->
-  <section class="cvsec" id="experience">
-    <ol class="cv" id="cv">
-      <li class="cv-row">
-        <h3 class="cv-who">Own agency<span class="cv-when">(2026 &ndash; now)</span></h3>
-        <p class="cv-what">Founder, across multiple clients</p>
-      </li>
-      <!-- One Osmosis row, not two. Polaris and the DEX ran over the same
-           dates in the same role, so two lines said the same thing twice in
-           a list whose whole job is to be read quickly. -->
-      <li class="cv-row">
-        <h3 class="cv-who">Polaris<span class="cv-when">(2024 &ndash; 25)</span></h3>
-        <p class="cv-what">Product Designer &amp; UX Researcher, Osmosis Labs</p>
-      </li>
-      <li class="cv-row">
-        <h3 class="cv-who">Brainfood<span class="cv-when">(2020 &ndash; 21)</span></h3>
-        <p class="cv-what">Product Designer &amp; UX Researcher</p>
-      </li>
-    </ol>
+       The easing race. One row per role: a number, the name, a glyph of the
+       curve its dot moves on, and a line from the year it started to the
+       year it ended. The script draws the glyphs from the same ease the dot
+       uses, so the picture and the motion cannot disagree. -->
+  <section class="xp tape" id="experience" data-chap="02 &ndash; Experience">
+    <div class="xp-body">
+      <div class="xp-head">
+        <h2 class="xp-title">Four years, from A to B.</h2>
+        <p class="xp-cap">Three roles &middot; 2020 &ndash; now</p>
+      </div>
+      <ol class="cv" id="cv">
+        <li class="cv-row" data-ease="elastic.out(1,0.3)">
+          <span class="xp-n">01</span>
+          <h3 class="xp-who">Own agency<span class="xp-role">Founder, across multiple clients</span></h3>
+          <svg class="xp-glyph" viewBox="0 0 60 58" aria-hidden="true"></svg>
+          <span class="xp-gap"></span>
+          <div class="xp-track"><i class="xp-line"></i><i class="xp-end a"></i><i class="xp-end b"></i>
+            <span class="xp-date a">2026</span><span class="xp-date b">now</span><i class="xp-dot"></i></div>
+        </li>
+        <!-- One Osmosis row, not two. Polaris and the DEX ran over the same
+             dates in the same role. -->
+        <li class="cv-row" data-ease="expo.out">
+          <span class="xp-n">02</span>
+          <h3 class="xp-who">Polaris<span class="xp-role">Product Designer &amp; UX Researcher, Osmosis Labs</span></h3>
+          <svg class="xp-glyph" viewBox="0 0 60 58" aria-hidden="true"></svg>
+          <span class="xp-gap"></span>
+          <div class="xp-track"><i class="xp-line"></i><i class="xp-end a"></i><i class="xp-end b"></i>
+            <span class="xp-date a">2024</span><span class="xp-date b">2025</span><i class="xp-dot"></i></div>
+        </li>
+        <li class="cv-row" data-ease="back.out(1.7)">
+          <span class="xp-n">03</span>
+          <h3 class="xp-who">Brainfood<span class="xp-role">Product Designer &amp; UX Researcher</span></h3>
+          <svg class="xp-glyph" viewBox="0 0 60 58" aria-hidden="true"></svg>
+          <span class="xp-gap"></span>
+          <div class="xp-track"><i class="xp-line"></i><i class="xp-end a"></i><i class="xp-end b"></i>
+            <span class="xp-date a">2020</span><span class="xp-date b">2021</span><i class="xp-dot"></i></div>
+        </li>
+      </ol>
+    </div>
   </section>
 
   <section class="montage" id="reel">
@@ -2329,24 +2434,12 @@ html.cursored,html.cursored *{cursor:none !important}
   const seen = new IntersectionObserver(es => {
     es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('seen'); seen.unobserve(e.target); } });
   }, { threshold: 0.18 });
-  document.querySelectorAll('.about,.case').forEach(el => seen.observe(el));
+  document.querySelectorAll('.case').forEach(el => seen.observe(el));
 
-  /* ---- the experience list, and the case study parallax ----
-     Both are read off the same scroll, because both are answers to the same
-     question: where is this element relative to the middle of the screen. */
-  const cvRows = [...document.querySelectorAll('.cv-row')];
+  /* ---- the case study parallax ---- */
   const caseImgs = [...document.querySelectorAll('.case-img')];
   function onScroll(){
     if (!innerHeight) return;
-    const mid = innerHeight * 0.44;
-    let best = null, bestD = Infinity;
-    cvRows.forEach(r => {
-      const b = r.getBoundingClientRect();
-      const d = Math.abs((b.top + b.bottom) / 2 - mid);
-      if (d < bestD){ bestD = d; best = r; }
-    });
-    cvRows.forEach(r => r.classList.toggle('on', r === best && bestD < innerHeight * 0.75));
-
     caseImgs.forEach(img => {
       const b = img.parentElement.getBoundingClientRect();
       /* -1 when the card is entering from the bottom, +1 when it is leaving
@@ -2407,6 +2500,292 @@ html.cursored,html.cursored *{cursor:none !important}
     W.play().catch(() => {});
   });
 
+})();
+</script>
+<script src="vendor/gsap.min.js"></script>
+<script>
+/* ---------- the reel ----------
+   The motion of the sections behind the monitor, after the motion-graphics
+   reel Kemal sent. Its own script so it can fail on its own: if GSAP does not
+   load, or the visitor asks for less motion, every section is simply drawn
+   in its finished state. */
+(() => {
+  const G = window.gsap;
+  const still = !G || matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const work = document.getElementById('work');
+  const tapes = [...document.querySelectorAll('.tape')];
+  if (!work || !tapes.length) return;
+
+  /* ---- the chrome ----
+     Corner brackets, labels, a timecode, a beat counter and a progress line,
+     laid out as the reel lays them out. The tape runs on the scroll: one
+     screen of scrolling is one second of timecode, so it runs while you
+     move and stops when you do. */
+  const FPS = 60, BPM = 128;
+  const pad = n => String(n).padStart(2, '0');
+  const chromes = tapes.map(sec => {
+    const c = document.createElement('div');
+    c.className = 'chrome';
+    c.setAttribute('aria-hidden', 'true');
+    c.innerHTML =
+      '<i class="ch-k tl"></i><i class="ch-k tr"></i><i class="ch-k bl"></i><i class="ch-k br"></i>' +
+      '<div class="ch-row t l"><span class="ch-b">Kemal Rahman</span><span class="ch-g">Portfolio &ndash; 2026</span></div>' +
+      '<div class="ch-row t r"><span class="ch-b"></span></div>' +
+      '<div class="ch-row b l"><span class="ch-b ch-tc">00:00:00:00</span><span class="ch-g">60 fps</span></div>' +
+      '<div class="ch-row b r"><span class="ch-g">128 bpm</span><span class="ch-sq"><i></i><i></i><i></i><i></i></span>' +
+      '<span class="ch-b ch-bar">bar 1/8</span></div>' +
+      '<i class="ch-line"></i>';
+    c.querySelector('.ch-row.t.r .ch-b').textContent = sec.dataset.chap || '';
+    sec.appendChild(c);
+    return { c, tc: c.querySelector('.ch-tc'), bar: c.querySelector('.ch-bar'),
+             sq: [...c.querySelectorAll('.ch-sq i')] };
+  });
+  let lastFrame = -1;
+  function runTape(){
+    if (work.hidden || !innerHeight) return;
+    const top = work.getBoundingClientRect().top + scrollY;
+    const y = Math.max(0, scrollY - top);
+    const f = Math.floor(y / innerHeight * FPS);
+    const span = Math.max(1, work.offsetHeight - innerHeight);
+    const prog = Math.min(1, y / span).toFixed(4);
+    const beat = Math.floor(f / FPS * BPM / 60);
+    const s = Math.floor(f / FPS);
+    const tc = `00:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}:${pad(f % FPS)}`;
+    tapes.forEach((sec, i) => sec.style.setProperty('--prog', prog));
+    if (f === lastFrame) return;
+    lastFrame = f;
+    chromes.forEach(k => {
+      k.tc.textContent = tc;
+      k.bar.textContent = `bar ${Math.floor(beat / 4) % 8 + 1}/8`;
+      k.sq.forEach((q, j) => q.classList.toggle('on', j === beat % 4));
+    });
+  }
+  addEventListener('scroll', runTape, { passive: true });
+  addEventListener('resize', runTape);
+  new MutationObserver(runTape).observe(work, { attributes: true, attributeFilter: ['hidden'] });
+  runTape();
+
+  /* Play a section each time it comes into view, and put it back to its
+     starting state once it has gone completely, so coming back to it plays
+     it again rather than showing a finished frame. */
+  function onView(target, threshold, play, reset){
+    let played = false;
+    new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting && e.intersectionRatio >= threshold && !played){ played = true; play(); }
+    }), { threshold }).observe(target);
+    new IntersectionObserver(es => es.forEach(e => {
+      if (!e.isIntersecting && played){ played = false; reset(); }
+    }), { threshold: 0 }).observe(target.closest('.tape'));
+  }
+
+  /* ---- about: kinetic type ----
+     Four entrances from the reel's type beat, one per phrase, in turn:
+       slide  "IN."    in from the right, smearing, snapping to a stop
+       rise   "EASE"   up from below, stretched tall, settling to size
+       slide  "OUT."   the same from the left
+       drop   "NEVER"  tumbling in from above and landing
+     The smear is the reel's motion blur done as echoes: copies of the word
+     trailing behind it, spaced by how far it moved this frame, so they
+     stretch out at speed and collapse into the word as it stops. */
+  const about = document.getElementById('about');
+  const lede = about && about.querySelector('.lede');
+  const tag = lede && lede.querySelector('.lede-tag');
+  const phrases = lede ? [...lede.querySelectorAll('.ph')].map(ph => {
+    const words = ph.textContent.trim().split(/\s+/);
+    ph.textContent = '';
+    words.forEach((w, i) => {
+      if (i) ph.append(' ');
+      const s = document.createElement('span');
+      s.className = 'w'; s.textContent = w;
+      ph.append(s);
+    });
+    return [...ph.querySelectorAll('.w')];
+  }) : [];
+  const allWords = phrases.flat();
+
+  function smear(el, prop){
+    let last = null;
+    return () => {
+      const v = G.getProperty(el, prop);
+      const d = last === null ? 0 : v - last;
+      last = v;
+      const m = Math.min(Math.abs(d), 70);
+      if (m < 0.4){ el.style.textShadow = ''; return; }
+      const s = -Math.sign(d) * m * 0.55;
+      el.style.textShadow = [1, 2, 3].map(k =>
+        (prop === 'x' ? `${(s * k).toFixed(1)}px 0` : `0 ${(s * k).toFixed(1)}px`) +
+        ` 0 rgba(10,10,10,${(0.3 / k).toFixed(2)})`).join(',');
+    };
+  }
+  const settle = el => () => { el.style.textShadow = ''; };
+
+  const ENTER = [
+    (ws, at, tl) => ws.forEach((w, i) => {       // in from the right
+      tl.fromTo(w, { x: innerWidth * 0.6, scaleX: 1.35, opacity: 0 },
+        { x: 0, scaleX: 1, opacity: 1, duration: 0.62, ease: 'expo.out',
+          onUpdate: smear(w, 'x'), onComplete: settle(w) }, at + i * 0.018);
+    }),
+    (ws, at, tl) => ws.forEach((w, i) => {       // up from below, stretched
+      tl.fromTo(w, { y: 1.2 * em, scaleY: 1.9, opacity: 0, transformOrigin: '50% 100%' },
+        { y: 0, scaleY: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.6)',
+          onUpdate: smear(w, 'y'), onComplete: settle(w) }, at + i * 0.045);
+    }),
+    (ws, at, tl) => ws.forEach((w, i) => {       // in from the left
+      tl.fromTo(w, { x: -innerWidth * 0.6, scaleX: 1.35, opacity: 0 },
+        { x: 0, scaleX: 1, opacity: 1, duration: 0.62, ease: 'expo.out',
+          onUpdate: smear(w, 'x'), onComplete: settle(w) }, at + i * 0.018);
+    }),
+    (ws, at, tl) => ws.forEach((w, i) => {       // tumbling in from above
+      tl.fromTo(w, { y: -1.5 * em, rotation: (i % 2 ? 1 : -1) * 16, opacity: 0, transformOrigin: '50% 100%' },
+        { y: 0, rotation: 0, opacity: 1, duration: 0.55, ease: 'back.out(2.4)',
+          onUpdate: smear(w, 'y'), onComplete: settle(w) }, at + i * 0.05);
+    }),
+  ];
+
+  let aboutTl = null, em = 40;
+  /* Reset with plain styles, not GSAP. Handed an element inside the
+     still-hidden #work, GSAP lifts it out of the page to measure its
+     transform and puts it back before the next element, which skips the
+     text node in between: every space in the paragraph ended up at the
+     front of its phrase and the words ran together. */
+  function armAbout(){
+    if (aboutTl){ aboutTl.kill(); aboutTl = null; }
+    allWords.forEach(w => { w.style.cssText = 'opacity:0'; });
+    if (tag) tag.style.cssText = 'opacity:0';
+  }
+  function playAbout(){
+    armAbout();
+    em = parseFloat(getComputedStyle(lede).fontSize) || 40;
+    const tl = aboutTl = G.timeline();
+    tl.fromTo(tag, { opacity: 0, x: -12 }, { opacity: 0.42, x: 0, duration: 0.3, ease: 'expo.out' }, 0);
+    phrases.forEach((ws, i) => ENTER[i % ENTER.length](ws, 0.12 + i * 0.3, tl));
+    tl.add(() => { allWords.forEach(w => { w.style.cssText = ''; }); if (tag) tag.style.cssText = ''; });
+  }
+  if (lede){
+    if (still){ /* drawn as it stands */ }
+    else { armAbout(); onView(lede, 0.4, playAbout, armAbout); }
+  }
+
+  /* ---- experience: the easing race ----
+     Each dot is drawn by hand every frame rather than left to a transform
+     tween, because the motion blur needs to know how fast it is going: it
+     stretches along its direction of travel and softens in proportion, and
+     drops a faint ring and a tick behind it at speed, which is how the reel
+     shows where it has been. */
+  const xp = document.getElementById('experience');
+  if (!xp) return;
+  const GX0 = 2, GX1 = 58, GY0 = 50, GY1 = 12;
+  const rows = [...xp.querySelectorAll('.cv-row')].map(row => {
+    const ease = G ? G.parseEase(row.dataset.ease) : (t => t);
+    const glyph = row.querySelector('.xp-glyph');
+    let d = '';
+    for (let i = 0; i <= 60; i++){
+      const t = i / 60;
+      d += (i ? 'L' : 'M') + (GX0 + (GX1 - GX0) * t).toFixed(2) + ' ' + (GY0 - (GY0 - GY1) * ease(t)).toFixed(2);
+    }
+    glyph.innerHTML = `<path class="ax" d="M1 0V57H60"/><path class="as" d="M1 ${GY1}H58"/>` +
+      `<path class="cu" d="${d}"/><circle class="gd" r="4.2" cx="${GX1}" cy="${GY1}"/>`;
+    return { row, ease, t: 1, x: 0, y: 0, px: 0, py: 0, fc: 0, racing: false,
+      track: row.querySelector('.xp-track'), dot: row.querySelector('.xp-dot'),
+      gd: glyph.querySelector('.gd'), line: row.querySelector('.xp-line'),
+      who: row.querySelector('.xp-who'), n: row.querySelector('.xp-n'),
+      bits: [...row.querySelectorAll('.xp-end,.xp-date')], glyph };
+  });
+  const title = xp.querySelector('.xp-title'), cap = xp.querySelector('.xp-cap');
+  const U = () => (document.documentElement.clientWidth || innerWidth) / (innerWidth <= 760 ? 760 : 1920);
+
+  function ghost(r){
+    const g = document.createElement('i');
+    g.className = 'xp-ghost';
+    g.style.transform = `translateX(${r.x.toFixed(1)}px)`;
+    const k = document.createElement('i');
+    k.className = 'xp-tick';
+    k.style.left = r.x.toFixed(1) + 'px';
+    r.track.insertBefore(g, r.dot);
+    r.track.insertBefore(k, r.dot);
+    G.to(g, { opacity: 0, duration: 0.32, ease: 'power1.in', onComplete: () => g.remove() });
+    G.to(k, { opacity: 0, duration: 0.7, delay: 0.25, ease: 'power1.in', onComplete: () => k.remove() });
+  }
+  function draw(r){
+    const dx = r.x - r.px, dy = r.y - r.py;
+    r.px = r.x; r.py = r.y;
+    const sp = Math.hypot(dx, dy) / Math.max(0.4, U());   // in reel pixels per frame
+    const st = Math.min(sp * 0.035, 1.3);
+    const ang = sp > 0.5 ? Math.atan2(dy, dx) * 180 / Math.PI : 0;
+    r.dot.style.transform = `translate(${r.x.toFixed(2)}px,${r.y.toFixed(2)}px) rotate(${ang.toFixed(1)}deg) scale(${(1 + st).toFixed(3)},${(1 - st * 0.16).toFixed(3)})`;
+    r.dot.style.filter = sp > 2 ? `blur(${Math.min(sp * 0.05, 3).toFixed(2)}px)` : '';
+    if (r.racing && sp > 9 && ++r.fc % 3 === 0) ghost(r);
+    const e = r.ease(r.t);
+    r.gd.setAttribute('cx', (GX0 + (GX1 - GX0) * r.t).toFixed(2));
+    r.gd.setAttribute('cy', (GY0 - (GY0 - GY1) * e).toFixed(2));
+  }
+  /* Where the dot belongs at rest, as a percentage of its line rather than
+     in pixels: it can be parked while #work is still hidden and the line has
+     no width, and it holds its place through a resize. */
+  function park(r, t){
+    r.t = t; r.x = r.px = 0; r.y = r.py = 0; r.racing = false;
+    r.dot.style.left = (t * 100) + '%';
+    draw(r);
+  }
+  let xpTl = null;
+  function armXp(){
+    if (xpTl){ xpTl.kill(); xpTl = null; }
+    rows.forEach(r => {
+      r.track.querySelectorAll('.xp-ghost,.xp-tick').forEach(n => n.remove());
+      park(r, 0);
+      /* Plain styles for the same reason as the About reset above. */
+      [r.dot, r.n, r.glyph, ...r.bits].forEach(n => { n.style.opacity = '0'; });
+      r.who.style.clipPath = 'inset(-10% 100% -10% 0)';
+      r.line.style.transform = 'scaleX(0)';
+    });
+    title.style.clipPath = 'inset(-20% 100% -30% 0)';
+    cap.style.opacity = '0';
+  }
+  function playXp(){
+    armXp();
+    const tl = xpTl = G.timeline();
+    const u = U();
+    /* Typed on, the way the reel's labels are: a clip that steps a
+       character at a time rather than wiping smoothly. */
+    tl.to(title, { clipPath: 'inset(-20% 0% -30% 0)', duration: 0.6,
+      ease: `steps(${title.textContent.length})` }, 0);
+    tl.to(cap, { opacity: 1, duration: 0.4 }, 0.3);
+    const first = rows[0].track.getBoundingClientRect().top;
+    rows.forEach((r, i) => {
+      const at = 0.08 * i;
+      tl.to(r.n, { opacity: 1, duration: 0.2 }, at);
+      tl.to(r.who, { clipPath: 'inset(-10% 0% -10% 0)', duration: 0.45,
+        ease: `steps(${Math.max(4, r.who.firstChild.textContent.length)})` }, at + 0.05);
+      tl.to(r.glyph, { opacity: 1, duration: 0.3 }, at + 0.15);
+      tl.fromTo(r.line, { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: 'expo.out' }, at + 0.1);
+      tl.to(r.bits, { opacity: 1, duration: 0.3 }, at + 0.35);
+      /* In from one point up and to the left, falling onto its own line:
+         height is lost fast and distance slowly, so each one arrives
+         travelling along the line it lands on. */
+      const drop = r.track.getBoundingClientRect().top - first;
+      const from = { x: -560 * u, y: -(300 * u + drop) };
+      tl.set(r.dot, { opacity: 1 }, 0.12 + at);
+      tl.fromTo(r, { x: from.x }, { x: 0, duration: 0.72, ease: 'power2.out',
+        onStart(){ r.px = from.x; r.py = from.y; } }, 0.12 + at);
+      tl.fromTo(r, { y: from.y }, { y: 0, duration: 0.72, ease: 'expo.out',
+        onUpdate: () => draw(r) }, 0.12 + at);
+    });
+    /* The race: same distance, same duration, a different curve each. */
+    tl.addLabel('go', 1.3);
+    rows.forEach(r => {
+      const o = { t: 0 };
+      tl.to(o, { t: 1, duration: 0.94, ease: 'none',
+        onStart(){ r.racing = true; r.fc = 0; },
+        onUpdate(){ r.t = o.t; r.x = r.ease(o.t) * r.track.clientWidth; draw(r); },
+        onComplete(){ park(r, 1); } }, 'go');
+    });
+  }
+  if (still || !G){
+    rows.forEach(r => park(r, 1));
+  } else {
+    armXp();
+    onView(xp.querySelector('.cv'), 0.8, playXp, armXp);
+  }
 })();
 </script>
 </body>

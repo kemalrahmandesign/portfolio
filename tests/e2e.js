@@ -88,7 +88,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
      than the window; lining the menu up with the window would put it off
      the masthead it sits above. */
   const centred = await E(()=>{const f=document.getElementById('tnFace').getBoundingClientRect();
-    const h=document.querySelector('.cv').getBoundingClientRect();
+    const h=document.querySelector('#about .lede').getBoundingClientRect();
     return Math.abs((f.left+f.right)/2 - (h.left+h.right)/2);});
   ok('face lines up with the masthead when open', centred<2, centred.toFixed(1)+'px');
   const sym = await E(()=>{const l=document.querySelector('.tn-left').getBoundingClientRect(),
@@ -144,23 +144,39 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   const p2 = await E(()=>Math.round(document.querySelector('.montage-stage').getBoundingClientRect().top));
   ok('montage pins, then leaves with its section', p1===0 && p2<0, p1+' -> '+p2);
 
-  // the new sections
-  await p.evaluate(()=>{const r=document.querySelectorAll('.cv-row')[1];
-    scrollTo(0, r.getBoundingClientRect().top + scrollY - innerHeight*0.30);});
-  await p.waitForTimeout(500);
-  const cv = await E(()=>{const rows=[...document.querySelectorAll('.cv-row')];
-    const on=rows.filter(r=>r.classList.contains('on'));
-    return {rows:rows.length, on:on.length, notes:document.querySelectorAll('.cv-notes').length,
-      lit:on[0]&&+getComputedStyle(on[0]).opacity, dim:+getComputedStyle(rows.find(r=>!r.classList.contains('on'))).opacity};});
-  ok('three experience rows, exactly one lit', cv.rows===3 && cv.on===1, JSON.stringify(cv));
-  ok('no bullet lists left in experience', cv.notes===0);
-  ok('lit row is full strength, the rest are not', cv.lit>0.95 && cv.dim<0.3, cv.lit+' vs '+cv.dim);
-  /* The year hangs outside the name's box, so the name and the role under it
-     share one axis instead of disagreeing by half a date. */
-  const axes = await E(()=>[...document.querySelectorAll('.cv-row')].map(r=>{
-    const w=r.querySelector('.cv-who').getBoundingClientRect(), t=r.querySelector('.cv-what').getBoundingClientRect();
-    return Math.abs((w.left+w.right)/2 - (t.left+t.right)/2);}));
-  ok('name and role share an axis', axes.every(d=>d<2), axes.map(d=>d.toFixed(1)).join(' '));
+  // the reel: about and experience
+  ok('about words keep their spaces', (await E(()=>
+    document.querySelector('.lede').textContent.replace(/\s+/g,' ').includes('A product designer of four years,'))));
+  /* Scrolled back to first: leaving a section puts it back to its starting
+     state so it plays again, and the montage checks above left it. */
+  await p.evaluate(()=>scrollTo(0, document.getElementById('about').getBoundingClientRect().top + scrollY));
+  await p.waitForTimeout(3000);
+  ok('about words settle in place', (await E(()=>[...document.querySelectorAll('.lede .w')]
+    .every(w=>getComputedStyle(w).opacity==='1' && getComputedStyle(w).transform==='none'))));
+  const chrome = await E(()=>[...document.querySelectorAll('.tape')].map(t=>({
+    id:t.id, k:t.querySelectorAll('.ch-k').length, chap:t.querySelector('.ch-row.t.r').textContent})));
+  ok('about and experience are framed like the reel',
+     chrome.length===2 && chrome.every(c=>c.k===4) && chrome[0].chap.includes('About') && chrome[1].chap.includes('Experience'),
+     JSON.stringify(chrome));
+  const tc1 = await E(()=>document.querySelector('#experience .ch-tc').textContent);
+  await p.evaluate(()=>{const r=document.getElementById('experience');
+    scrollTo(0, r.getBoundingClientRect().top + scrollY);});
+  await p.waitForTimeout(3200);
+  const tc2 = await E(()=>document.querySelector('#experience .ch-tc').textContent);
+  ok('timecode runs with the scroll', /^\d\d:\d\d:\d\d:\d\d$/.test(tc2) && tc1!==tc2, tc1+' -> '+tc2);
+  const race = await E(()=>[...document.querySelectorAll('.cv-row')].map(r=>{
+    const t=r.querySelector('.xp-track').getBoundingClientRect(), d=r.querySelector('.xp-dot').getBoundingClientRect();
+    return {end:Math.round(t.right-(d.left+d.right)/2), glyph:!!r.querySelector('.xp-glyph .cu'),
+            ease:r.dataset.ease};}));
+  ok('three roles, each on its own curve', race.length===3 && race.every(r=>r.glyph) &&
+     new Set(race.map(r=>r.ease)).size===3, JSON.stringify(race));
+  ok('every dot finishes on the end of its line', race.every(r=>Math.abs(r.end)<3), race.map(r=>r.end).join(' '));
+  ok('no ghosts left behind', (await E(()=>document.querySelectorAll('.xp-ghost').length))===0);
+  ok('nothing in the reel is coloured', (await E(()=>[...document.querySelectorAll('.tape, .tape *')].every(el=>{
+    const cs=getComputedStyle(el);
+    return [cs.color, cs.backgroundColor, cs.borderTopColor].every(c=>{
+      const m=c.match(/[\d.]+/g); if(!m) return true; const [r,g,b]=m.map(Number);
+      return Math.max(r,g,b)-Math.min(r,g,b)<6;});}))));
   const cases = await E(()=>({n:document.querySelectorAll('.case').length,
     titles:document.querySelectorAll('.case-title,.case-meta').length}));
   ok('four case studies, image only', cases.n===4 && cases.titles===0, JSON.stringify(cases));

@@ -4,7 +4,7 @@ Things agreed and deliberately not built yet, with enough detail that picking
 one up does not mean rediscovering the decision.
 
 **In progress, not in this list:** motion design for the sections behind the
-monitor, Experience first. That is the current work and it is written up in
+monitor. About and Experience are built; montage, case studies and contact are next. That is the current work and it is written up in
 full under "Next up" in `START-HERE.md`.
 
 ## 1. Mobile, at 9:16
