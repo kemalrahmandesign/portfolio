@@ -4,3 +4,6 @@ dist/
 .DS_Store
 *.local
 refs/
+
+# test site, rebuilt from index.html by tests/build.py
+tests/.site/

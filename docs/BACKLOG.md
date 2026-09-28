@@ -3,7 +3,11 @@
 Things agreed and deliberately not built yet, with enough detail that picking
 one up does not mean rediscovering the decision.
 
-## 1. Mobile, at 9:16 — next up
+**In progress, not in this list:** motion design for the sections behind the
+monitor, Experience first. That is the current work and it is written up in
+full under "Next up" in `START-HERE.md`.
+
+## 1. Mobile, at 9:16
 
 Kemal is rationing Higgsfield credits for this, so it comes before anything
 else that generates. The desktop clips are 16:9 and are shown letterboxed on a
@@ -34,9 +38,10 @@ the same place as the monitor.
 
 ## 2. The character meshes — after mobile
 
-The static mesh was removed from the site (`git log` for "Put the skater on
-the ramp" has the code, the GLB and `tools/shrink-glb.js` if it is wanted
-back). What it proved:
+The static mesh was removed from the site. Commit `7818298` ("Put the skater
+on the ramp") has the scene code, the GLB, the vendored three.js and
+`tools/shrink-glb.js`; `git show 7818298:tools/shrink-glb.js` gets any of them
+back. What it proved:
 
 - `image_to_3d` returns a genuinely good likeness at 12000 triangles.
 - `SKATER.yaw = Math.PI / 2` is the profile travelling right.
@@ -83,6 +88,9 @@ he waves you in.
 
 ## 4. Smaller, still open
 
+- **Commit the four hero clips** into `media/`. The live site is being served
+  from the Higgsfield CDN through the fallback map, which lasts only as long as
+  the generations do. Kemal can drop the files into the chat.
 - **The prop arrows** still need work. Kemal's coordinates are in and correct;
   the geometry of the curl is what he is unhappy with.
 - **Real social URLs.** Every link in the hero is still `href="#"`.

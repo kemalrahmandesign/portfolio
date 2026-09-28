@@ -1,45 +1,118 @@
 # Start here
 
-Picking this up cold? Read this file, then `hero-production-notes.md` for the
-detail and the reasoning behind every decision. Everything else is reference.
+Picking this up cold? Read this file top to bottom, then `BACKLOG.md`. The
+**Next up** section below is where the last session stopped, mid-conversation,
+with a plan Kemal had agreed to and was waiting to see built.
+
+`hero-production-notes.md` (2500 lines) is the full reasoning behind every
+decision, appended in order. Search it; do not read it end to end.
 
 ## What this is
 
-Kemal Rahman's portfolio site. The whole project so far is the **hero section**:
-an animated intro that hands off into the real site.
+Kemal Rahman's portfolio. One file, `index.html`, vanilla HTML, CSS and JS, no
+build step and no framework. That is deliberate: see "Do not" below.
 
-A stylized 3D cartoon Kemal stands in a white studio surrounded by his hobbies.
-He waves while the headline animates in, then idles. Clicking the call to action
-sends him walking right to his desk in one continuous take; he sits, his cat
-Nova settles on the PC, the camera pushes past his shoulder into the monitor,
-the monitor powers on white, and the site is underneath.
+**The hero:** a stylised 3D cartoon Kemal stands in a white studio among his
+hobbies (motorcycle, skis, guitar and amp, skateboard, football). He waves while
+the masthead animates in, then idles. The "Cool Sh\*t" call to action sends him
+walking to his desk in one continuous take; he sits, his cat Nova settles on the
+PC, the camera pushes into the monitor, it powers on white, and the rest of the
+site is underneath.
+
+**Behind the monitor**, in scroll order: About, Experience, the montage (Work),
+four case study images, Contact. A face menu (his cartoon head, centred at the
+top) appears only once inside the monitor.
 
 Live: **https://kemalrahmandesign.github.io/portfolio/**
-Deploys on push to `claude/portfolio-hero-brainstorm-oonxku`, which is also the
-default branch. Work has been landing on `claude/eager-bardeen-yde4ng` and
-**needs merging before any of it goes live.**
+Deploy = merge into `claude/portfolio-hero-brainstorm-oonxku` and push. The last
+session developed on `claude/eager-bardeen-yde4ng`; both are in step.
+
+## Next up: motion design for the second scene
+
+Kemal wants the sections behind the monitor to move like a reference reel he
+sent: a 15s motion-graphics piece made with Claude (source:
+`https://cdn.revid.ai/static/claude-motion-graphics/stephanlivera-2103315922098470926.mp4`,
+also imported to Higgsfield as media `9c699afa-7053-4c3c-b4a6-7a4e6f99b733`).
+**Not committed here; it is someone else's work.** If you need to see it, ask
+Kemal to drop the file into the chat, which is how the last session saw it.
+
+**Decided:** the motion, **not the colour**. The reel runs on saturated flat
+fields (black, coral `#ee4938`, cream, electric blue `#2e2ef4`, lime `#c9f13d`).
+Kemal wants it on his black and white only. Do not reintroduce colour: a coral
+accent on the About section was rejected hard one session earlier.
+
+**Decided:** no Higgsfield. It is all code: SVG, canvas, a little three.js,
+timelines in GSAP (`npm` works here; CDNs like jsdelivr do not, so vendor any
+library into the repo, as was done for three.js before it was removed).
+
+**What is in the reel, beat by beat, and the agreed home for each:**
+
+| Reel beat | Site section |
+|---|---|
+| **Easing race.** "Six ways to get from A to B": six rows, each a dot shooting along a line on a different curve (linear, ease-in-out, expo-out, back-out, elastic, bounce), with motion-blur smears and a curve glyph at the start of each row | **Experience.** Each role a row; a dot travels across its dates as the row scrolls in. The best fit in the reel. **Build this first** as the proof of the direction. |
+| **Kinetic type.** "EASE IN. EASE OUT. NEVER LINEAR." One word per beat, huge, stretch and squash on entry; outlined repeats of a word scrolling in rows behind the solid one | **About.** The paragraph arrives phrase by phrase with that snap. |
+| **Shape morphing.** Circle to triangle to star to square, a ring of small markers orbiting, faint construction lines | **Case studies.** Each image reveals through a shape that morphs open into its rounded frame. |
+| **Truchet field and dot grid.** A full-frame maze of quarter-circle tiles with a wave rippling through it; then a perspective dot grid and a dotted wireframe blob morphing sphere, vase, torus | **Montage.** The field the reel grows out of, instead of the flat grey box. |
+| **Starburst and lockup.** Dot, ring, then a spinning burst of rays; the name lockup with particles drifting | **Contact.** The sign-off. |
+
+**The chrome** is half of why it reads as a reel: corner brackets, tiny
+monospace labels top and bottom, a running timecode, a thin progress line. On
+the site: a quiet frame around each section that ticks as you scroll.
+
+Kemal's last word on it: build **Experience** first, show him, then roll the
+system out to the other four. He has not yet seen any of it built.
 
 ## State
 
 | Piece | Status |
 |---|---|
-| Hub frame (the still every clip starts on) | done, `3f470988-9df8-4d61-98f6-e316d6f6ad9e` |
-| Wave clip, 3s | done and wired, `d6974c93-3cf7-4790-ada6-4ba84737426f` |
-| Idle loop, 10s | done and wired, `adac86ab-3d37-41ff-860a-4c713b405a9c` |
-| End frame (monitor on its arm) | done, media `f9a03660-1c4b-47b0-8323-95918531479d` |
-| **Walk clip** | **done**, Genjutsu armrest fix over the best take, wired |
-| Hero page, handoff, flash fixes | done, measured, pushed |
-| Hosting the clips in the repo | page repointed at `media/`; **all four files ready to download** |
-| Behind the monitor | menu, back button, statement, montage placeholder; **copy is placeholder** |
-| Social trinkets | 3D renders done, cut out, hanging top-left of the hero |
-| Hero overscroll | rubber-band with the curved note underneath |
-| The rest of the site | sections drafted, content not written |
+| Hero clips (hub, wave, idle, walk) | done and wired; served from the Higgsfield CDN via the `FALLBACK` map because **`media/` still does not contain them** (see below) |
+| Hero page, handoff, flash fixes | done |
+| CTA pill | done: rotating dashes, 25 periods exactly (a non-dividing period stutters at the top-left) |
+| Social trinkets | done, bottom centre at his feet, one shake on hover; **links are still `#`** |
+| Prop labels (Kaushan Script, write-on) | done; coordinates are Kemal's, dragged in with `?props`; **the arrow curls still need work** |
+| Overscroll | done, black arc with curved note, holds 850ms |
+| Fast forward | done, speeds the take to 4x, resets between runs |
+| Face menu | done: about, experience, work, contact; the face goes home; split-flap hover |
+| About | one paragraph, black on white, `( about )` inline; copy approved-ish |
+| Experience | three rows centred: Own agency (2026 to now), Polaris (2024 to 25), Brainfood (2020 to 21); **agency name unknown** |
+| Montage | sticky, full window width, grey placeholder; **no reel yet** |
+| Case studies | four 21:9 images with parallax and a "view" cursor; **placeholder gradients** |
+| Contact | placeholder; **waiting on a design reference from Kemal** |
+| Cursor | a pointer arrow with a label pill, FigJam-like |
+| Mobile | letterboxed 16:9; **the 9:16 regeneration is in `BACKLOG.md`** |
+| Tests | `tests/`, 59 passing; see `tests/README.md` |
 
-## Do this first: download four files
+## Working with Kemal
 
-`index.html` no longer references a CDN anywhere. It loads `media/hub.jpg`,
-`media/wave.mp4`, `media/idle.mp4` and `media/walk.mp4` by relative path. All
-four are re-encoded and waiting; **the page is broken until they land.**
+- He sends screenshots as references. **Match them; do not invent around them.**
+  The worst session in this project was one where an accent colour, a
+  headline-plus-footnote layout and a full CV were built from two screenshots
+  that showed none of them.
+- He will tell you bluntly when something is wrong. Fix it, say what caused it
+  in a sentence, move on.
+- He is rationing Higgsfield credits. Always `get_cost` before spending and
+  quote the number.
+- He cannot always check things himself, and cannot see what you see; he can
+  see what you cannot (the videos). Say plainly which of those a claim rests on.
+
+## Do not
+
+- **Do not rewrite the site in React.** It was discussed. The effects come from
+  shaders and timelines, which work without it, and the hero is one file that
+  took many sessions to get right.
+- **Do not commit his reference photos.** The repo is public. `refs/` is
+  gitignored and must stay that way.
+- No em dashes in site copy.
+
+## Still open: the four hero clips are not in the repo
+
+`index.html` loads `media/hub.jpg`, `media/wave.mp4`, `media/idle.mp4` and
+`media/walk.mp4` by relative path, and falls back to the Higgsfield CDN when
+they 404, which is what the live site is doing today. That works until one of
+those generations is deleted. Kemal can now drop files straight into the chat
+(the session reads them from `/root/.claude/uploads/`), which is the easiest way
+to get them committed. The history below is why this matters.
 
 This was urgent for a reason that already came true: the walk clip the page
 used to point at, `4d06b164`, now returns **403**. The call to action was dead
@@ -67,9 +140,8 @@ These are re-encoded, not raw: CRF 21, preset slow, `+faststart`, no re-timing.
 across the encode and the luminance shift is under 0.1 levels, so every `head`
 in the player still holds.
 
-**Then merge into `claude/portfolio-hero-brainstorm-oonxku` to deploy.** Do not
-merge before the files are committed: the page would go live pointing at
-`media/` paths that 404, which is worse than what is deployed now.
+Once they are committed the CDN fallback becomes a safety net rather than the
+thing actually serving the page.
 
 ## The walk clip, settled
 
@@ -175,6 +247,20 @@ amp                   7b7f77c9-c08a-4d5d-b2be-7ca1dc6297b8
 
 ## Environment traps
 
+- **Files Kemal drops into the chat are readable** at
+  `/root/.claude/uploads/<session>/`. That is the way to see anything the CDNs
+  hide: he dropped the reference reel and the skater GLB that way. For video,
+  `pip install imageio-ffmpeg` gives a working static ffmpeg locally (there is
+  none installed); extract frames or a contact sheet and Read the image.
+- **What the container can reach:** npm and PyPI yes. jsdelivr, the Higgsfield
+  result and input CDNs, revid.ai and most media CDNs no. Higgsfield's
+  `media_import_url` and `sandbox_exec` *can* reach external URLs, so a blocked
+  file can be imported or measured there, but `sandbox_exec` stdout truncates at
+  about 25KB, so images cannot come back through it.
+- No GPU: 4 CPUs, 15GB. WebGL works in headless Chromium through SwiftShader
+  (see `tests/README.md`). Blender is available as `pip install bpy`, CPU only.
+- Higgsfield `video_analysis_create` sat in `queued` for over twenty minutes and
+  never ran. Do not wait on it.
 - **The agent cannot see any image or video it generates.** Both the result CDN
   and the input CDN are blocked; only the S3 *input* host is reachable, which is
   why uploads work and reads do not. Images Kemal pastes into the chat *are*
