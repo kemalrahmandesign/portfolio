@@ -59,6 +59,23 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
+**Session 4, fourth pass (latest).** Kemal did not like any entrance motion
+on About (reel smears, then spring hops). About is now **read by scrolling**:
+the section is 220svh, the paragraph pins, words go from pale to ink with
+scroll progress, the hello starts lit, and a handwritten "keep scrolling"
+with a bobbing arrow answers "not clear you can scroll". Desktop menu: the
+side-expanding bar is gone; hovering the face drops a row of separate pills
+(home first, filled) with the letter-flip ticker; phones keep the rolled-down
+card. Prop squiggles no longer flash on load (the lines animated from a
+placeholder length when measured; idle lines are now opacity 0). Experience
+roles per Kemal: Founder; Polaris Senior Product Designer & Lead UX/UI
+Researcher (team of two designers, his boss was lead; "Senior" was his
+guess); Osmosis DEX Junior Product Designer & Lead UX/UI Researcher;
+Brainfood UX Researcher. No blinking "now" dot (he called it AI slop and is
+finding inspiration). Contact is one centred capsule: name, email, "Say hi",
+with the two clients named in a line above. Work cards say "View project",
+crop the product shots toward the top.
+
 **Session 4, third pass (from Kemal testing on his phone):** the face menu
 now rolls a list down on touch screens (`.tn-drop`, home written first; the
 desktop hover sides are unchanged). Case links were dead everywhere: a
