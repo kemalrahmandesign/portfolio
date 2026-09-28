@@ -14,6 +14,7 @@ most regressions before Kemal did. Last run: **61 passing, 0 failing.**
 python3 tests/build.py                    # writes tests/.site/ (gitignored)
 cd tests/.site && python3 -m http.server 8099 &   # in the background
 node tests/e2e.js                         # PASS / FAIL per line
+node tests/mobile.js                      # phone: tap menu, tap a case study
 ```
 
 `build.py` swaps three things for limitations of the container, not of the

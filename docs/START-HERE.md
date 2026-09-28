@@ -59,7 +59,17 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-**Session 4, second pass (what is live now).** Kemal rejected the reel
+**Session 4, third pass (from Kemal testing on his phone):** the face menu
+now rolls a list down on touch screens (`.tn-drop`, home written first; the
+desktop hover sides are unchanged). Case links were dead everywhere: a
+leftover placeholder handler called `preventDefault` and then crashed on a
+missing `.case-title`; removed. Experience: "Kemal Rahman Design", Polaris
+2025 above Osmosis DEX 2024. About: the `( about )` tag is gone, the copy is
+a first-person hello, and the words hop in on springs (the reel's smears and
+tumbles read as too serious). Section titles bounce in word by word. Phone
+checks live in `tests/mobile.js`.
+
+**Session 4, second pass.** Kemal rejected the reel
 chrome (corner labels, timecode, progress line: "make no sense") and the
 easing-race timeline ("0 sense"), and said the site's tone is Disney-like, so
 it should be **friendly, not serious**. Kept: the About kinetic type. Built:
@@ -104,7 +114,7 @@ it should be **friendly, not serious**. Kept: the About kinetic type. Built:
 | Contact | form + next clients; built without a reference, on request |
 | Cursor | a pointer arrow with a label pill, FigJam-like |
 | Mobile | letterboxed 16:9; **the 9:16 regeneration is in `BACKLOG.md`** |
-| Tests | `tests/`, 61 passing; see `tests/README.md` |
+| Tests | `tests/e2e.js` 61 passing, `tests/mobile.js` 5 passing |
 
 ## Working with Kemal
 

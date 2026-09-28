@@ -9,6 +9,10 @@ full under "Next up" in `START-HERE.md`.
 
 ## 1. Mobile, at 9:16
 
+**Re-confirmed by Kemal (session 4, testing on his phone):** regenerate the
+two main scenes on Higgsfield for mobile. Parked here until he says go;
+`get_cost` first and quote it.
+
 Kemal is rationing Higgsfield credits for this, so it comes before anything
 else that generates. The desktop clips are 16:9 and are shown letterboxed on a
 phone, because covering a portrait viewport crops to about 26% of the frame
