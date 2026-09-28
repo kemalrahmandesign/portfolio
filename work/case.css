@@ -18,12 +18,64 @@ body{margin:0;background:var(--bg);color:var(--ink);
 img,video{display:block;max-width:100%}
 a{color:inherit}
 
-.top{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10}
-.back{display:flex;align-items:center;gap:10px;background:#fff;border-radius:50px;padding:5px 18px 5px 5px;
-  box-shadow:var(--lift);text-decoration:none;font:600 14px/1 Inter,sans-serif;white-space:nowrap;
-  transition:transform .35s var(--spring)}
-.back:hover{transform:translateY(-2px) rotate(-2deg)}
-.back img{width:36px;height:36px;border-radius:50%;background:var(--bg);object-fit:cover}
+/* The same face menu as the main site: his head, and on hover four pills
+   fly out two either side (a card of five on a phone, tapped open). */
+.topnav{
+  position:fixed;z-index:70;top:clamp(7px,1vh,14px);left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;background:#fff;border-radius:50px;padding:4px;box-shadow:var(--lift);
+}
+.tn-face{
+  appearance:none;border:0;padding:0;margin:0;cursor:pointer;flex:none;position:relative;
+  width:38px;height:38px;border-radius:50%;background:var(--bg);overflow:hidden;display:grid;place-items:center;
+  transition:transform .4s var(--spring),box-shadow .25s ease;
+}
+.tn-face img{width:100%;height:100%;object-fit:cover;transform:scale(1.06)}
+.tn-face::after{content:"";position:absolute;left:50%;top:50%;width:56px;height:56px;transform:translate(-50%,-50%)}
+.tn-face:hover,.tn-face:focus-visible{transform:scale(1.16) rotate(-7deg);box-shadow:0 0 0 3px var(--ink);outline:0}
+.tn-face:active{transform:scale(.94)}
+.tn-tip{
+  position:absolute;top:calc(100% + 9px);left:50%;transform:translateX(-50%) translateY(-6px) scale(.6);transform-origin:50% 0;
+  background:var(--ink);color:var(--bg);padding:7px 13px;border-radius:50px;font:600 12px/1 Inter,sans-serif;letter-spacing:.02em;
+  opacity:0;pointer-events:none;transition:opacity .2s ease,transform .4s var(--spring);
+}
+.tn-face:hover ~ .tn-tip,.tn-face:focus-visible ~ .tn-tip{opacity:1;transform:translateX(-50%)}
+.tn-drop{
+  position:absolute;top:calc(100% + 10px);left:50%;display:grid;min-width:190px;padding:8px;
+  background:#fff;border-radius:26px;box-shadow:var(--lift);
+  transform:translateX(-50%) translateY(-10px) scale(.7);transform-origin:50% 0;opacity:0;pointer-events:none;
+  transition:transform .5s var(--spring),opacity .2s ease;
+}
+.topnav.dropped .tn-drop,.topnav.open .tn-drop{opacity:1;pointer-events:auto;transform:translateX(-50%)}
+.tn-drop a{
+  display:block;padding:14px 20px;border-radius:18px;text-align:center;text-decoration:none;
+  font:700 19px/1 var(--display);letter-spacing:-.02em;color:var(--ink);opacity:0;transform:translateY(-8px);
+  transition:opacity .25s ease,transform .45s var(--spring),background .2s ease,color .2s ease;
+}
+.tn-drop a:first-child{background:var(--ink);color:var(--bg)}
+.topnav.dropped .tn-drop a,.topnav.open .tn-drop a{opacity:1;transform:none}
+.tk{display:inline-flex}
+.tk-c{position:relative;display:inline-block;overflow:hidden;height:1.05em;line-height:1.05em;white-space:pre}
+.tk-c > span{display:block;transition:transform .34s cubic-bezier(.32,0,.18,1);transition-delay:calc(var(--i) * 24ms)}
+.tk-c > .b{position:absolute;left:0;top:0;transform:translateY(-100%)}
+@media (hover:hover){
+  .tn-drop{display:flex;align-items:center;gap:8px;min-width:0;padding:0;background:none;box-shadow:none;border-radius:0;
+    top:50%;transform:translate(-50%,-50%)}
+  .topnav.open .tn-drop{transform:translate(-50%,-50%);pointer-events:none}
+  .topnav.open .tn-drop a{pointer-events:auto}
+  .tn-drop a:first-child{display:none}
+  .tn-drop a{position:relative;width:118px;background:#fff;box-shadow:var(--lift);border-radius:50px;padding:13px 0;
+    font:600 15px/1 Inter,sans-serif;letter-spacing:-.006em;white-space:nowrap}
+  .tn-drop a::after{content:"";position:absolute;inset:-8px -12px}
+  .tn-drop a:nth-child(3){margin-right:58px}
+  .tn-drop a:nth-child(2),.tn-drop a:nth-child(3){transform:translateX(40px) scale(.6)}
+  .tn-drop a:nth-child(4),.tn-drop a:nth-child(5){transform:translateX(-40px) scale(.6)}
+  .topnav.open .tn-drop a{transform:none}
+  .topnav.open .tn-drop a:hover,.topnav.open .tn-drop a:focus-visible{transform:translateY(-2px) rotate(-2deg);background:var(--ink);color:var(--bg)}
+  .topnav.open .tn-drop:hover a:not(:hover):not(:focus-visible){opacity:.55}
+  .tn-drop a:hover .tk-c > .a,.tn-drop a:focus-visible .tk-c > .a{transform:translateY(100%)}
+  .tn-drop a:hover .tk-c > .b,.tn-drop a:focus-visible .tk-c > .b{transform:translateY(0)}
+}
+@media (hover:none){ .tn-tip{display:none} }
 
 .wrap{max-width:1180px;margin:0 auto;padding:0 var(--pad)}
 .hero-c{padding:clamp(110px,18vh,190px) 0 clamp(30px,6vh,60px);text-align:center}
@@ -74,15 +126,68 @@ a{color:inherit}
 .reflect .note{margin-top:22px}
 
 /* The storyboard: Loco's scenes as a strip of frames with a caption each. */
-.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin:clamp(24px,4vh,44px) 0}
+/* Two wide frames on top, three under them, so the block stays symmetric. */
+.board{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px;margin:clamp(24px,4vh,44px) 0}
+.board .frame{grid-column:span 2}
+.board .frame:nth-child(-n+2){grid-column:span 3}
 .frame{background:#fff;border-radius:26px;overflow:hidden;box-shadow:var(--lift);transition:transform .45s var(--spring)}
 .frame:hover{transform:translateY(-4px) rotate(-.8deg)}
 .frame:nth-child(even):hover{transform:translateY(-4px) rotate(.8deg)}
-.frame video,.frame img{width:100%;aspect-ratio:16/10;object-fit:cover;background:#111}
 .frame figcaption{padding:16px 18px 20px}
-.frame b{display:block;font:800 20px/1.1 var(--display);letter-spacing:-.03em}
-.frame b i{font-style:normal;opacity:.4;margin-right:8px}
-.frame span{display:block;margin-top:6px;color:var(--grey);font-size:15px;line-height:1.45}
+.frame figcaption b{display:block;font:800 20px/1.1 var(--display);letter-spacing:-.03em}
+.frame figcaption b i{font-style:normal;opacity:.4;margin-right:8px}
+.frame figcaption span{display:block;margin-top:6px;color:var(--grey);font-size:15px;line-height:1.45}
+
+/* Loco's opening: the film fills the window and is scrubbed by the scroll,
+   with the site's own lockup over it, which stays put the whole way. */
+.scrub.scrub-hero{height:260svh;position:relative;margin:0}
+.scrub-hero .scrub-stage{position:sticky;top:0;height:100svh;display:block;place-items:stretch}
+.hero-film{position:relative;width:100%;height:100svh;overflow:hidden;background:#0b0704;color:#fff}
+.hero-film video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero-film::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(to top,rgba(10,6,2,.72),rgba(10,6,2,.15) 55%,rgba(10,6,2,.35))}
+.hl{position:absolute;z-index:2;left:0;right:0;bottom:clamp(90px,17vh,170px);text-align:center;padding:0 var(--pad)}
+.hl-tag{margin:0 0 14px;font:600 clamp(11px,1vw,14px)/1.3 Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;opacity:.85}
+.hl-name{margin:0;font:800 clamp(52px,10.5vw,190px)/.88 var(--display);letter-spacing:-.055em;text-shadow:0 4px 40px rgba(0,0,0,.35)}
+.hl-sub{margin:18px 0 26px;font:600 clamp(17px,1.9vw,28px)/1.3 var(--display);letter-spacing:-.02em}
+.hl-cta{display:inline-block;background:#fff;color:var(--ink);text-decoration:none;font:700 16px/1 Inter,sans-serif;
+  padding:16px 26px;border-radius:50px;transition:transform .35s var(--spring)}
+.hl-cta:hover{transform:rotate(-3deg) scale(1.05)}
+.hl-case{position:absolute;z-index:2;top:clamp(70px,11vh,100px);left:0;right:0;text-align:center;margin:0;
+  font:600 12px/1 Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+.hl-cue{position:absolute;z-index:2;bottom:clamp(20px,4vh,40px);left:50%;transform:translateX(-50%);margin:0;
+  font:400 clamp(20px,1.8vw,26px)/1 var(--hand);opacity:calc(1 - var(--p,0) * 14);pointer-events:none}
+.intro{padding-top:clamp(40px,8vh,80px)}
+
+/* Text laid over a film, on a dark wash so it always reads. Sizes are in
+   container units so the same overlay works in a wide card and a narrow one. */
+.fm{position:relative;container-type:inline-size;background:#111;overflow:hidden}
+.fm video,.fm img{width:100%;aspect-ratio:16/10;object-fit:cover;background:#111}
+.fm::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(10,6,2,.9),rgba(10,6,2,.25) 55%,rgba(10,6,2,.05) 80%)}
+.ov{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:5cqw 6cqw;color:#fff;text-align:left;display:grid;gap:1.2cqw}
+.ov .lb{font:600 max(9px,2.3cqw)/1.35 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.ov .hd{font:800 max(18px,6.4cqw)/1 var(--display);letter-spacing:-.04em}
+.ov .hd-xl{font-size:max(28px,11cqw);letter-spacing:-.05em}
+.ov .sb{font:500 max(11px,2.9cqw)/1.35 Inter,sans-serif;opacity:.85}
+.ov .qt{font:700 max(15px,4.2cqw)/1.2 var(--display);letter-spacing:-.025em}
+.ov .rows{list-style:none;margin:0;padding:0;display:grid;gap:.8cqw;font:700 max(14px,4.2cqw)/1.15 var(--display);letter-spacing:-.025em}
+.ov .rows i{font-style:normal;font:600 max(9px,2.2cqw)/1 Inter,sans-serif;opacity:.6;margin-right:2cqw;letter-spacing:.1em}
+.beats{display:grid}
+.beat{grid-area:1/1;display:grid;gap:1.2cqw;opacity:0;transform:translateY(10px)}
+.beat .lb{font:600 max(9px,2.3cqw)/1.35 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.beat .hd{font:800 max(18px,6.4cqw)/1 var(--display);letter-spacing:-.04em}
+.beat .sb{font:500 max(11px,2.9cqw)/1.35 Inter,sans-serif;opacity:.85}
+.beat .qt{font:700 max(15px,4.2cqw)/1.2 var(--display);letter-spacing:-.025em}
+.beat.b4{animation:beat4 9.6s var(--spring) infinite;animation-delay:calc(var(--i) * 2.4s)}
+.beat.b3{animation:beat3 9.9s var(--spring) infinite;animation-delay:calc(var(--i) * 3.3s)}
+@keyframes beat4{0%{opacity:0;transform:translateY(10px)}3%,22%{opacity:1;transform:none}25%,100%{opacity:0;transform:translateY(-6px)}}
+@keyframes beat3{0%{opacity:0;transform:translateY(10px)}3%,30%{opacity:1;transform:none}33.4%,100%{opacity:0;transform:translateY(-6px)}}
+@media (prefers-reduced-motion:reduce){ .beat{animation:none!important} .beat:first-child{opacity:1;transform:none} }
+.scrub-card .ov{padding:4% 4.5%;gap:8px;font-size:1cqw}
+.scrub-card{container-type:inline-size}
+.scrub-card::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(10,6,2,.7),rgba(10,6,2,0) 55%)}
+.scrub-card .ov{z-index:2}
+.scrub-tag{z-index:3}
 
 .scrub{height:260vh;position:relative;margin:clamp(20px,4vh,40px) 0}
 .scrub-stage{position:sticky;top:0;height:100svh;display:grid;place-items:center}
@@ -110,6 +215,7 @@ a{color:inherit}
   .blk{grid-template-columns:1fr}
   .blk-head{position:static}
   .nums{grid-template-columns:1fr}
+  .board .frame,.board .frame:nth-child(-n+2){grid-column:1/-1}
   .shot,.hard{border-radius:24px}
 }
 @media (prefers-reduced-motion:reduce){

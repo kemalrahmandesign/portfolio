@@ -120,6 +120,7 @@ body{
      push-in scaling one of them, that is where the take stuttered. The lift
      is 1 and the warmth was 2% saturation, which nobody could see. */
   opacity:0;z-index:1;
+  will-change:opacity;
 }
 
 /* Portrait: letterbox rather than crop.
@@ -269,7 +270,13 @@ h1{
   margin:clamp(10px,1.7vh,30px) 0 0;
   display:flex;justify-content:center;align-items:baseline;
   gap:clamp(64px,16.2vw,330px);
-  font-size:var(--tag);font-weight:700;letter-spacing:-.005em;
+  /* The secondary face. The headline is a heavy grotesque, so the line under
+     it is an italic serif: the two say "designer" and "good taste" in
+     different voices. A serif sets small next to a grotesque at the same
+     size, so it runs a size up. */
+  font-family:'Instrument Serif',Georgia,'Times New Roman',serif;
+  font-style:italic;font-weight:400;
+  font-size:calc(var(--tag) * 1.7);letter-spacing:0;
   white-space:nowrap;
 }
 .tagline span{
@@ -369,6 +376,10 @@ h1{
    starts the moment he finishes waving. */
 .hero.armed .cta{cursor:default}
 .hero.armed .cta .ring rect{animation-duration:.55s}
+/* The dashes are an SVG stroke animation, which the browser repaints on the
+   main thread every frame. The button is fading out for the take, and the
+   take is the one moment nothing else may compete for the frame. */
+.hero.is-leaving .cta .ring rect{animation-play-state:paused}
 /* The pill stays unfilled. Hover thickens and darkens the outline rather
    than flooding it, because a solid fill at this size covers a good part of
    the shot behind it. */
@@ -687,7 +698,24 @@ h1{
   display:grid;place-items:center;
   transition:transform .3s cubic-bezier(.16,1,.3,1);
 }
-.topnav.open .tn-face{transform:scale(1.04)}
+/* Hover states, so every part of the menu says it can be pressed.
+   The face grows, tilts, and gets an ink ring, with a small "home" tag
+   under it; a pill fills black. Moving from one to the other hands the
+   attention across: while a pill is hovered the others step back and the
+   face relaxes, and leaving the pills returns everything to rest. */
+.tn-face{transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease}
+.tn-face:hover,.tn-face:focus-visible{transform:scale(1.16) rotate(-7deg);box-shadow:0 0 0 3px var(--ink)}
+.tn-face:active{transform:scale(.94)}
+.tn-tip{
+  position:absolute;top:calc(100% + 9px);left:50%;
+  transform:translateX(-50%) translateY(-6px) scale(.6);transform-origin:50% 0;
+  background:var(--ink);color:var(--bg);padding:7px 13px;border-radius:50px;
+  font:600 12px/1 Inter,sans-serif;letter-spacing:.02em;
+  opacity:0;pointer-events:none;
+  transition:opacity .2s ease,transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+.tn-face:hover ~ .tn-tip,.tn-face:focus-visible ~ .tn-tip{opacity:1;transform:translateX(-50%)}
+@media (hover:none){ .tn-tip{display:none} }
 .tn-face img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.06)}
 .tn-face:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 /* The plate is 46px closed, which is smaller than a finger. The hit area is
@@ -785,7 +813,11 @@ h1{
   .topnav.open .tn-drop a{transform:none}
   .tn-drop a:nth-child(3),.tn-drop a:nth-child(4){transition-delay:0s}
   .tn-drop a:nth-child(2),.tn-drop a:nth-child(5){transition-delay:.06s}
-  .topnav.open .tn-drop a:hover{transform:translateY(-2px) rotate(-2deg)}
+  .tn-drop a{transition:opacity .25s ease,transform .45s cubic-bezier(.34,1.56,.64,1),background .2s ease,color .2s ease}
+  .topnav.open .tn-drop a:hover,.topnav.open .tn-drop a:focus-visible{
+    transform:translateY(-2px) rotate(-2deg);background:var(--ink);color:var(--bg);
+  }
+  .topnav.open .tn-drop:hover a:not(:hover):not(:focus-visible){opacity:.55}
 }
 
 /* ---------- about ----------
@@ -1118,11 +1150,23 @@ h1{
 .cur svg{
   width:24px;height:24px;display:block;flex:none;
   fill:var(--ink);stroke:var(--bg);stroke-width:1.4;stroke-linejoin:round;
-  transform:scale(var(--s,1));transform-origin:4px 3px;
-  transition:transform .22s cubic-bezier(.16,1,.3,1);
+  transform:scale(var(--s,1)) rotate(var(--r,0deg));transform-origin:4px 3px;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
   filter:drop-shadow(0 2px 5px rgba(10,10,10,.18));
 }
 .cur.tap{--s:.86}
+/* Over anything that can be pressed: the arrow tips up and swells, and a
+   soft ring blooms around its point like a spotlight landing, all on the same
+   springs as the rest of the site. Pressing squashes it. */
+.cur::before{
+  content:"";position:absolute;left:-15px;top:-17px;width:40px;height:40px;border-radius:50%;
+  background:rgba(10,10,10,.07);border:1.5px solid rgba(10,10,10,.55);
+  transform:scale(0);transition:transform .45s cubic-bezier(.34,1.56,.64,1);
+}
+.cur.link{--s:1.2;--r:-12deg}
+.cur.link::before{transform:scale(1)}
+.cur.link.tap{--s:.95}
+.cur.link.tap::before{transform:scale(.8)}
 /* The label rides beside it the way a name tag does on a shared canvas. */
 .cur-tag{
   margin-top:14px;
@@ -1184,6 +1228,7 @@ html.cursored,html.cursored *{cursor:none !important}
   <button class="tn-face" id="tnFace" type="button" aria-expanded="false" aria-label="Back to the studio">
     <img alt="" src="" id="tnFaceImg">
   </button>
+  <span class="tn-tip" aria-hidden="true">home</span>
   <!-- On a touch screen there is no hover to open the sides, so a tap on
        the face rolls this list down instead, with home written out. -->
   <div class="tn-drop" id="tnDrop">
@@ -1355,11 +1400,11 @@ html.cursored,html.cursored *{cursor:none !important}
       <span class="sec-note">under construction</span>
     </div>
     <div class="build-grid">
-      <div class="build" aria-disabled="true">
+      <div class="build" aria-disabled="true" data-cursor="soon">
         <div class="build-frame"><span class="build-tape">Under construction</span></div>
         <div class="case-cap"><h3 class="case-name">Alexandria Car Clinic</h3><span class="build-soon">Coming soon</span></div>
       </div>
-      <div class="build" aria-disabled="true">
+      <div class="build" aria-disabled="true" data-cursor="soon">
         <div class="build-frame"><span class="build-tape">Under construction</span></div>
         <div class="case-cap"><h3 class="case-name">Tokiwa Matcha</h3><span class="build-soon">Coming soon</span></div>
       </div>
@@ -1703,6 +1748,14 @@ html.cursored,html.cursored *{cursor:none !important}
     }
     show(poster, 0);
     requestAnimationFrame(() => hero.classList.add('is-in'));
+    /* Arriving from a case study page with a section in the address goes
+       straight to it, skipping the greeting and the walk. */
+    const deep = location.hash.slice(1);
+    if (['about','experience','reel','cases','building','contact'].includes(deep)){
+      waveEnded = true;
+      goTo(deep);
+      return;
+    }
 
   /* Mobile plays the full sequence too. It used to be excluded along with
      reduced motion, which left phones on a bare poster and made the call to
@@ -1840,6 +1893,14 @@ html.cursored,html.cursored *{cursor:none !important}
        cover it. The first half second of the clip is him turning away, which is
        the cheapest half second in the take to spend on a dissolve. */
     playOnce(W, CLIPS.walk, reveal, WALK_XF);
+    /* The idle loop's last element is still playing when the press lands,
+       and it keeps decoding under the walk for the rest of its ten seconds.
+       Two video decoders at once is what a phone cannot afford, and it shows
+       as dropped frames on the camera swing. Once the walk has covered it,
+       everything else is stopped. */
+    W.addEventListener('playing', () => {
+      setTimeout(() => [A, B, C].forEach(v => { if (v !== W) v.pause(); }), WALK_XF + 80);
+    }, { once: true });
 
     // Hand over during the clip's final stretch, by which point the monitor has
     // powered on inside the shot and the frame is mostly white.
@@ -2446,9 +2507,10 @@ html.cursored,html.cursored *{cursor:none !important}
       /* What is under the pointer decides the shape. `closest` rather than a
          list of selectors on the element itself, because every one of these
          has children and the pointer is usually over one of them. */
-      const hit = e.target.closest('[data-cursor],a,button');
+      const hit = e.target.closest('[data-cursor],a,button,label.chip,[role=button]');
       const word = (hit && hit.dataset.cursor) || '';
       cur.classList.toggle('big', !!word);
+      cur.classList.toggle('link', !!hit && !hit.disabled && hit.getAttribute('aria-disabled') !== 'true');
       if (word && label.textContent !== word) label.textContent = word;
     }, { passive: true });
     addEventListener('pointerdown', () => cur.classList.add('tap'));

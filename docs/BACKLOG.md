@@ -94,11 +94,16 @@ he waves you in.
 
 - **Case study layout.** Kemal floated trying something other than three
   cards stacked ("just a future thought"). No direction yet.
-- **The walk still choppy?** Session 4 removed the CSS filter on the hero
-  videos (the likeliest cause visible in code). If it still stutters, the
-  next suspects are the walk's 24fps re-render and the clips still being
-  served from the Higgsfield CDN rather than `media/`.
-
+- **The walk is still the weak spot.** Session 4 removed the CSS filter,
+  paused the idle loop's leftover decoder and the button's SVG animation
+  during the take. None of that could be watched from the container (headless
+  Chromium has no H.264). What is left: the walk is a **24fps** re-render, and
+  24 does not divide a 60Hz screen evenly, so camera pans judder (30fps
+  divides evenly; 120Hz screens are fine). Real fixes: regenerate the walk at
+  30fps or higher (fold into the 9:16 regeneration), or interpolate it to 60fps
+  with ffmpeg `minterpolate` (needs the file, which the container cannot fetch
+  from the Higgsfield CDN; Kemal can drop it into the chat). Also still open:
+  the clips are served from the CDN, not `media/`.
 - **Commit the four hero clips** into `media/`. The live site is being served
   from the Higgsfield CDN through the fallback map, which lasts only as long as
   the generations do. Kemal can drop the files into the chat.
