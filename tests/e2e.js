@@ -78,27 +78,18 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   await p.waitForTimeout(2000);
   ok('menu arrives with the monitor', (await E(()=>getComputedStyle(document.getElementById('topnav')).opacity))==='1');
   await p.hover('#tnFace'); await p.waitForTimeout(700);
-  const order = await E(()=>[...document.querySelectorAll('.tn-side a')]
+  const order = await E(()=>[...document.querySelectorAll('.tn-drop a')]
       .sort((a,c)=>a.getBoundingClientRect().left-c.getBoundingClientRect().left).map(a=>a.getAttribute('aria-label')));
-  ok('nav reads about, experience, work, contact',
-     order.join(',')==='about,experience,work,contact', order.join(','));
+  ok('hover drops pills: home, about, experience, work, contact',
+     order.join(',')==='home,about,experience,work,contact', order.join(','));
   ok('menu is lowercase', order.every(t=>t===t.toLowerCase()));
-  /* Against the masthead, not against innerWidth. The page reserves a
-     scrollbar gutter, so the column everything is centred in is narrower
-     than the window; lining the menu up with the window would put it off
-     the masthead it sits above. */
-  const centred = await E(()=>{const f=document.getElementById('tnFace').getBoundingClientRect();
-    const h=document.querySelector('#about .lede').getBoundingClientRect();
-    return Math.abs((f.left+f.right)/2 - (h.left+h.right)/2);});
-  ok('face lines up with the masthead when open', centred<2, centred.toFixed(1)+'px');
-  const sym = await E(()=>{const l=document.querySelector('.tn-left').getBoundingClientRect(),
-    r=document.querySelector('.tn-right').getBoundingClientRect(); return Math.abs(l.width-r.width);});
-  ok('sides are the same width', sym<1, sym.toFixed(1)+'px');
-  const gap = await E(()=>{const l=document.querySelector('.tn-left').getBoundingClientRect(),
-    a=document.querySelector('.tn-left a:last-child').getBoundingClientRect();
-    return a.left - l.left;});
-  ok('no dead space on the left of the menu', gap<3, gap.toFixed(1)+'px');
-  const flip = await E(()=>document.querySelectorAll('.tn-side a .tk-c').length);
+  const pills = await E(()=>{const f=document.getElementById('tnFace').getBoundingClientRect();
+    const as=[...document.querySelectorAll('.tn-drop a')].map(a=>a.getBoundingClientRect());
+    const l=Math.min(...as.map(r=>r.left)), r=Math.max(...as.map(r=>r.right));
+    return {row:new Set(as.map(r=>Math.round(r.top))).size, below:as.every(r=>r.top>f.bottom),
+      centre:Math.round((l+r)/2-(f.left+f.right)/2), op:getComputedStyle(document.querySelector('.tn-drop a')).opacity};});
+  ok('pills sit in one row under the face, centred', pills.row===1 && pills.below && Math.abs(pills.centre)<3 && pills.op==='1', JSON.stringify(pills));
+  const flip = await E(()=>document.querySelectorAll('.tn-drop a .tk-c').length);
   ok('links split into flip cells', flip>20, flip+' cells');
   await p.mouse.move(700,700); await p.waitForTimeout(500);
 
@@ -147,12 +138,14 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   // the reel: about and experience
   ok('about words keep their spaces', (await E(()=>
     document.querySelector('.lede').textContent.replace(/\s+/g,' ').includes('I’m a product designer who spent'))));
-  /* Scrolled back to first: leaving a section puts it back to its starting
-     state so it plays again, and the montage checks above left it. */
-  await p.evaluate(()=>scrollTo(0, document.getElementById('about').getBoundingClientRect().top + scrollY));
-  await p.waitForTimeout(3000);
-  ok('about words settle in place', (await E(()=>[...document.querySelectorAll('.lede .w')]
-    .every(w=>getComputedStyle(w).opacity==='1' && getComputedStyle(w).transform==='none'))));
+  const aboutRead = async at => { await p.evaluate(v=>{const a=document.getElementById('about');
+      scrollTo(0, a.getBoundingClientRect().top + scrollY + (a.offsetHeight - innerHeight) * v);}, at);
+    await p.waitForTimeout(400);
+    return E(()=>{const ws=[...document.querySelectorAll('.lede .w')].map(w=>+getComputedStyle(w).opacity);
+      return {lit:ws.filter(o=>o>0.95).length, n:ws.length, cue:+getComputedStyle(document.querySelector('.about-cue')).opacity};}); };
+  const r0 = await aboutRead(0), r1 = await aboutRead(1);
+  ok('about starts with the hello lit and a scroll cue', r0.lit>0 && r0.lit<r0.n && r0.cue>0.9, JSON.stringify(r0));
+  ok('scrolling reads the whole paragraph and the cue leaves', r1.lit===r1.n && r1.cue<0.1, JSON.stringify(r1));
   await p.evaluate(()=>scrollTo(0, document.getElementById('experience').getBoundingClientRect().top + scrollY));
   await p.waitForTimeout(2500);
   const xp = await E(()=>({cards:[...document.querySelectorAll('.xp-card')].map(c=>c.querySelector('.xp-who').textContent),
@@ -161,9 +154,10 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('four places, Osmosis and Polaris as one family', xp.cards.length===4 && xp.fam.join()==='Polaris,Osmosis DEX', JSON.stringify(xp));
   ok('experience cards land', xp.shown);
   ok('no reel chrome left', (await E(()=>!document.querySelector('.chrome,.ch-k,.xp-dot'))));
-  const hello = await E(()=>({form:!!document.querySelector('#contact form input[type=email]'),
-    bench:document.querySelector('.bench').textContent}));
-  ok('contact has a form and the next clients', hello.form && hello.bench.includes('Alexandria Car Clinic') && hello.bench.includes('Tokiwa Matcha'));
+  const hello = await E(()=>({fields:[...document.querySelectorAll('#contact form input:not(.hp)')].map(i=>i.name),
+    send:!!document.querySelector('#contact .send'), now:document.querySelector('.hello-now').textContent}));
+  ok('contact is just name, email and a button', hello.fields.join()==='name,email' && hello.send, JSON.stringify(hello));
+  ok('contact names the next clients', hello.now.includes('Alexandria Car Clinic') && hello.now.includes('Tokiwa Matcha'));
   const cases = await E(()=>({n:document.querySelectorAll('.case').length,
     titles:document.querySelectorAll('.case-title,.case-meta').length}));
   ok('three case studies, each linking to its page', cases.n===3 && (await E(()=>[...document.querySelectorAll('.case')].map(c=>c.getAttribute('href')).join())) === 'work/osmosis.html,work/polaris.html,work/loco.html', JSON.stringify(cases));
