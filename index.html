@@ -115,7 +115,10 @@ body{
 .stage video,.stage img{
   position:absolute;inset:0;width:100%;height:100%;
   object-fit:cover;object-position:center bottom;
-  filter:brightness(var(--clip-lift)) saturate(var(--clip-warm));
+  /* No filter. A CSS filter on a full-screen video makes the compositor
+     re-filter every decoded frame, and with two layers crossfading and the
+     push-in scaling one of them, that is where the take stuttered. The lift
+     is 1 and the warmth was 2% saturation, which nobody could see. */
   opacity:0;z-index:1;
 }
 
@@ -755,20 +758,34 @@ h1{
 .tn-drop a:nth-child(3){transition-delay:.08s}
 .tn-drop a:nth-child(4){transition-delay:.12s}
 .tn-drop a:nth-child(5){transition-delay:.16s}
+/* Desktop: no home pill (the face is home) and the four sections fly out
+   either side of the face, two left, two right. Every pill is the same
+   width, so the face stays dead centre between the pairs. */
 @media (hover:hover){
   .tn-drop{
-    display:flex;gap:8px;min-width:0;padding:0;background:none;box-shadow:none;border-radius:0;
-    transform:translateX(-50%) translateY(-14px);
+    display:flex;align-items:center;gap:8px;min-width:0;padding:0;background:none;box-shadow:none;border-radius:0;
+    top:50%;transform:translate(-50%,-50%);
   }
-  /* A bridge over the gap, so moving from the face down to a pill does not
-     count as leaving the menu. */
-  .tn-drop::before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px}
+  .topnav.open .tn-drop{transform:translate(-50%,-50%)}
+  /* The row is centred on the face and would sit over it, so only the
+     pills take the pointer; each carries an invisible margin that bridges
+     the gaps, so crossing from face to pill never counts as leaving. */
+  .topnav.open .tn-drop{pointer-events:none}
+  .topnav.open .tn-drop a{pointer-events:auto}
+  .tn-drop a{position:relative}
+  .tn-drop a::after{content:"";position:absolute;inset:-8px -12px}
+  .tn-drop a:first-child{display:none}
   .tn-drop a{
-    background:#fff;box-shadow:var(--lift);border-radius:50px;
-    padding:12px 18px;font:600 15px/1 Inter,sans-serif;letter-spacing:-.006em;white-space:nowrap;
-    transform:translateY(-12px) scale(.8);
+    width:118px;background:#fff;box-shadow:var(--lift);border-radius:50px;
+    padding:13px 0;font:600 15px/1 Inter,sans-serif;letter-spacing:-.006em;white-space:nowrap;
   }
-  .tn-drop a:hover{transform:translateY(2px) rotate(-2deg)}
+  .tn-drop a:nth-child(3){margin-right:58px}
+  .tn-drop a:nth-child(2),.tn-drop a:nth-child(3){transform:translateX(40px) scale(.6)}
+  .tn-drop a:nth-child(4),.tn-drop a:nth-child(5){transform:translateX(-40px) scale(.6)}
+  .topnav.open .tn-drop a{transform:none}
+  .tn-drop a:nth-child(3),.tn-drop a:nth-child(4){transition-delay:0s}
+  .tn-drop a:nth-child(2),.tn-drop a:nth-child(5){transition-delay:.06s}
+  .topnav.open .tn-drop a:hover{transform:translateY(-2px) rotate(-2deg)}
 }
 
 /* ---------- about ----------
@@ -902,6 +919,37 @@ h1{
   .case-frame{aspect-ratio:4/3;border-radius:22px}
   .case-cap{flex-direction:column;gap:12px}
 }
+
+/* ---------- currently building ----------
+   Case-study cards in a disabled state: diagonal hazard stripes in ink, a
+   strip of tape across the corner, the name set big in the middle, and a
+   "coming soon" pill where "view project" would be. Not links. */
+.building{padding:0 0 clamp(60px,12vh,140px)}
+.build-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2.4vw,32px)}
+.build{cursor:not-allowed}
+.build-frame{
+  position:relative;overflow:hidden;border-radius:28px;aspect-ratio:4/3;box-shadow:var(--lift);
+  display:grid;place-items:center;
+  background:repeating-linear-gradient(-45deg,#e4e3e0 0 22px,#ebeae7 22px 44px);
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1);
+}
+.build:hover .build-frame{transform:rotate(-1deg)}
+.build-name{
+  font:800 clamp(28px,3.4vw,52px)/1 var(--font-display);letter-spacing:-.045em;
+  text-align:center;padding:0 8%;color:rgba(10,10,10,.28);
+}
+.build-tape{
+  position:absolute;top:44px;right:-70px;transform:rotate(35deg);
+  padding:10px 90px;background:var(--ink);color:var(--bg);
+  font:700 11px/1 Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;
+  background-image:repeating-linear-gradient(-45deg,transparent 0 10px,rgba(241,240,238,.14) 10px 20px);
+}
+.build .case-name{opacity:.45}
+.build-soon{
+  flex:none;font:600 14px/1 Inter,sans-serif;padding:.9em 1.3em;border-radius:50px;
+  border:1.5px dashed rgba(10,10,10,.35);color:rgba(10,10,10,.55);
+}
+@media (max-width:640px){ .build-grid{grid-template-columns:1fr} .build .case-cap{flex-direction:row;align-items:center} }
 
 /* ---------- contact ----------
    Centred and short: what is on the bench, the question, and one capsule
@@ -1298,11 +1346,30 @@ html.cursored,html.cursored *{cursor:none !important}
     </a>
   </section>
 
+  <!-- ---------- currently building ----------
+       The two clients on the bench, as cards shaped like the case studies
+       but switched off: taped over, striped, and not links yet. -->
+  <section class="building" id="building">
+    <div class="sec-head">
+      <h2 class="sec-title">Currently building</h2>
+      <span class="sec-note">under construction</span>
+    </div>
+    <div class="build-grid">
+      <div class="build" aria-disabled="true">
+        <div class="build-frame"><span class="build-tape">Under construction</span></div>
+        <div class="case-cap"><h3 class="case-name">Alexandria Car Clinic</h3><span class="build-soon">Coming soon</span></div>
+      </div>
+      <div class="build" aria-disabled="true">
+        <div class="build-frame"><span class="build-tape">Under construction</span></div>
+        <div class="case-cap"><h3 class="case-name">Tokiwa Matcha</h3><span class="build-soon">Coming soon</span></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ---------- contact ----------
        One line on what is on the bench, one question, and a single capsule:
        name, email, send. Nothing else to fill in. -->
   <section class="hello" id="contact">
-    <p class="hello-now"><span>Now building with</span> <b>Alexandria Car Clinic</b> <span>&amp;</span> <b>Tokiwa Matcha</b></p>
     <div class="sec-head">
       <h2 class="sec-title">Want to work together?</h2>
       <span class="sec-note">I don&rsquo;t bite, promise</span>
