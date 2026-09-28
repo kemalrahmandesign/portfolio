@@ -59,35 +59,31 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-**Built so far (session 4): About and Experience**, deployed. Kemal asked for
-those two only; the montage, the case studies and contact are still to do,
-with the same system.
+**Session 4, second pass (what is live now).** Kemal rejected the reel
+chrome (corner labels, timecode, progress line: "make no sense") and the
+easing-race timeline ("0 sense"), and said the site's tone is Disney-like, so
+it should be **friendly, not serious**. Kept: the About kinetic type. Built:
 
-- **The reel system** (`.tape` sections, the second `<script>` at the bottom of
-  `index.html`): each section is a full-window frame measured off a 1920x1080
-  reel frame in `--u` units (a 760-wide frame on phones). The chrome is built
-  by script: corner brackets, `KEMAL RAHMAN · PORTFOLIO – 2026`, the chapter
-  from `data-chap`, a timecode and beat counter driven by scroll (one screen =
-  one second), and a progress line over the whole of `#work`. A section plays
-  when it comes into view and resets once it is fully out, so it replays.
-- **Experience** is the easing race: number, mono name and role, a curve glyph
-  drawn from the same ease the dot uses, and a line from start year to end
-  year. Dots fly in from the upper left, then race 0.94s (the reel's figure)
-  on elastic, expo-out and back-out, with velocity motion blur and ghost rings
-  and ticks behind them. The title "Four years, from A to B." and the caption
-  are placeholders written this session; Kemal has not approved them.
-- **About** is the kinetic type beat: six phrases in `.ph` spans, each entering
-  with one of the reel's moves in turn (slide from the right with an echo
-  smear, rise stretched from below, slide from the left, tumble from above).
-- GSAP 3.15 is vendored at `vendor/gsap.min.js`. Fonts: JetBrains Mono for the
-  chrome and labels, Instrument Serif italic for the Experience title (closest
-  Google Fonts matches to the reel; the test copies are in `tests/fonts/`).
-- **Trap:** do not hand GSAP an element inside `#work` while it is hidden. It
-  lifts the element out to measure its transform and reinserts it before the
-  next element, skipping text nodes, which moved every space in the About
-  paragraph to the front of its phrase. Reset with plain styles instead.
-- Kemal has not seen it yet: everything above rests on headless screenshots
-  at 1440, 1920 and 390 wide.
+- **Experience:** four white rounded cards that pop in on a spring; Osmosis
+  and Polaris share a dashed "Osmosis Labs" outline ("same family, two
+  products", his Toyota and Lexus). Handwritten notes in Kaushan Script.
+- **Work:** three cards (Osmosis, Polaris, Loco Exotics), each opening a page
+  in `work/` (`case.css` + `case.js` shared). Copy rewritten from his old
+  Framer case studies, leaning on crypto being unsolved and him being one of
+  the first designers on those systems. No Brainfood case study, by request.
+- **Images:** the crypto shots are **hotlinked from framerusercontent.com**
+  (his old Framer site). The container cannot reach Framer, so they were never
+  seen here; they sit where the old pages placed them, uncaptioned. If that
+  site goes, they go: get the files from Kemal and commit them.
+  Loco's films and stills are copied from `kemalrahmandesign/loco-exotic`
+  into `media/loco/` (tail.mp4 re-encoded to 2.3MB).
+- **Contact:** "Want to work together?" form posting to FormSubmit's AJAX
+  endpoint for kemal203@gmail.com (the **first submission sends an
+  activation email** he must click), falling back to a pre-filled mailto.
+  "On the bench": Alexandria Car Clinic, Tokiwa Matcha.
+- GSAP 3.15 is vendored at `vendor/gsap.min.js`. **Trap:** never hand GSAP an
+  element inside the hidden `#work`; it reparents it to measure and drops the
+  spaces between words. Reset with plain styles.
 
 ## State
 
@@ -105,10 +101,10 @@ with the same system.
 | Experience | the easing race, three rows: Own agency (2026 to now), Polaris (2024 to 25), Brainfood (2020 to 21); **agency name unknown; title copy unapproved** |
 | Montage | sticky, full window width, grey placeholder; **no reel yet** |
 | Case studies | four 21:9 images with parallax and a "view" cursor; **placeholder gradients** |
-| Contact | placeholder; **waiting on a design reference from Kemal** |
+| Contact | form + next clients; built without a reference, on request |
 | Cursor | a pointer arrow with a label pill, FigJam-like |
 | Mobile | letterboxed 16:9; **the 9:16 regeneration is in `BACKLOG.md`** |
-| Tests | `tests/`, 63 passing; see `tests/README.md` |
+| Tests | `tests/`, 61 passing; see `tests/README.md` |
 
 ## Working with Kemal
 

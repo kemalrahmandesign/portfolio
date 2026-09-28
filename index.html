@@ -762,76 +762,12 @@ h1{
 @keyframes nudge{0%,100%{transform:translateY(0);opacity:.55} 50%{transform:translateY(4px);opacity:1}}
 
 
-/* ---------- the reel ----------
-   The sections behind the monitor move like the motion-graphics reel Kemal
-   sent: the motion, not the colour. Everything here is black on the page
-   tone. The reel runs on coral, blue and lime, and none of that comes across.
-
-   Every measurement in this block is taken off a 1920x1080 frame of the
-   reel and written in --u, one 1920th of the window, so the frame scales the
-   way the video does. A phone gets a 760-wide frame instead, or the dots and
-   labels come out the size of full stops. */
-.tape{
-  --u:calc(var(--vw,100vw) / 1920);
-  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-  --serif:'Instrument Serif',Georgia,serif;
-  --grey:rgba(10,10,10,.5);
-  position:relative;min-height:100svh;
-  width:var(--vw,100%);
-  margin-left:calc((var(--vw,100%) - 100%) / -2);
-  margin-right:calc((var(--vw,100%) - 100%) / -2);
-  /* The elastic dot overshoots the end of its line and off the frame, which
-     is the point of it; it must not widen the page on the way. */
-  overflow:clip;
-}
-@media (max-width:760px){ .tape{--u:calc(var(--vw,100vw) / 760)} }
-
-/* The chrome. Corner brackets, tiny mono labels, a running timecode and a
-   progress line: half of why the reel reads as a reel. It ticks with the
-   scroll rather than with a clock, so standing still stops the tape. */
-.chrome{
-  position:absolute;inset:0;pointer-events:none;z-index:2;
-  font:500 max(9px,calc(14 * var(--u)))/1 var(--mono);
-  letter-spacing:.2em;text-transform:uppercase;color:var(--ink);
-}
-.ch-k{
-  position:absolute;width:calc(20 * var(--u));height:calc(20 * var(--u));
-  border:0 solid var(--ink);
-}
-.ch-k.tl{left:calc(44 * var(--u));top:calc(44 * var(--u));border-width:2px 0 0 2px}
-.ch-k.tr{right:calc(44 * var(--u));top:calc(44 * var(--u));border-width:2px 2px 0 0}
-.ch-k.bl{left:calc(44 * var(--u));bottom:calc(44 * var(--u));border-width:0 0 2px 2px}
-.ch-k.br{right:calc(44 * var(--u));bottom:calc(44 * var(--u));border-width:0 2px 2px 0}
-.ch-row{position:absolute;display:flex;align-items:center;gap:calc(44 * var(--u));white-space:nowrap}
-.ch-row.t{top:calc(68 * var(--u))}
-.ch-row.b{bottom:calc(67 * var(--u))}
-.ch-row.l{left:calc(80 * var(--u))}
-.ch-row.r{right:calc(80 * var(--u))}
-.ch-b{font-weight:700}
-.ch-g{color:var(--grey)}
-.ch-tc{font-variant-numeric:tabular-nums}
-.ch-sq{display:flex;gap:calc(5 * var(--u));margin-left:calc(-16 * var(--u))}
-.ch-sq i{
-  width:max(7px,calc(12 * var(--u)));height:max(7px,calc(12 * var(--u)));
-  border:1.5px solid var(--ink);box-sizing:border-box;
-}
-.ch-sq i.on{background:var(--ink)}
-.ch-line{
-  position:absolute;left:calc(44 * var(--u));bottom:calc(29 * var(--u));
-  height:2px;background:var(--ink);
-  width:calc((100% - 88 * var(--u)) * var(--prog,0));
-}
-@media (max-width:760px){
-  .ch-row.b.r .ch-g, .ch-row.t.l .ch-g{display:none}
-}
-
 /* ---------- about ----------
-   The kinetic type beat. The paragraph arrives phrase by phrase, each
-   phrase entering the way a word does in the reel: a slide from the side
-   that smears and snaps, a rise that stretches and settles, a drop that
-   tumbles and lands. The words keep their place in the paragraph; only the
-   way they get there changes. */
-.about{display:grid;align-items:center;padding:calc(var(--bar) + 6vh) var(--pad) 10vh}
+   The kinetic type beat from the reel. The paragraph arrives phrase by
+   phrase, each phrase entering with one of the reel's moves: a slide from
+   the side that smears and snaps, a rise that stretches and settles, a drop
+   that tumbles and lands. The words keep their place in the paragraph. */
+.about{min-height:100svh;display:grid;align-items:center;padding:calc(var(--bar) + 6vh) 0 10vh}
 .about-body{width:100%;margin:0}
 .lede{
   margin:0;font-family:var(--font-display);
@@ -850,130 +786,180 @@ h1{
    transformed, one per word so the paragraph still wraps between them. */
 .lede .w{display:inline-block}
 
+/* ---------- shared: a friendly section head ----------
+   A big bold line with a handwritten note hanging off it, in the same
+   Kaushan Script the prop labels use in the studio, so the rooms behind the
+   monitor sound like the person who waved you in. */
+.sec-head{text-align:center;margin:0 auto clamp(28px,5vh,60px);position:relative}
+.sec-title{
+  margin:0;font-family:var(--font-display);font-weight:800;
+  font-size:clamp(34px,5.4vw,84px);letter-spacing:-.04em;line-height:1;
+}
+.sec-note{
+  display:inline-block;font-family:var(--font-hand);font-weight:400;
+  font-size:clamp(20px,2vw,32px);transform:rotate(-6deg);
+  margin-top:.35em;opacity:.8;
+}
+
 /* ---------- experience ----------
-   The easing race. In the reel it is six dots on six curves covering the
-   same distance in the same time; here it is one dot per role, travelling
-   from the year it started to the year it ended, each on its own curve. */
-.xp{display:grid;align-items:center}
-.xp-body{
-  margin:0 calc(220 * var(--u)) 0 calc(150 * var(--u));
-  padding:calc(var(--bar) + 40 * var(--u)) 0 calc(120 * var(--u));
+   Four places as big rounded cards that pop in on a spring and wiggle when
+   you point at them. Osmosis and Polaris sit together in one outline: the
+   same company, two products, Toyota and Lexus. */
+.xp{padding:clamp(60px,12vh,140px) 0 clamp(40px,8vh,100px)}
+.xp-list{list-style:none;margin:0 auto;padding:0;max-width:980px;display:grid;gap:clamp(14px,2vh,22px)}
+.xp-card{
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;
+  gap:clamp(14px,2vw,26px);
+  background:#fff;border-radius:28px;box-shadow:var(--lift);
+  padding:clamp(16px,2.2vw,26px) clamp(18px,2.6vw,32px);
+  transition:transform .45s cubic-bezier(.34,1.56,.64,1);
 }
-.xp-head{display:flex;align-items:baseline;justify-content:space-between;gap:24px;
-  margin-bottom:calc(88 * var(--u))}
-.xp-title{
-  margin:0;font:italic 400 max(30px,calc(74 * var(--u)))/1 var(--serif);
-  letter-spacing:-.012em;
+.xp-card:hover{transform:translateY(-4px) rotate(-.8deg)}
+.xp-card:nth-child(even):hover{transform:translateY(-4px) rotate(.8deg)}
+.xp-mono{
+  width:clamp(48px,5vw,64px);aspect-ratio:1;border-radius:50%;
+  background:var(--ink);color:var(--bg);display:grid;place-items:center;
+  font:800 clamp(20px,2.2vw,28px)/1 var(--font-display);letter-spacing:-.04em;
+  transition:transform .6s cubic-bezier(.34,1.56,.64,1);
 }
-.xp-cap{
-  margin:0;font:500 max(9px,calc(14 * var(--u)))/1 var(--mono);
-  letter-spacing:.12em;text-transform:uppercase;color:var(--grey);white-space:nowrap;
+.xp-card:hover .xp-mono{transform:rotate(-14deg) scale(1.08)}
+.xp-who{margin:0;font:800 clamp(22px,2.6vw,36px)/1.05 var(--font-display);letter-spacing:-.035em}
+.xp-what{margin:.3em 0 0;font-size:clamp(13px,1.1vw,16px);color:rgba(10,10,10,.58);line-height:1.4}
+.xp-when{
+  font:600 clamp(12px,1vw,14px)/1 Inter,sans-serif;white-space:nowrap;
+  padding:.7em 1.1em;border-radius:50px;border:1.5px solid var(--ink);
+  font-variant-numeric:tabular-nums;
 }
-.cv{list-style:none;margin:0;padding:0}
-.cv-row{
-  display:grid;align-items:center;
-  grid-template-columns:calc(44 * var(--u)) calc(266 * var(--u)) calc(60 * var(--u)) calc(140 * var(--u)) 1fr;
-  height:calc(118 * var(--u));
+.xp-card.now .xp-when{background:var(--ink);color:var(--bg)}
+.xp-when .live{display:inline-block;width:.55em;height:.55em;border-radius:50%;background:currentColor;
+  margin-right:.5em;vertical-align:.05em;animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+/* The family: a dashed outline around the two siblings, named on its edge. */
+.xp-fam{
+  list-style:none;position:relative;border:2px dashed rgba(10,10,10,.28);border-radius:36px;
+  padding:clamp(26px,3.4vh,40px) clamp(10px,1.4vw,16px) clamp(10px,1.4vw,16px);
+  display:grid;gap:clamp(10px,1.4vh,16px);
 }
-.xp-n{font:700 max(9px,calc(14 * var(--u)))/1 var(--mono);color:var(--grey)}
-.xp-who{margin:0;font:400 max(13px,calc(22 * var(--u)))/1.1 var(--mono);text-transform:lowercase}
-.xp-role{
-  display:block;margin-top:calc(9 * var(--u));
-  font-size:max(9px,calc(13 * var(--u)));line-height:1.35;color:var(--grey);
-  padding-right:calc(20 * var(--u));
+.xp-fam > ul{list-style:none;margin:0;padding:0;display:grid;gap:inherit}
+.xp-fam-tag{
+  position:absolute;top:0;left:clamp(22px,3vw,40px);transform:translateY(-50%);
+  background:var(--bg);padding:0 .6em;
+  font:700 12px/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;
 }
-.xp-glyph{width:calc(60 * var(--u));height:calc(58 * var(--u));overflow:visible;display:block}
-.xp-glyph .ax{fill:none;stroke:rgba(10,10,10,.28);stroke-width:1.5}
-.xp-glyph .as{fill:none;stroke:rgba(10,10,10,.35);stroke-width:1.2;stroke-dasharray:1.5 3}
-.xp-glyph .cu{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.xp-glyph .gd{fill:var(--ink)}
-.xp-track{position:relative;height:calc(43 * var(--u));grid-column:5}
-.xp-line{
-  position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;
-  background:rgba(10,10,10,.16);transform-origin:0 50%;
+.xp-fam-note{
+  position:absolute;top:0;right:clamp(18px,3vw,40px);transform:translateY(-62%) rotate(4deg);
+  background:var(--bg);padding:0 .4em;
+  font:400 clamp(17px,1.6vw,24px)/1 var(--font-hand);
 }
-.xp-end{
-  position:absolute;top:50%;width:2px;height:calc(24 * var(--u));
-  transform:translate(-1px,-50%);background:rgba(10,10,10,.42);
-}
-.xp-end.a{left:0}
-.xp-end.b{left:100%}
-.xp-date{
-  position:absolute;top:calc(100% + 10 * var(--u));
-  font:700 max(9px,calc(13 * var(--u)))/1 var(--mono);letter-spacing:.12em;
-  text-transform:uppercase;white-space:nowrap;
-}
-.xp-date.a{left:0;transform:translateX(-50%)}
-.xp-date.b{left:100%;transform:translateX(-50%)}
-/* The dot sits with its centre on the start of the line and finishes with
-   its centre on the end, the way the reel's dots sit on A and B. */
-.xp-dot,.xp-ghost{
-  position:absolute;left:0;top:50%;
-  width:calc(43 * var(--u));height:calc(43 * var(--u));
-  margin:calc(-21.5 * var(--u)) 0 0 calc(-21.5 * var(--u));
-  border-radius:50%;
-}
-.xp-dot{background:var(--ink);will-change:transform,filter;z-index:1}
-.xp-ghost{border:2px solid rgba(10,10,10,.13);box-sizing:border-box;pointer-events:none}
-.xp-tick{
-  position:absolute;top:50%;width:2px;height:calc(12 * var(--u));
-  margin:calc(-29 * var(--u)) 0 0 -1px;background:rgba(10,10,10,.55);pointer-events:none;
-}
-@media (max-width:760px){
-  .xp-body{margin:0 calc(40 * var(--u)) 0 calc(40 * var(--u))}
-  .xp-head{flex-direction:column;align-items:flex-start;gap:12px}
-  .cv-row{
-    grid-template-columns:calc(44 * var(--u)) 1fr calc(60 * var(--u));
-    grid-template-rows:auto auto;row-gap:calc(40 * var(--u));
-    height:auto;padding:calc(30 * var(--u)) 0 calc(56 * var(--u));
-  }
-  .xp-gap{display:none}
-  .xp-track{grid-column:1 / -1;margin:0 calc(22 * var(--u))}
+@media (max-width:640px){
+  .xp-card{grid-template-columns:auto 1fr;border-radius:22px}
+  .xp-when{grid-column:2;justify-self:start}
+  .xp-fam-note{display:none}
 }
 
 /* ---------- case studies ----------
-   The picture is the whole card. It is 124% of its frame's height and drifts
-   against the scroll while the frame does not, so the two disagree by a few
-   percent and the card reads as a window rather than a panel. */
-.cases{padding:0 0 clamp(60px,12vh,150px)}
+   The picture is the card. It is 124% of its frame's height and drifts
+   against the scroll while the frame does not, so the card reads as a window.
+   Under it, the name and one line, and a pill that says where it goes. */
+.cases{padding:clamp(60px,12vh,140px) 0 clamp(60px,12vh,150px)}
 .case{
-  display:block;position:relative;overflow:hidden;
-  border-radius:20px;aspect-ratio:21/9;
-  background:#e4e3e0;box-shadow:var(--lift);
-  margin-bottom:clamp(24px,5vh,72px);
+  display:block;position:relative;color:var(--ink);text-decoration:none;
+  margin-bottom:clamp(40px,8vh,96px);
   opacity:0;transform:translateY(26px);
   transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1);
 }
 .case.seen{opacity:1;transform:none}
+.case-frame{
+  position:relative;overflow:hidden;border-radius:28px;aspect-ratio:21/9;
+  background:#e4e3e0;box-shadow:var(--lift);
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1),border-radius .5s ease;
+}
+.case:hover .case-frame{transform:scale(.985);border-radius:40px}
 .case-img{
   position:absolute;left:0;right:0;top:-12%;height:124%;
   transform:translateY(calc(var(--par,0) * 10%));
   will-change:transform;
 }
-.case-img[data-tint="1"]{background:linear-gradient(140deg,#2b3550,#6d7ea8 62%,#c3cede)}
-.case-img[data-tint="2"]{background:linear-gradient(140deg,#3c2f4d,#8a6ea8 62%,#d8cde6)}
-.case-img[data-tint="3"]{background:linear-gradient(140deg,#243f38,#5e8f7e 62%,#c6ded4)}
-.case-img[data-tint="4"]{background:linear-gradient(140deg,#4d3623,#a5794c 62%,#e5d3bd)}
+.case-img img,.case-img video{width:100%;height:100%;object-fit:cover;display:block}
+.case-cap{display:flex;align-items:baseline;justify-content:space-between;gap:20px;margin-top:clamp(14px,2vh,22px);padding:0 6px}
+.case-name{margin:0;font:800 clamp(24px,3vw,44px)/1 var(--font-display);letter-spacing:-.04em}
+.case-line{margin:.35em 0 0;font-size:clamp(14px,1.2vw,18px);color:rgba(10,10,10,.58)}
+.case-go{
+  flex:none;font:600 14px/1 Inter,sans-serif;padding:.9em 1.3em;border-radius:50px;
+  background:var(--ink);color:var(--bg);transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.case:hover .case-go{transform:translateX(4px) rotate(-3deg)}
+@media (max-width:640px){
+  .case-frame{aspect-ratio:4/3;border-radius:22px}
+  .case-cap{flex-direction:column;gap:12px}
 }
 
-/* ---------- goodbye ----------
-   He waved you in, so he waves you out. The clip slot sits above the line,
-   which puts the character last on the page rather than a footer. */
-.bye-body{display:grid;justify-items:center;text-align:center;gap:clamp(14px,2.4vh,30px)}
-.bye-stage{width:clamp(180px,26vw,380px);aspect-ratio:1}
+/* ---------- contact ----------
+   "Want to work together?" with a real form, and what is on the bench right
+   now. The form posts to FormSubmit, a no-account form relay, and falls back
+   to opening a pre-filled email if that fails, so a message never vanishes. */
+.hello{padding:clamp(60px,12vh,140px) 0 clamp(40px,8vh,80px)}
+.hello-grid{
+  display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:clamp(20px,3vw,40px);
+  max-width:1180px;margin:0 auto;align-items:start;
+}
+.hello-card{background:#fff;border-radius:32px;box-shadow:var(--lift);padding:clamp(22px,3vw,40px)}
+.form{display:grid;gap:14px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:grid;gap:7px}
+.field span{font:600 13px/1 Inter,sans-serif;opacity:.6}
+.field input,.field textarea{
+  font:500 16px/1.4 Inter,sans-serif;color:var(--ink);
+  background:var(--bg);border:1.5px solid transparent;border-radius:16px;
+  padding:14px 16px;outline:none;transition:border-color .2s ease,background .2s ease;
+}
+.field textarea{min-height:130px;resize:vertical}
+.field input:focus,.field textarea:focus{border-color:var(--ink);background:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px;border:0;margin:0;padding:0}
+.chips legend{font:600 13px/1 Inter,sans-serif;opacity:.6;margin-bottom:9px;padding:0}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chip span{
+  display:inline-block;font:600 14px/1 Inter,sans-serif;padding:.8em 1.1em;border-radius:50px;
+  border:1.5px solid rgba(10,10,10,.2);transition:all .25s cubic-bezier(.34,1.56,.64,1);
+}
+.chip input:checked + span{background:var(--ink);color:var(--bg);border-color:var(--ink);transform:rotate(-2deg) scale(1.04)}
+.chip input:focus-visible + span{outline:2px solid var(--ink);outline-offset:2px}
+.send{
+  justify-self:start;appearance:none;border:0;cursor:pointer;
+  font:700 16px/1 Inter,sans-serif;padding:1em 1.6em;border-radius:50px;
+  background:var(--ink);color:var(--bg);margin-top:6px;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.send:hover{transform:translateY(-2px) rotate(-2deg)}
+.send[disabled]{opacity:.5;cursor:default}
+.form-msg{margin:0;font-size:15px;min-height:1.4em}
+.form-body{display:grid;gap:14px}
+.form.sent .form-body{display:none}
+.form-done{display:none;text-align:center;padding:30px 0}
+.form.sent .form-done{display:block}
+.form-done b{display:block;font:800 clamp(26px,3vw,40px)/1.05 var(--font-display);letter-spacing:-.04em}
+.form-done span{font-family:var(--font-hand);font-size:24px;display:inline-block;transform:rotate(-4deg);margin-top:10px}
+.hp{position:absolute;left:-9999px}
+.bench h3{margin:0 0 4px;font:700 12px/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+.bench-note{font-family:var(--font-hand);font-size:22px;display:inline-block;transform:rotate(-4deg);margin:2px 0 14px}
+.bench ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.bench li{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:20px;background:var(--bg)}
+.bench .xp-mono{width:46px;font-size:18px}
+.bench b{display:block;font:800 19px/1.1 var(--font-display);letter-spacing:-.03em}
+.bench small{font-size:13px;color:rgba(10,10,10,.58)}
+.bench .dot{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font:600 12px/1 Inter,sans-serif;white-space:nowrap}
+.bench .dot::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink);animation:blink 1.4s ease-in-out infinite}
+.bench-mail{display:block;margin-top:22px;font:700 17px/1.2 Inter,sans-serif;color:var(--ink);text-decoration:none}
+.bench-mail u{text-decoration-thickness:1.5px;text-underline-offset:4px}
+.bye-stage{width:clamp(180px,26vw,380px);aspect-ratio:1;margin:0 auto}
 .bye-stage:empty{display:none}
 .bye-stage video,.bye-stage img{width:100%;height:100%;object-fit:contain;display:block}
-.bye-head{
-  margin:0;font-family:var(--font-display);
-  font-size:clamp(30px,5vw,76px);font-weight:800;letter-spacing:-.034em;
-  line-height:1.04;
+.bye-foot{text-align:center;margin:clamp(40px,8vh,90px) 0 0;font-size:13px;opacity:.5}
+@media (max-width:860px){
+  .hello-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
 }
-.bye-mail{
-  font-size:clamp(15px,1.5vw,22px);color:var(--ink);opacity:.55;
-  text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:2px;
-  transition:opacity .2s ease;
-}
-.bye-mail:hover{opacity:1}
 
 /* ---------- the montage ----------
    A sticky viewport-height stage the reel grows inside. Scroll position
@@ -1236,7 +1222,7 @@ html.cursored,html.cursored *{cursor:none !important}
        on its own beat; the script splits them into words and gives each
        phrase one of the reel's entrances. The copy is edited here, as
        plain text: the phrases are the only markup it needs. -->
-  <section class="about tape" id="about" data-chap="01 &ndash; About">
+  <section class="about" id="about">
     <div class="about-body">
       <p class="lede"><span class="lede-tag">( about )</span> <span class="ph">A product
       designer of four years,</span> <span class="ph">working end to end</span> <span class="ph">from
@@ -1247,45 +1233,45 @@ html.cursored,html.cursored *{cursor:none !important}
   </section>
 
   <!-- ---------- experience ----------
-       The easing race. One row per role: a number, the name, a glyph of the
-       curve its dot moves on, and a line from the year it started to the
-       year it ended. The script draws the glyphs from the same ease the dot
-       uses, so the picture and the motion cannot disagree. -->
-  <section class="xp tape" id="experience" data-chap="02 &ndash; Experience">
-    <div class="xp-body">
-      <div class="xp-head">
-        <h2 class="xp-title">Four years, from A to B.</h2>
-        <p class="xp-cap">Three roles &middot; 2020 &ndash; now</p>
-      </div>
-      <ol class="cv" id="cv">
-        <li class="cv-row" data-ease="elastic.out(1,0.3)">
-          <span class="xp-n">01</span>
-          <h3 class="xp-who">Own agency<span class="xp-role">Founder, across multiple clients</span></h3>
-          <svg class="xp-glyph" viewBox="0 0 60 58" aria-hidden="true"></svg>
-          <span class="xp-gap"></span>
-          <div class="xp-track"><i class="xp-line"></i><i class="xp-end a"></i><i class="xp-end b"></i>
-            <span class="xp-date a">2026</span><span class="xp-date b">now</span><i class="xp-dot"></i></div>
-        </li>
-        <!-- One Osmosis row, not two. Polaris and the DEX ran over the same
-             dates in the same role. -->
-        <li class="cv-row" data-ease="expo.out">
-          <span class="xp-n">02</span>
-          <h3 class="xp-who">Polaris<span class="xp-role">Product Designer &amp; UX Researcher, Osmosis Labs</span></h3>
-          <svg class="xp-glyph" viewBox="0 0 60 58" aria-hidden="true"></svg>
-          <span class="xp-gap"></span>
-          <div class="xp-track"><i class="xp-line"></i><i class="xp-end a"></i><i class="xp-end b"></i>
-            <span class="xp-date a">2024</span><span class="xp-date b">2025</span><i class="xp-dot"></i></div>
-        </li>
-        <li class="cv-row" data-ease="back.out(1.7)">
-          <span class="xp-n">03</span>
-          <h3 class="xp-who">Brainfood<span class="xp-role">Product Designer &amp; UX Researcher</span></h3>
-          <svg class="xp-glyph" viewBox="0 0 60 58" aria-hidden="true"></svg>
-          <span class="xp-gap"></span>
-          <div class="xp-track"><i class="xp-line"></i><i class="xp-end a"></i><i class="xp-end b"></i>
-            <span class="xp-date a">2020</span><span class="xp-date b">2021</span><i class="xp-dot"></i></div>
-        </li>
-      </ol>
+       Four places, as cards that pop in on a spring. Osmosis and Polaris
+       share one dashed outline: same company, two products. -->
+  <section class="xp" id="experience">
+    <div class="sec-head">
+      <h2 class="sec-title">Where I&rsquo;ve been</h2>
+      <span class="sec-note">so far!</span>
     </div>
+    <ul class="xp-list" id="cv">
+      <li class="xp-card now">
+        <span class="xp-mono" aria-hidden="true">K</span>
+        <div><h3 class="xp-who">My own studio</h3>
+          <p class="xp-what">Founder. Brand, product and web for a handful of clients</p></div>
+        <span class="xp-when"><i class="live"></i>2026 &ndash; now</span>
+      </li>
+      <li class="xp-fam">
+        <span class="xp-fam-tag">Osmosis Labs</span>
+        <span class="xp-fam-note">same family, two products</span>
+        <ul>
+          <li class="xp-card">
+            <span class="xp-mono" aria-hidden="true">O</span>
+            <div><h3 class="xp-who">Osmosis</h3>
+              <p class="xp-what">Product Designer &amp; UX Researcher. The DEX of the interchain, 2M users</p></div>
+            <span class="xp-when">2024 &ndash; 25</span>
+          </li>
+          <li class="xp-card">
+            <span class="xp-mono" aria-hidden="true">P</span>
+            <div><h3 class="xp-who">Polaris</h3>
+              <p class="xp-what">Product Designer &amp; UX Researcher. Every token, every chain, one app</p></div>
+            <span class="xp-when">2024 &ndash; 25</span>
+          </li>
+        </ul>
+      </li>
+      <li class="xp-card">
+        <span class="xp-mono" aria-hidden="true">B</span>
+        <div><h3 class="xp-who">Brainfood</h3>
+          <p class="xp-what">Product Designer &amp; UX Researcher</p></div>
+        <span class="xp-when">2020 &ndash; 21</span>
+      </li>
+    </ul>
   </section>
 
   <section class="montage" id="reel">
@@ -1295,40 +1281,67 @@ html.cursored,html.cursored *{cursor:none !important}
   </section>
 
   <!-- ---------- case studies ----------
-       Four cards stacked down the page. The image inside each one drifts
-       against the scroll, which is the whole parallax: the card edge is
-       fixed to the page and the picture is not, so the two disagree by a few
-       percent and the card reads as a window rather than a panel. -->
-  <!-- ---------- case studies ----------
-       Four pictures, near full width, stacked. No titles: in the reference
-       the work carries its own name inside the image, and a caption beside
-       it would be the site talking over the thing it is showing. -->
+       Three pieces of work, each opening its own page under work/. The
+       crypto shots are served from the old Framer site's image CDN. -->
   <section class="cases" id="cases">
-    <a class="case" href="#" data-cursor="view" aria-label="Polaris">
-      <div class="case-img" data-tint="1"></div>
+    <div class="sec-head">
+      <h2 class="sec-title">Things I&rsquo;ve made</h2>
+      <span class="sec-note">the good stuff</span>
+    </div>
+    <a class="case" href="work/osmosis.html" data-cursor="view">
+      <div class="case-frame"><div class="case-img"><img alt="Osmosis trading interface" loading="lazy" src="https://framerusercontent.com/images/85N2HgM9XOiUkqYxx1eO2fb2kSI.png?scale-down-to=2048"></div></div>
+      <div class="case-cap"><div><h3 class="case-name">Osmosis</h3><p class="case-line">Designing a trading floor for a financial system still being invented</p></div><span class="case-go">Read the story</span></div>
     </a>
-    <a class="case" href="#" data-cursor="view" aria-label="Osmosis DEX">
-      <div class="case-img" data-tint="2"></div>
+    <a class="case" href="work/polaris.html" data-cursor="view">
+      <div class="case-frame"><div class="case-img"><img alt="Polaris app" loading="lazy" src="https://framerusercontent.com/images/ajWSdaaKEhCdiBEaPDr7HYxfOrk.png?scale-down-to=2048"></div></div>
+      <div class="case-cap"><div><h3 class="case-name">Polaris</h3><p class="case-line">Every token, every chain, one calm app</p></div><span class="case-go">Read the story</span></div>
     </a>
-    <a class="case" href="#" data-cursor="view" aria-label="Portfolio and wallet">
-      <div class="case-img" data-tint="3"></div>
-    </a>
-    <a class="case" href="#" data-cursor="view" aria-label="Brainfood">
-      <div class="case-img" data-tint="4"></div>
+    <a class="case" href="work/loco.html" data-cursor="view">
+      <div class="case-frame"><div class="case-img"><video muted loop playsinline preload="metadata" poster="media/loco/hero-poster.jpg" src="media/loco/hero.mp4" aria-label="Loco Exotics"></video></div></div>
+      <div class="case-cap"><div><h3 class="case-name">Loco Exotics</h3><p class="case-line">A car repair shop, told like a film</p></div><span class="case-go">Read the story</span></div>
     </a>
   </section>
 
-  <!-- ---------- contact ----------
-       He waved you in, so he waves you out. The clip slot sits above the
-       line, which puts the character last rather than a footer. -->
-  <section class="panel bye" id="contact">
-    <div></div>
-    <div class="panel-body bye-body">
-      <div class="bye-stage" id="byeStage" aria-hidden="true"></div>
-      <h2 class="bye-head">Thanks for stopping by.</h2>
-      <a class="bye-mail" href="mailto:kemal203@gmail.com">kemal203@gmail.com</a>
+  <!-- ---------- contact ---------- -->
+  <section class="hello" id="contact">
+    <div class="sec-head">
+      <h2 class="sec-title">Want to work together?</h2>
+      <span class="sec-note">I don&rsquo;t bite, promise</span>
     </div>
-    <div></div>
+    <div class="hello-grid">
+      <form class="hello-card form" id="helloForm" action="https://formsubmit.co/kemal203@gmail.com" method="POST">
+        <div class="form-body">
+          <div class="form-row">
+            <label class="field"><span>Your name</span><input name="name" required autocomplete="name"></label>
+            <label class="field"><span>Email</span><input name="email" type="email" required autocomplete="email"></label>
+          </div>
+          <fieldset class="chips">
+            <legend>What are we making?</legend>
+            <label class="chip"><input type="checkbox" name="kind" value="Product design"><span>Product design</span></label>
+            <label class="chip"><input type="checkbox" name="kind" value="Website"><span>A website</span></label>
+            <label class="chip"><input type="checkbox" name="kind" value="Brand"><span>Brand</span></label>
+            <label class="chip"><input type="checkbox" name="kind" value="Motion and story"><span>Motion &amp; story</span></label>
+            <label class="chip"><input type="checkbox" name="kind" value="Not sure yet"><span>Not sure yet</span></label>
+          </fieldset>
+          <label class="field"><span>Tell me about it</span><textarea name="message" required placeholder="The idea, the timeline, the dream."></textarea></label>
+          <input class="hp" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button class="send" type="submit">Send it over</button>
+          <p class="form-msg" role="status"></p>
+        </div>
+        <div class="form-done" role="status"><b>Got it, thank you!</b><span>I&rsquo;ll write back soon.</span></div>
+      </form>
+      <aside class="hello-card bench">
+        <h3>On the bench right now</h3>
+        <span class="bench-note">my next clients</span>
+        <ul>
+          <li><span class="xp-mono" aria-hidden="true">A</span><div><b>Alexandria Car Clinic</b></div><span class="dot">in progress</span></li>
+          <li><span class="xp-mono" aria-hidden="true">T</span><div><b>Tokiwa Matcha</b></div><span class="dot">in progress</span></li>
+        </ul>
+        <a class="bench-mail" href="mailto:kemal203@gmail.com">or just email me: <u>kemal203@gmail.com</u></a>
+      </aside>
+    </div>
+    <div class="bye-stage" id="byeStage" aria-hidden="true"></div>
+    <p class="bye-foot">Made by Kemal Rahman, with a lot of coffee and one cat.</p>
   </section>
 
 </main>
@@ -2504,66 +2517,12 @@ html.cursored,html.cursored *{cursor:none !important}
 </script>
 <script src="vendor/gsap.min.js"></script>
 <script>
-/* ---------- the reel ----------
-   The motion of the sections behind the monitor, after the motion-graphics
-   reel Kemal sent. Its own script so it can fail on its own: if GSAP does not
-   load, or the visitor asks for less motion, every section is simply drawn
-   in its finished state. */
+/* ---------- motion behind the monitor ----------
+   Its own script so it can fail on its own: if GSAP does not load, or the
+   visitor asks for less motion, every section is simply drawn finished. */
 (() => {
   const G = window.gsap;
   const still = !G || matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const work = document.getElementById('work');
-  const tapes = [...document.querySelectorAll('.tape')];
-  if (!work || !tapes.length) return;
-
-  /* ---- the chrome ----
-     Corner brackets, labels, a timecode, a beat counter and a progress line,
-     laid out as the reel lays them out. The tape runs on the scroll: one
-     screen of scrolling is one second of timecode, so it runs while you
-     move and stops when you do. */
-  const FPS = 60, BPM = 128;
-  const pad = n => String(n).padStart(2, '0');
-  const chromes = tapes.map(sec => {
-    const c = document.createElement('div');
-    c.className = 'chrome';
-    c.setAttribute('aria-hidden', 'true');
-    c.innerHTML =
-      '<i class="ch-k tl"></i><i class="ch-k tr"></i><i class="ch-k bl"></i><i class="ch-k br"></i>' +
-      '<div class="ch-row t l"><span class="ch-b">Kemal Rahman</span><span class="ch-g">Portfolio &ndash; 2026</span></div>' +
-      '<div class="ch-row t r"><span class="ch-b"></span></div>' +
-      '<div class="ch-row b l"><span class="ch-b ch-tc">00:00:00:00</span><span class="ch-g">60 fps</span></div>' +
-      '<div class="ch-row b r"><span class="ch-g">128 bpm</span><span class="ch-sq"><i></i><i></i><i></i><i></i></span>' +
-      '<span class="ch-b ch-bar">bar 1/8</span></div>' +
-      '<i class="ch-line"></i>';
-    c.querySelector('.ch-row.t.r .ch-b').textContent = sec.dataset.chap || '';
-    sec.appendChild(c);
-    return { c, tc: c.querySelector('.ch-tc'), bar: c.querySelector('.ch-bar'),
-             sq: [...c.querySelectorAll('.ch-sq i')] };
-  });
-  let lastFrame = -1;
-  function runTape(){
-    if (work.hidden || !innerHeight) return;
-    const top = work.getBoundingClientRect().top + scrollY;
-    const y = Math.max(0, scrollY - top);
-    const f = Math.floor(y / innerHeight * FPS);
-    const span = Math.max(1, work.offsetHeight - innerHeight);
-    const prog = Math.min(1, y / span).toFixed(4);
-    const beat = Math.floor(f / FPS * BPM / 60);
-    const s = Math.floor(f / FPS);
-    const tc = `00:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}:${pad(f % FPS)}`;
-    tapes.forEach((sec, i) => sec.style.setProperty('--prog', prog));
-    if (f === lastFrame) return;
-    lastFrame = f;
-    chromes.forEach(k => {
-      k.tc.textContent = tc;
-      k.bar.textContent = `bar ${Math.floor(beat / 4) % 8 + 1}/8`;
-      k.sq.forEach((q, j) => q.classList.toggle('on', j === beat % 4));
-    });
-  }
-  addEventListener('scroll', runTape, { passive: true });
-  addEventListener('resize', runTape);
-  new MutationObserver(runTape).observe(work, { attributes: true, attributeFilter: ['hidden'] });
-  runTape();
 
   /* Play a section each time it comes into view, and put it back to its
      starting state once it has gone completely, so coming back to it plays
@@ -2575,7 +2534,7 @@ html.cursored,html.cursored *{cursor:none !important}
     }), { threshold }).observe(target);
     new IntersectionObserver(es => es.forEach(e => {
       if (!e.isIntersecting && played){ played = false; reset(); }
-    }), { threshold: 0 }).observe(target.closest('.tape'));
+    }), { threshold: 0 }).observe(target.closest('section'));
   }
 
   /* ---- about: kinetic type ----
@@ -2666,125 +2625,63 @@ html.cursored,html.cursored *{cursor:none !important}
     else { armAbout(); onView(lede, 0.4, playAbout, armAbout); }
   }
 
-  /* ---- experience: the easing race ----
-     Each dot is drawn by hand every frame rather than left to a transform
-     tween, because the motion blur needs to know how fast it is going: it
-     stretches along its direction of travel and softens in proportion, and
-     drops a faint ring and a tick behind it at speed, which is how the reel
-     shows where it has been. */
-  const xp = document.getElementById('experience');
-  if (!xp) return;
-  const GX0 = 2, GX1 = 58, GY0 = 50, GY1 = 12;
-  const rows = [...xp.querySelectorAll('.cv-row')].map(row => {
-    const ease = G ? G.parseEase(row.dataset.ease) : (t => t);
-    const glyph = row.querySelector('.xp-glyph');
-    let d = '';
-    for (let i = 0; i <= 60; i++){
-      const t = i / 60;
-      d += (i ? 'L' : 'M') + (GX0 + (GX1 - GX0) * t).toFixed(2) + ' ' + (GY0 - (GY0 - GY1) * ease(t)).toFixed(2);
-    }
-    glyph.innerHTML = `<path class="ax" d="M1 0V57H60"/><path class="as" d="M1 ${GY1}H58"/>` +
-      `<path class="cu" d="${d}"/><circle class="gd" r="4.2" cx="${GX1}" cy="${GY1}"/>`;
-    return { row, ease, t: 1, x: 0, y: 0, px: 0, py: 0, fc: 0, racing: false,
-      track: row.querySelector('.xp-track'), dot: row.querySelector('.xp-dot'),
-      gd: glyph.querySelector('.gd'), line: row.querySelector('.xp-line'),
-      who: row.querySelector('.xp-who'), n: row.querySelector('.xp-n'),
-      bits: [...row.querySelectorAll('.xp-end,.xp-date')], glyph };
-  });
-  const title = xp.querySelector('.xp-title'), cap = xp.querySelector('.xp-cap');
-  const U = () => (document.documentElement.clientWidth || innerWidth) / (innerWidth <= 760 ? 760 : 1920);
-
-  function ghost(r){
-    const g = document.createElement('i');
-    g.className = 'xp-ghost';
-    g.style.transform = `translateX(${r.x.toFixed(1)}px)`;
-    const k = document.createElement('i');
-    k.className = 'xp-tick';
-    k.style.left = r.x.toFixed(1) + 'px';
-    r.track.insertBefore(g, r.dot);
-    r.track.insertBefore(k, r.dot);
-    G.to(g, { opacity: 0, duration: 0.32, ease: 'power1.in', onComplete: () => g.remove() });
-    G.to(k, { opacity: 0, duration: 0.7, delay: 0.25, ease: 'power1.in', onComplete: () => k.remove() });
-  }
-  function draw(r){
-    const dx = r.x - r.px, dy = r.y - r.py;
-    r.px = r.x; r.py = r.y;
-    const sp = Math.hypot(dx, dy) / Math.max(0.4, U());   // in reel pixels per frame
-    const st = Math.min(sp * 0.035, 1.3);
-    const ang = sp > 0.5 ? Math.atan2(dy, dx) * 180 / Math.PI : 0;
-    r.dot.style.transform = `translate(${r.x.toFixed(2)}px,${r.y.toFixed(2)}px) rotate(${ang.toFixed(1)}deg) scale(${(1 + st).toFixed(3)},${(1 - st * 0.16).toFixed(3)})`;
-    r.dot.style.filter = sp > 2 ? `blur(${Math.min(sp * 0.05, 3).toFixed(2)}px)` : '';
-    if (r.racing && sp > 9 && ++r.fc % 3 === 0) ghost(r);
-    const e = r.ease(r.t);
-    r.gd.setAttribute('cx', (GX0 + (GX1 - GX0) * r.t).toFixed(2));
-    r.gd.setAttribute('cy', (GY0 - (GY0 - GY1) * e).toFixed(2));
-  }
-  /* Where the dot belongs at rest, as a percentage of its line rather than
-     in pixels: it can be parked while #work is still hidden and the line has
-     no width, and it holds its place through a resize. */
-  function park(r, t){
-    r.t = t; r.x = r.px = 0; r.y = r.py = 0; r.racing = false;
-    r.dot.style.left = (t * 100) + '%';
-    draw(r);
-  }
-  let xpTl = null;
+  /* ---- experience: cards on a spring ----
+     Each card drops in a little tilted and overshoots into place, like a
+     sticker slapped on a page. */
+  const cards = [...document.querySelectorAll('.xp-card')];
+  const fam = document.querySelector('.xp-fam');
+  const xpList = document.querySelector('.xp-list');
   function armXp(){
-    if (xpTl){ xpTl.kill(); xpTl = null; }
-    rows.forEach(r => {
-      r.track.querySelectorAll('.xp-ghost,.xp-tick').forEach(n => n.remove());
-      park(r, 0);
-      /* Plain styles for the same reason as the About reset above. */
-      [r.dot, r.n, r.glyph, ...r.bits].forEach(n => { n.style.opacity = '0'; });
-      r.who.style.clipPath = 'inset(-10% 100% -10% 0)';
-      r.line.style.transform = 'scaleX(0)';
-    });
-    title.style.clipPath = 'inset(-20% 100% -30% 0)';
-    cap.style.opacity = '0';
+    cards.forEach(c => { c.style.cssText = 'opacity:0'; });
+    if (fam) fam.style.cssText = 'opacity:0';
   }
   function playXp(){
-    armXp();
-    const tl = xpTl = G.timeline();
-    const u = U();
-    /* Typed on, the way the reel's labels are: a clip that steps a
-       character at a time rather than wiping smoothly. */
-    tl.to(title, { clipPath: 'inset(-20% 0% -30% 0)', duration: 0.6,
-      ease: `steps(${title.textContent.length})` }, 0);
-    tl.to(cap, { opacity: 1, duration: 0.4 }, 0.3);
-    const first = rows[0].track.getBoundingClientRect().top;
-    rows.forEach((r, i) => {
-      const at = 0.08 * i;
-      tl.to(r.n, { opacity: 1, duration: 0.2 }, at);
-      tl.to(r.who, { clipPath: 'inset(-10% 0% -10% 0)', duration: 0.45,
-        ease: `steps(${Math.max(4, r.who.firstChild.textContent.length)})` }, at + 0.05);
-      tl.to(r.glyph, { opacity: 1, duration: 0.3 }, at + 0.15);
-      tl.fromTo(r.line, { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: 'expo.out' }, at + 0.1);
-      tl.to(r.bits, { opacity: 1, duration: 0.3 }, at + 0.35);
-      /* In from one point up and to the left, falling onto its own line:
-         height is lost fast and distance slowly, so each one arrives
-         travelling along the line it lands on. */
-      const drop = r.track.getBoundingClientRect().top - first;
-      const from = { x: -560 * u, y: -(300 * u + drop) };
-      tl.set(r.dot, { opacity: 1 }, 0.12 + at);
-      tl.fromTo(r, { x: from.x }, { x: 0, duration: 0.72, ease: 'power2.out',
-        onStart(){ r.px = from.x; r.py = from.y; } }, 0.12 + at);
-      tl.fromTo(r, { y: from.y }, { y: 0, duration: 0.72, ease: 'expo.out',
-        onUpdate: () => draw(r) }, 0.12 + at);
-    });
-    /* The race: same distance, same duration, a different curve each. */
-    tl.addLabel('go', 1.3);
-    rows.forEach(r => {
-      const o = { t: 0 };
-      tl.to(o, { t: 1, duration: 0.94, ease: 'none',
-        onStart(){ r.racing = true; r.fc = 0; },
-        onUpdate(){ r.t = o.t; r.x = r.ease(o.t) * r.track.clientWidth; draw(r); },
-        onComplete(){ park(r, 1); } }, 'go');
+    const tl = G.timeline();
+    if (fam) tl.fromTo(fam, { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(2)' }, 0.1);
+    cards.forEach((c, i) => {
+      tl.fromTo(c, { opacity: 0, y: 60, rotation: i % 2 ? 4 : -4, scale: 0.9 },
+        { opacity: 1, y: 0, rotation: 0, scale: 1, duration: 0.8, ease: 'elastic.out(1,0.6)',
+          onComplete(){ c.style.cssText = ''; } }, 0.12 * i);
     });
   }
-  if (still || !G){
-    rows.forEach(r => park(r, 1));
-  } else {
-    armXp();
-    onView(xp.querySelector('.cv'), 0.8, playXp, armXp);
+  if (xpList && !still){ armXp(); onView(xpList, 0.25, playXp, armXp); }
+
+  /* The Loco card is a film; it plays only while it is on screen. */
+  document.querySelectorAll('.case video').forEach(v => {
+    new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting && !still) v.play().catch(() => {}); else v.pause();
+    }), { threshold: 0.2 }).observe(v);
+  });
+
+  /* ---- the contact form ----
+     Sent to FormSubmit's AJAX endpoint so the page never leaves. If that
+     fails for any reason, the same message opens in the visitor's own mail
+     app, already written, so nothing they typed is lost. */
+  const form = document.getElementById('helloForm');
+  if (form){
+    const msg = form.querySelector('.form-msg');
+    const btn = form.querySelector('.send');
+    form.addEventListener('submit', async ev => {
+      ev.preventDefault();
+      const d = new FormData(form);
+      if (d.get('_honey')) return;
+      const kinds = d.getAll('kind').join(', ') || 'Not said';
+      const body = { name: d.get('name'), email: d.get('email'), making: kinds,
+        message: d.get('message'), _subject: 'Portfolio: new message from ' + d.get('name') };
+      btn.disabled = true; msg.textContent = 'Sending...';
+      try {
+        const r = await fetch('https://formsubmit.co/ajax/kemal203@gmail.com', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(body) });
+        if (!r.ok) throw new Error(r.status);
+        form.classList.add('sent');
+      } catch (e){
+        const text = `${body.message}\n\nMaking: ${kinds}\n${body.name} <${body.email}>`;
+        location.href = 'mailto:kemal203@gmail.com?subject=' + encodeURIComponent(body._subject) +
+          '&body=' + encodeURIComponent(text);
+        msg.textContent = 'Opening your email app instead.';
+      } finally { btn.disabled = false; }
+    });
   }
 })();
 </script>

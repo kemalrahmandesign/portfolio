@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loco Exotics &middot; Kemal Rahman</title>
+<meta name="description" content="How Kemal Rahman built the Loco Exotics site as a scroll-driven film.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&family=Kaushan+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="case.css">
+</head>
+<body>
+<header class="top"><a class="back" href="../index.html#cases"><img src="../media/face.webp" alt="">Back to the studio</a></header>
+<main class="wrap">
+  <section class="hero-c">
+    <p class="kicker">Case study &middot; client site &middot; 2026</p>
+    <h1 class="big">Loco Exotics</h1>
+    <p class="deck">Loudoun County Exotics fixes Ferraris, Porsches and Lamborghinis in Sterling, Virginia. The site had to feel the way the cars do, so I built it as a short film you scroll through.</p>
+    <ul class="meta"><li><b>2026</b><span>year</span></li><li><b>Luxury car repair</b><span>client</span></li><li><b>Story, art direction</b><span>film and build</span></li><li><b><a href="https://kemalrahmandesign.github.io/Loco-exotic/">Visit the live site &rarr;</a></b><span></span></li></ul>
+  </section>
+  <figure class="shot cover"><video autoplay muted loop playsinline poster="../media/loco/hero-poster.jpg" src="../media/loco/hero.mp4"></video></figure>
+  <section class="blk rise">
+    <div class="blk-head"><span class="num">01</span><h2>Not a body shop. An atelier.</h2><br><span class="note">the brief</span></div>
+    <div class="blk-body"><p>Most repair shop sites sell on a price list and a stock photo of a spanner. This shop works on machines that punish shortcuts, for owners who notice everything.</p><p>So the goal was a feeling, before a single word gets read: these people are obsessive, in the best way. Everything on the site serves that one story.</p></div>
+  </section>
+  <section class="rise" style="padding:clamp(40px,8vh,90px) 0 0">
+    <div style="text-align:center"><span class="num">02</span><h2 style="margin:0;font:800 clamp(30px,3.6vw,54px)/1 var(--display);letter-spacing:-.045em">Told in five scenes</h2><span class="note">the storyboard</span></div>
+    <div class="board"><figure class="frame"><img loading="lazy" alt="" src="../media/loco/hero-poster.jpg"><figcaption><b><i>1</i>Arrival</b><span>A black 911 floating on its own reflection. Quiet, expensive, patient. The first thing you see, and the promise of everything after.</span></figcaption></figure><figure class="frame"><video muted loop playsinline preload="none" data-auto poster="../media/loco/lift-poster.jpg" src="../media/loco/lift.mp4"></video><figcaption><b><i>2</i>The atelier</b><span>A Ferrari up on the lift, lit like a stage. The shop as a place of craft, not a garage.</span></figcaption></figure><figure class="frame"><img loading="lazy" alt="" src="../media/loco/gear.webp"><figcaption><b><i>3</i>The craft</b><span>A single gear, machined and lit like jewellery. Precision you can almost feel.</span></figcaption></figure><figure class="frame"><video muted loop playsinline preload="none" data-auto poster="../media/loco/brake-poster.jpg" src="../media/loco/brake.mp4"></video><figcaption><b><i>4</i>Stopping power</b><span>A brake disc spinning like a turntable, with the scroll driving the spin. Services, told as a moment.</span></figcaption></figure><figure class="frame"><video muted loop playsinline preload="none" data-auto poster="../media/loco/tail-poster.jpg" src="../media/loco/tail.mp4"></video><figcaption><b><i>5</i>The details</b><span>A tail light glowing in the dark, the last shot before the reviews. Care, down to the smallest part.</span></figcaption></figure></div>
+  </section>
+  <section class="blk rise">
+    <div class="blk-head"><span class="num">03</span><h2>The scroll is the playhead</h2><br><span class="note">try it below</span></div>
+    <div class="blk-body"><p>Nothing on the site just autoplays at you. Each film is scrubbed by the scroll, so the visitor directs the pace: scroll slowly and the brake disc turns slowly, flick and it spins.</p><p>Scenes hand over to each other through a tunnel transition instead of a hard cut, so the page reads as one continuous take. That transition took four attempts to get right, and it was worth every one.</p></div>
+  </section>
+  <section class="scrub">
+    <div class="scrub-stage"><div class="scrub-card"><video muted playsinline preload="auto" poster="../media/loco/brake-poster.jpg" src="../media/loco/brake.mp4"></video><span class="scrub-tag">Scroll to spin</span><i class="scrub-bar"></i></div></div>
+  </section>
+  <section class="blk rise">
+    <div class="blk-head"><span class="num">04</span><h2>Stills before motion</h2><br><span class="note">the golden rule</span></div>
+    <div class="blk-body"><p>Every shot was generated with AI, and I directed it like a shoot. Each scene started as a still: composed, approved, and only then animated from that exact frame, so no credits were spent on a film nobody wanted.</p><p>The text was planned before the picture. Headline space, light sources out of frame, cars low in the shot, blank brake calipers. You cannot style your way out of a frame with gibberish baked into it; the fix is always to shoot it again.</p></div>
+  </section>
+  <section class="blk rise">
+    <div class="blk-head"><span class="num">05</span><h2>Film, not a website</h2><br><span class="note">the nerdy bit</span></div>
+    <div class="blk-body"><p>Scrubbing video on scroll usually stutters. I re-encoded every clip with a keyframe every four frames, eased the playhead toward the scroll instead of jumping, and never asked for a new frame while the last one was still loading. Add momentum scrolling and it glides like a film.</p><p>Under the hood it is one HTML file, two stylesheets and one script. No framework, fast on a phone, and it even works offline.</p></div>
+  </section>
+  <section class="blk rise">
+    <div class="blk-head"><span class="num">06</span><h2>Then it gets out of the way</h2><br><span class="note">the useful part</span></div>
+    <div class="blk-body"><p>After the story come the things a customer actually needs: services by marque, reviews, hours and directions, and a booking form that promises a call back within one business day.</p><p class="pull">Big feelings up top, easy answers below.</p></div>
+  </section>
+  <section class="reflect rise"><q>People don&rsquo;t remember a spec sheet. They remember how the site made them feel about their car.</q><span class="note">visual storytelling</span></section>
+  <a class="next rise" href="osmosis.html"><small>Next story</small><b>Osmosis</b><span class="note">back to crypto</span></a>
+
+</main>
+<footer class="foot">Like what you see? <a href="../index.html#contact">Let&rsquo;s make something together</a></footer>
+<script src="../vendor/gsap.min.js"></script>
+<script src="case.js"></script>
+</body>
+</html>
