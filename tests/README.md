@@ -6,7 +6,7 @@ the prop labels, the overscroll, the scroll-driven sections, the cursor, and a
 second lap through all of it (several bugs only ever appeared the second time).
 
 It was written and grown over the first long working session, where it caught
-most regressions before Kemal did. Last run: **63 passing, 0 failing.**
+most regressions before Kemal did. Last run: **61 passing, 0 failing.**
 
 ## Run it
 

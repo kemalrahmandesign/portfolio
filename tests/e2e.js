@@ -153,33 +153,20 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   await p.waitForTimeout(3000);
   ok('about words settle in place', (await E(()=>[...document.querySelectorAll('.lede .w')]
     .every(w=>getComputedStyle(w).opacity==='1' && getComputedStyle(w).transform==='none'))));
-  const chrome = await E(()=>[...document.querySelectorAll('.tape')].map(t=>({
-    id:t.id, k:t.querySelectorAll('.ch-k').length, chap:t.querySelector('.ch-row.t.r').textContent})));
-  ok('about and experience are framed like the reel',
-     chrome.length===2 && chrome.every(c=>c.k===4) && chrome[0].chap.includes('About') && chrome[1].chap.includes('Experience'),
-     JSON.stringify(chrome));
-  const tc1 = await E(()=>document.querySelector('#experience .ch-tc').textContent);
-  await p.evaluate(()=>{const r=document.getElementById('experience');
-    scrollTo(0, r.getBoundingClientRect().top + scrollY);});
-  await p.waitForTimeout(3200);
-  const tc2 = await E(()=>document.querySelector('#experience .ch-tc').textContent);
-  ok('timecode runs with the scroll', /^\d\d:\d\d:\d\d:\d\d$/.test(tc2) && tc1!==tc2, tc1+' -> '+tc2);
-  const race = await E(()=>[...document.querySelectorAll('.cv-row')].map(r=>{
-    const t=r.querySelector('.xp-track').getBoundingClientRect(), d=r.querySelector('.xp-dot').getBoundingClientRect();
-    return {end:Math.round(t.right-(d.left+d.right)/2), glyph:!!r.querySelector('.xp-glyph .cu'),
-            ease:r.dataset.ease};}));
-  ok('three roles, each on its own curve', race.length===3 && race.every(r=>r.glyph) &&
-     new Set(race.map(r=>r.ease)).size===3, JSON.stringify(race));
-  ok('every dot finishes on the end of its line', race.every(r=>Math.abs(r.end)<3), race.map(r=>r.end).join(' '));
-  ok('no ghosts left behind', (await E(()=>document.querySelectorAll('.xp-ghost').length))===0);
-  ok('nothing in the reel is coloured', (await E(()=>[...document.querySelectorAll('.tape, .tape *')].every(el=>{
-    const cs=getComputedStyle(el);
-    return [cs.color, cs.backgroundColor, cs.borderTopColor].every(c=>{
-      const m=c.match(/[\d.]+/g); if(!m) return true; const [r,g,b]=m.map(Number);
-      return Math.max(r,g,b)-Math.min(r,g,b)<6;});}))));
+  await p.evaluate(()=>scrollTo(0, document.getElementById('experience').getBoundingClientRect().top + scrollY));
+  await p.waitForTimeout(2500);
+  const xp = await E(()=>({cards:[...document.querySelectorAll('.xp-card')].map(c=>c.querySelector('.xp-who').textContent),
+    fam:[...document.querySelectorAll('.xp-fam .xp-who')].map(c=>c.textContent),
+    shown:[...document.querySelectorAll('.xp-card')].every(c=>getComputedStyle(c).opacity==='1')}));
+  ok('four places, Osmosis and Polaris as one family', xp.cards.length===4 && xp.fam.join()==='Osmosis,Polaris', JSON.stringify(xp));
+  ok('experience cards land', xp.shown);
+  ok('no reel chrome left', (await E(()=>!document.querySelector('.chrome,.ch-k,.xp-dot'))));
+  const hello = await E(()=>({form:!!document.querySelector('#contact form input[type=email]'),
+    bench:document.querySelector('.bench').textContent}));
+  ok('contact has a form and the next clients', hello.form && hello.bench.includes('Alexandria Car Clinic') && hello.bench.includes('Tokiwa Matcha'));
   const cases = await E(()=>({n:document.querySelectorAll('.case').length,
     titles:document.querySelectorAll('.case-title,.case-meta').length}));
-  ok('four case studies, image only', cases.n===4 && cases.titles===0, JSON.stringify(cases));
+  ok('three case studies, each linking to its page', cases.n===3 && (await E(()=>[...document.querySelectorAll('.case')].map(c=>c.getAttribute('href')).join())) === 'work/osmosis.html,work/polaris.html,work/loco.html', JSON.stringify(cases));
   await p.evaluate(()=>{const c=document.querySelectorAll('.case')[1];
     scrollTo(0, c.getBoundingClientRect().top + scrollY - innerHeight*0.25);});
   await p.waitForTimeout(700);
