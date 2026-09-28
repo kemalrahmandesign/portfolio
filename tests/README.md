@@ -6,7 +6,7 @@ the prop labels, the overscroll, the scroll-driven sections, the cursor, and a
 second lap through all of it (several bugs only ever appeared the second time).
 
 It was written and grown over the first long working session, where it caught
-most regressions before Kemal did. Last run: **59 passing, 0 failing.**
+most regressions before Kemal did. Last run: **63 passing, 0 failing.**
 
 ## Run it
 
@@ -43,5 +43,6 @@ normally. For WebGL, launch Chromium with
 the renderer with `preserveDrawingBuffer: true`, or every screenshot of a
 canvas comes back blank even while it is rendering correctly.
 
-The fonts are Inter, Inter Tight and Kaushan Script, all under the SIL Open
-Font License.
+The fonts are Inter, Inter Tight, Kaushan Script, JetBrains Mono and
+Instrument Serif, all under the SIL Open Font License. `build.py` also copies
+`vendor/` (GSAP) into the test site.
