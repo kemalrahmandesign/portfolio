@@ -59,9 +59,10 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-**Session 4, seventh pass (latest).** Cursor link state simplified per Kemal:
-no ring or tilt, just a bigger arrow (2.2x) that balloons with a jelly wobble
-on entering and squishes back on leaving (`cur-grow` / `cur-shrink`). Nav
+**Session 4, seventh pass (latest).** Cursor link state, third attempt: Kemal
+wanted no bounce and it looked pixelated (a transform-scaled SVG on a promoted
+layer is upscaled from a bitmap). It is now 24px to 30px by real width/height
+with a plain 160ms ease, so it stays sharp. Never scale the cursor by transform. Nav
 pills no longer tilt: each fills with a black blob that grows from the point
 the pointer crossed the edge and drains toward where it left (`.bl`, `--bx/--by`
 set from the pointer; same on the case pages).
