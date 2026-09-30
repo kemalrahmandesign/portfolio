@@ -71,6 +71,11 @@
           c.append(t, b); wrap.append(c);
         });
         a.append(wrap);
+        const bl = document.createElement('span'); bl.className = 'bl'; bl.setAttribute('aria-hidden', 'true'); a.prepend(bl);
+        const at = e => { const r = a.getBoundingClientRect();
+          a.style.setProperty('--bx', Math.min(r.width, Math.max(0, e.clientX - r.left)) + 'px');
+          a.style.setProperty('--by', Math.min(r.height, Math.max(0, e.clientY - r.top)) + 'px'); };
+        a.addEventListener('pointerenter', at); a.addEventListener('pointerleave', at);
       });
       nav.addEventListener('pointerenter', () => nav.classList.add('open'));
       nav.addEventListener('pointerleave', () => nav.classList.remove('open'));

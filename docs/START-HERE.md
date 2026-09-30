@@ -59,7 +59,14 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-**Session 4, sixth pass (latest).** Case pages now carry the same face menu
+**Session 4, seventh pass (latest).** Cursor link state simplified per Kemal:
+no ring or tilt, just a bigger arrow (2.2x) that balloons with a jelly wobble
+on entering and squishes back on leaving (`cur-grow` / `cur-shrink`). Nav
+pills no longer tilt: each fills with a black blob that grows from the point
+the pointer crossed the edge and drains toward where it left (`.bl`, `--bx/--by`
+set from the pointer; same on the case pages).
+
+**Session 4, sixth pass.** Case pages now carry the same face menu
 (`work/case.css`+`case.js`; links go to `../index.html#section`, and the main
 page treats a section hash as a deep link that skips the greeting). Loco page
 opens on a full-window scrubbed hero with the site's own lockup; the

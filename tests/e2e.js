@@ -89,6 +89,9 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
     const fc=(f.left+f.right)/2;
     return {left:as.filter(r=>r.right<f.left).length, right:as.filter(r=>r.left>f.right).length,
       sym:Math.round((fc-as[0].left)-(as[3].right-fc)), mid:Math.round((as[0].top+as[0].bottom)/2-(f.top+f.bottom)/2)};});
+  ok('each pill carries its fill blob and does not tilt', (await E(()=>{
+    const as=[...document.querySelectorAll('.tn-drop a')].filter(a=>getComputedStyle(a).display!=='none');
+    return as.length===4 && as.every(a=>a.querySelector('.bl') && getComputedStyle(a).transform==='matrix(1, 0, 0, 1, 0, 0)' || getComputedStyle(a).transform==='none');})));
   ok('two pills each side of the face, level and symmetric', pills.left===2 && pills.right===2 && Math.abs(pills.sym)<3 && Math.abs(pills.mid)<3, JSON.stringify(pills));
   const flip = await E(()=>document.querySelectorAll('.tn-drop a .tk-c').length);
   ok('links split into flip cells', flip>20, flip+' cells');

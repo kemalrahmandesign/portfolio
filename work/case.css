@@ -70,7 +70,12 @@ a{color:inherit}
   .tn-drop a:nth-child(2),.tn-drop a:nth-child(3){transform:translateX(40px) scale(.6)}
   .tn-drop a:nth-child(4),.tn-drop a:nth-child(5){transform:translateX(-40px) scale(.6)}
   .topnav.open .tn-drop a{transform:none}
-  .topnav.open .tn-drop a:hover,.topnav.open .tn-drop a:focus-visible{transform:translateY(-2px) rotate(-2deg);background:var(--ink);color:var(--bg)}
+  .tn-drop .bl{position:absolute;inset:0;border-radius:inherit;overflow:hidden;z-index:0;pointer-events:none}
+  .tn-drop .bl::before{content:"";position:absolute;left:var(--bx,50%);top:var(--by,50%);width:320px;height:320px;margin:-160px 0 0 -160px;
+    border-radius:50%;background:var(--ink);transform:scale(0);transition:transform .55s cubic-bezier(.5,.05,.2,1)}
+  .tn-drop .tk{position:relative;z-index:1}
+  .topnav.open .tn-drop a:hover .bl::before,.topnav.open .tn-drop a:focus-visible .bl::before{transform:scale(1)}
+  .topnav.open .tn-drop a:hover,.topnav.open .tn-drop a:focus-visible{color:var(--bg);transition-delay:.06s}
   .topnav.open .tn-drop:hover a:not(:hover):not(:focus-visible){opacity:.55}
   .tn-drop a:hover .tk-c > .a,.tn-drop a:focus-visible .tk-c > .a{transform:translateY(100%)}
   .tn-drop a:hover .tk-c > .b,.tn-drop a:focus-visible .tk-c > .b{transform:translateY(0)}
