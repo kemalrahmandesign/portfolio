@@ -1160,34 +1160,17 @@ h1{
   width:24px;height:24px;display:block;flex:none;
   fill:var(--ink);stroke:var(--bg);stroke-width:1.4;stroke-linejoin:round;
   transform:scale(var(--s,1));transform-origin:4px 3px;
-  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
   filter:drop-shadow(0 2px 5px rgba(10,10,10,.18));
 }
 .cur.tap{--s:.86}
-/* Over anything that can be pressed the arrow simply gets big, and the
-   growing is the fun part: it balloons past its size, squashes back, wobbles
-   and settles, like something that is delighted to be pointed at anything.
-   Leaving is the same the other way, a little jelly on the way down. Pressing
-   squishes it. */
-.cur.link svg{animation:cur-grow .75s both}
-.cur.unlink svg{animation:cur-shrink .5s both}
-.cur.link.tap svg{animation:none;transform:scale(1.7)}
-@keyframes cur-grow{
-  0%{transform:scale(1) rotate(0)}
-  28%{transform:scale(3.1) rotate(-12deg)}
-  50%{transform:scale(1.8) rotate(7deg)}
-  70%{transform:scale(2.5) rotate(-4deg)}
-  86%{transform:scale(2.12) rotate(1deg)}
-  100%{transform:scale(2.2) rotate(0)}
-}
-@keyframes cur-shrink{
-  0%{transform:scale(2.2)}
-  35%{transform:scale(.72)}
-  65%{transform:scale(1.14)}
-  100%{transform:scale(1)}
-}
-/* The name tag steps clear of the bigger arrow. */
-.cur.link .cur-tag{margin-left:26px;margin-top:34px}
+/* Over anything that can be pressed the arrow is a touch larger. It grows by
+   changing its real size, not by a transform: a scaled SVG on a promoted layer
+   is enlarged from a bitmap drawn at the smaller size, which is what made it
+   look pixelated. Real width and height are redrawn sharp every frame. A
+   plain ease, no overshoot. */
+.cur svg{transition:width .16s ease,height .16s ease,transform .16s ease}
+.cur.link svg{width:30px;height:30px}
+.cur.link.tap svg{width:27px;height:27px}
 /* The label rides beside it the way a name tag does on a shared canvas. */
 .cur-tag{
   margin-top:14px;
@@ -1195,7 +1178,7 @@ h1{
   background:var(--ink);color:var(--bg);
   font:600 12px/1 Inter,sans-serif;letter-spacing:.01em;white-space:nowrap;
   opacity:0;transform:translateX(-4px) scale(.92);transform-origin:0 50%;
-  transition:opacity .2s ease,transform .24s cubic-bezier(.16,1,.3,1),margin .3s cubic-bezier(.34,1.56,.64,1);
+  transition:opacity .2s ease,transform .24s cubic-bezier(.16,1,.3,1);
 }
 .cur.big .cur-tag{opacity:1;transform:none}
 .cur.hide{opacity:0}
@@ -2547,11 +2530,7 @@ html.cursored,html.cursored *{cursor:none !important}
       const word = (hit && hit.dataset.cursor) || '';
       cur.classList.toggle('big', !!word);
       const isLink = !!hit && !hit.disabled && hit.getAttribute('aria-disabled') !== 'true';
-      if (isLink !== cur.classList.contains('link')){
-        cur.classList.toggle('link', isLink);
-        cur.classList.remove('unlink');
-        if (!isLink){ void cur.offsetWidth; cur.classList.add('unlink'); clearTimeout(cur._u); cur._u = setTimeout(() => cur.classList.remove('unlink'), 520); }
-      }
+      cur.classList.toggle('link', isLink);
       if (word && label.textContent !== word) label.textContent = word;
     }, { passive: true });
     addEventListener('pointerdown', () => cur.classList.add('tap'));
