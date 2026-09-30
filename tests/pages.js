@@ -22,6 +22,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
       return {l:as.filter(r=>r.right<f.left).length, r:as.filter(r=>r.left>f.right).length,
         tip:+getComputedStyle(document.querySelector('.tn-tip')).opacity};});
     ok(`${w}: hover opens two pills each side, face shows its tag`, pills.l===2 && pills.r===2 && pills.tip>0.9, JSON.stringify(pills));
+    ok(`${w}: pills have the fill blob`, (await p.evaluate(()=>document.querySelectorAll('.tn-drop .bl').length))===5 || (await p.evaluate(()=>document.querySelectorAll('.tn-drop .bl').length))===4);
     const text = await p.evaluate(()=>document.body.innerText);
     ok(`${w}: no Toyota/Lexus, no little sibling`, !/toyota|lexus|little sibling/i.test(text));
     await p.close();

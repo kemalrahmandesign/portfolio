@@ -813,10 +813,19 @@ h1{
   .topnav.open .tn-drop a{transform:none}
   .tn-drop a:nth-child(3),.tn-drop a:nth-child(4){transition-delay:0s}
   .tn-drop a:nth-child(2),.tn-drop a:nth-child(5){transition-delay:.06s}
-  .tn-drop a{transition:opacity .25s ease,transform .45s cubic-bezier(.34,1.56,.64,1),background .2s ease,color .2s ease}
-  .topnav.open .tn-drop a:hover,.topnav.open .tn-drop a:focus-visible{
-    transform:translateY(-2px) rotate(-2deg);background:var(--ink);color:var(--bg);
+  .tn-drop a{transition:opacity .25s ease,transform .45s cubic-bezier(.34,1.56,.64,1),color .25s ease}
+  /* No tilt. Hovering a pill pours black into it from whichever edge the
+     pointer came through (--bx/--by are set from the pointer on the way in
+     and again on the way out, so it drains toward where you left). */
+  .tn-drop .bl{position:absolute;inset:0;border-radius:inherit;overflow:hidden;z-index:0;pointer-events:none}
+  .tn-drop .bl::before{
+    content:"";position:absolute;left:var(--bx,50%);top:var(--by,50%);
+    width:320px;height:320px;margin:-160px 0 0 -160px;border-radius:50%;background:var(--ink);
+    transform:scale(0);transition:transform .55s cubic-bezier(.5,.05,.2,1);
   }
+  .tn-drop .tk{position:relative;z-index:1}
+  .topnav.open .tn-drop a:hover .bl::before,.topnav.open .tn-drop a:focus-visible .bl::before{transform:scale(1)}
+  .topnav.open .tn-drop a:hover,.topnav.open .tn-drop a:focus-visible{color:var(--bg);transition-delay:.06s}
   .topnav.open .tn-drop:hover a:not(:hover):not(:focus-visible){opacity:.55}
 }
 
@@ -1150,23 +1159,35 @@ h1{
 .cur svg{
   width:24px;height:24px;display:block;flex:none;
   fill:var(--ink);stroke:var(--bg);stroke-width:1.4;stroke-linejoin:round;
-  transform:scale(var(--s,1)) rotate(var(--r,0deg));transform-origin:4px 3px;
+  transform:scale(var(--s,1));transform-origin:4px 3px;
   transition:transform .35s cubic-bezier(.34,1.56,.64,1);
   filter:drop-shadow(0 2px 5px rgba(10,10,10,.18));
 }
 .cur.tap{--s:.86}
-/* Over anything that can be pressed: the arrow tips up and swells, and a
-   soft ring blooms around its point like a spotlight landing, all on the same
-   springs as the rest of the site. Pressing squashes it. */
-.cur::before{
-  content:"";position:absolute;left:-15px;top:-17px;width:40px;height:40px;border-radius:50%;
-  background:rgba(10,10,10,.07);border:1.5px solid rgba(10,10,10,.55);
-  transform:scale(0);transition:transform .45s cubic-bezier(.34,1.56,.64,1);
+/* Over anything that can be pressed the arrow simply gets big, and the
+   growing is the fun part: it balloons past its size, squashes back, wobbles
+   and settles, like something that is delighted to be pointed at anything.
+   Leaving is the same the other way, a little jelly on the way down. Pressing
+   squishes it. */
+.cur.link svg{animation:cur-grow .75s both}
+.cur.unlink svg{animation:cur-shrink .5s both}
+.cur.link.tap svg{animation:none;transform:scale(1.7)}
+@keyframes cur-grow{
+  0%{transform:scale(1) rotate(0)}
+  28%{transform:scale(3.1) rotate(-12deg)}
+  50%{transform:scale(1.8) rotate(7deg)}
+  70%{transform:scale(2.5) rotate(-4deg)}
+  86%{transform:scale(2.12) rotate(1deg)}
+  100%{transform:scale(2.2) rotate(0)}
 }
-.cur.link{--s:1.2;--r:-12deg}
-.cur.link::before{transform:scale(1)}
-.cur.link.tap{--s:.95}
-.cur.link.tap::before{transform:scale(.8)}
+@keyframes cur-shrink{
+  0%{transform:scale(2.2)}
+  35%{transform:scale(.72)}
+  65%{transform:scale(1.14)}
+  100%{transform:scale(1)}
+}
+/* The name tag steps clear of the bigger arrow. */
+.cur.link .cur-tag{margin-left:26px;margin-top:34px}
 /* The label rides beside it the way a name tag does on a shared canvas. */
 .cur-tag{
   margin-top:14px;
@@ -1174,7 +1195,7 @@ h1{
   background:var(--ink);color:var(--bg);
   font:600 12px/1 Inter,sans-serif;letter-spacing:.01em;white-space:nowrap;
   opacity:0;transform:translateX(-4px) scale(.92);transform-origin:0 50%;
-  transition:opacity .2s ease,transform .24s cubic-bezier(.16,1,.3,1);
+  transition:opacity .2s ease,transform .24s cubic-bezier(.16,1,.3,1),margin .3s cubic-bezier(.34,1.56,.64,1);
 }
 .cur.big .cur-tag{opacity:1;transform:none}
 .cur.hide{opacity:0}
@@ -2346,6 +2367,21 @@ html.cursored,html.cursored *{cursor:none !important}
      the sides are inside it. focusin/focusout keep it usable from a keyboard,
      and closing on Escape gives the keyboard a way out that is not tabbing
      through every link. */
+  /* The blob a pill fills with. It grows from the point the pointer crossed
+     the edge, and drains toward the point it left by. */
+  function addBlob(a){
+    const bl = document.createElement('span');
+    bl.className = 'bl'; bl.setAttribute('aria-hidden', 'true');
+    a.prepend(bl);
+    const at = e => {
+      const r = a.getBoundingClientRect();
+      const x = Math.min(r.width, Math.max(0, e.clientX - r.left));
+      const y = Math.min(r.height, Math.max(0, e.clientY - r.top));
+      a.style.setProperty('--bx', x + 'px'); a.style.setProperty('--by', y + 'px');
+    };
+    a.addEventListener('pointerenter', at);
+    a.addEventListener('pointerleave', at);
+  }
   function splitTicker(a){
     const text = a.textContent;
     const wrap = document.createElement('span');
@@ -2367,7 +2403,7 @@ html.cursored,html.cursored *{cursor:none !important}
     a.appendChild(wrap);
   }
   /* The flip is a hover effect, so only a pointer gets it. */
-  if (topnav && matchMedia('(hover: hover)').matches) topnav.querySelectorAll('.tn-drop a').forEach(splitTicker);
+  if (topnav && matchMedia('(hover: hover)').matches) topnav.querySelectorAll('.tn-drop a').forEach(a => { splitTicker(a); addBlob(a); });
 
   let navOpen = false;
   function setNav(open){
@@ -2510,7 +2546,12 @@ html.cursored,html.cursored *{cursor:none !important}
       const hit = e.target.closest('[data-cursor],a,button,label.chip,[role=button]');
       const word = (hit && hit.dataset.cursor) || '';
       cur.classList.toggle('big', !!word);
-      cur.classList.toggle('link', !!hit && !hit.disabled && hit.getAttribute('aria-disabled') !== 'true');
+      const isLink = !!hit && !hit.disabled && hit.getAttribute('aria-disabled') !== 'true';
+      if (isLink !== cur.classList.contains('link')){
+        cur.classList.toggle('link', isLink);
+        cur.classList.remove('unlink');
+        if (!isLink){ void cur.offsetWidth; cur.classList.add('unlink'); clearTimeout(cur._u); cur._u = setTimeout(() => cur.classList.remove('unlink'), 520); }
+      }
       if (word && label.textContent !== word) label.textContent = word;
     }, { passive: true });
     addEventListener('pointerdown', () => cur.classList.add('tap'));
