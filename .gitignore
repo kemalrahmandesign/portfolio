@@ -7,3 +7,6 @@ refs/
 
 # test site, rebuilt from index.html by tests/build.py
 tests/.site/
+
+# screen-reel captures and renders
+tools/reel/out/
