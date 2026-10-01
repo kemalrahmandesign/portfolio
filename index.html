@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kemal Rahman</title>
+<link rel="icon" href="media/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="media/favicon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500;700&family=Kaushan+Script&display=swap" rel="stylesheet">
@@ -1848,6 +1851,10 @@ html.cursored,html.cursored *{cursor:none !important}
     document.documentElement.classList.add('scrolls');
     heroShell.style.display = 'none';
     cover.classList.remove('take');
+    /* hardCut() raises the cover with an inline opacity, which beats the
+       .clear rule: without this the page was revealed underneath a cover
+       that never lifted, a blank white screen. */
+    cover.style.opacity = '';
     cover.classList.add('clear');
     window.scrollTo(0, 0);
   }

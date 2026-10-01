@@ -58,8 +58,15 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   const arrived = await m.evaluate(()=>({shown:!document.getElementById('work').hidden,
     top:Math.round(document.getElementById('contact').getBoundingClientRect().top),
     nav:getComputedStyle(document.getElementById('topnav')).opacity}));
+  await m.waitForTimeout(800);
+  const veil = await m.evaluate(()=>+getComputedStyle(document.getElementById('cover')).opacity);
+  ok('the white cover lifts after a deep link', veil===0, String(veil));
   ok('a deep link lands on its section, past the hero', arrived.shown && Math.abs(arrived.top)<140 && arrived.nav==='1', JSON.stringify(arrived));
   await m.close();
+  const w = await open('index.html#cases'); await w.waitForTimeout(2200);
+  const wk = await w.evaluate(()=>({veil:+getComputedStyle(document.getElementById('cover')).opacity, top:Math.round(document.getElementById('cases').getBoundingClientRect().top)}));
+  ok('Work from a case page shows the work, not a white screen', wk.veil===0 && Math.abs(wk.top)<140, JSON.stringify(wk));
+  await w.close();
   ok('no JS errors', errs.length===0, errs.join(' | '));
   await b.close();
 })();
