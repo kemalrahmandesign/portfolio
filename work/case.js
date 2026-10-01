@@ -102,4 +102,50 @@
       document.addEventListener('click', e => { if (!nav.contains(e.target)) set(false); });
     }
   }
+
+  /* ---- the archetypes map (Polaris) ---- */
+  const map = document.getElementById('archMap'), card = document.getElementById('archCard');
+  if (map && card){
+    /* [initials, name, x%, y% (top is seasoned), what they are like,
+        what it changed in Polaris, the parts of Polaris it touched] */
+    const A = [
+      ['Tr','The Trader',9,34,'Buys the dips, sells the rips. Checks technical signals daily. Loves to win. Focused on short-term gains.','One search box to any token, live charts and a route preview, so a trade is a few taps.',['Trading','Live charts','Route preview']],
+      ['Hu','The Hunter',16,10,'Likes to be ahead of the crowd. Always on the lookout for the next big thing. Knows all the obscure coins.','Trending and new tokens are surfaced early, with signals on what is moving.',['Trending','Signal cards']],
+      ['Ea','The Early Adopter',36,22,'Extremely bullish on the future of crypto. Part of thriving communities on X, Discord and Telegram. In it for the tech and profit.','News and the narrative around a token sit right beside the trade button.',['News','For You']],
+      ['Cn','The Crypto Native',56,8,'Lived through multiple market cycles, used to high volatility. Understands the technical and financial aspects of crypto.','The real detail is one tap away: routes, networks and balances across every chain.',['Cross-chain routes','Wallet balances']],
+      ['Ee','The Ecosystem Expert',72,26,'The go-to expert in an area of crypto. Identifies promising projects. Always up to date with ecosystem news.','A Following tab keeps the projects they track at the top of their feed.',['Following','News']],
+      ['Wh','The Whale',92,10,'High net worth, experienced investor, manages risk carefully.','Privacy mode hides balances with a tap, and every trade is previewed before it is signed.',['Privacy mode','Transaction preview']],
+      ['Bm','The Bitcoin Maximalist',90,42,'Buys every dip. Believes in the vision of Bitcoin as sound money. Satoshi is their hero.','Bitcoin is a first-class asset everywhere: priced, charted and tradeable like any other.',['Token pages','Trading']],
+      ['Hd','The HODLer',68,54,'Here to get rich but not rich quick. Focuses on fundamentals, not FOMO. Mostly unfazed by volatility.','The portfolio shows the long view, with history and performance rather than only today\u2019s move.',['Portfolio','History']],
+      ['Ti','The Traditional Investor',86,68,'Treats crypto like any asset class: managing risk, maximizing profits. Long-term horizon, three years or more. Plans and prepares, never panics.','A clean portfolio, plain language and the careful previews they expect from any broker.',['Portfolio','Plain language']],
+      ['Be','The Beginner',50,88,'Interested in crypto, but not sure where to start. Looking to increase wealth and knowledge. Excited to start investing.','The For You feed explains the news in plain words, and nothing is signed before a clear preview.',['For You','Transaction preview']],
+      ['Fo','The FOMOer',14,72,'Overly excited or fearful, buys high and sells low. Applies investment strategies to prevent FOMO.','Calm signal cards and a preview before every trade slow the panic down.',['Signal cards','Transaction preview']],
+    ];
+    const nodes = A.map((a, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'an' + (a[2] > 75 ? ' lr' : a[2] < 20 ? ' ll' : '');
+      /* Kept off the very edge so the axis words and the labels have room. */
+      b.style.left = (6 + a[2] * 0.88) + '%'; b.style.top = (8 + a[3] * 0.82) + '%';
+      b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', a[1]);
+      b.innerHTML = a[0] + '<span class="lb">' + a[1].replace('The ', '') + '</span>';
+      b.addEventListener('click', () => pick(i));
+      map.append(b); return b;
+    });
+    let first = true;
+    function pick(i){
+      nodes.forEach((n, j) => n.setAttribute('aria-pressed', j === i ? 'true' : 'false'));
+      map.classList.add('has-pick');
+      const a = A[i];
+      card.classList.remove('swap'); void card.offsetWidth; card.classList.add('swap');
+      /* On a phone the card sits under the map, so bring it into view. */
+      if (matchMedia('(max-width:800px)').matches && !first){ const r = card.getBoundingClientRect(); if (r.bottom > innerHeight || r.top < 0) card.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+      card.innerHTML = '<span class="ac-dot">' + a[0] + '</span><h3>' + a[1] + '</h3><p class="ac-d">' + a[4] +
+        '</p><p class="ac-k">What it changed in Polaris</p><p class="ac-s">' + a[5] + '</p>' +
+        '<ul class="pills">' + a[6].map(t => '<li>' + t + '</li>').join('') + '</ul>';
+    }
+    pick(0); first = false;
+    /* Quiet until touched: the first choice should not look like a decision
+       already made. */
+    map.classList.remove('has-pick');
+  }
 })();

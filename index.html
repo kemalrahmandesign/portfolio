@@ -980,10 +980,11 @@ h1{
 .building{padding:0 0 clamp(60px,12vh,140px)}
 .build-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2.4vw,32px)}
 .build{cursor:not-allowed}
+.build-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.85) brightness(.94)}
 .build-frame{
-  position:relative;overflow:hidden;border-radius:28px;aspect-ratio:4/3;box-shadow:var(--lift);
+  position:relative;overflow:hidden;border-radius:28px;aspect-ratio:3/2;box-shadow:var(--lift);
   display:grid;place-items:center;
-  background:repeating-linear-gradient(-45deg,#e4e3e0 0 22px,#ebeae7 22px 44px);
+  background:#e4e3e0;
   transition:transform .5s cubic-bezier(.34,1.56,.64,1);
 }
 .build:hover .build-frame{transform:rotate(-1deg)}
@@ -1081,9 +1082,9 @@ h1{
      next section is pulled up underneath so its title is already showing in
      the strip below the frame, saying there is more. */
   /* --fh is the frame's final height. The next section is pulled up until
-     its title sits 14px under the frame. */
+     its title sits 48px under the frame. */
   --fh:min(53.4375vw, 90svh);
-  height:100svh;position:relative;margin-bottom:calc(-1 * (100svh - var(--fh) - 14px));
+  height:100svh;position:relative;margin-bottom:calc(-1 * (100svh - var(--fh) - 48px));
   width:var(--vw,100%);
   margin-left:calc((var(--vw,100%) - 100%) / -2);
   margin-right:calc((var(--vw,100%) - 100%) / -2);
@@ -1268,7 +1269,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
         <svg class="ring" aria-hidden="true" focusable="false">
           <rect width="100%" height="100%" pathLength="100"/>
         </svg>
-        Come on in
+        Cool stuff
         <span class="arw" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
                stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
@@ -1392,7 +1393,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       <div class="case-cap"><div><h3 class="case-name">Loco Exotics</h3><p class="case-line">A car repair shop, told like a film</p></div><span class="case-go">View project</span></div>
     </a>
     <a class="case" href="work/polaris.html" data-cursor="view">
-      <div class="case-frame"><div class="case-img"><img alt="Polaris app" loading="lazy" src="https://framerusercontent.com/images/ajWSdaaKEhCdiBEaPDr7HYxfOrk.png?scale-down-to=2048"></div></div>
+      <div class="case-frame"><div class="case-img"><img alt="Polaris" loading="lazy" src="media/polaris/home.webp" style="object-position:50% 8%"></div></div>
       <div class="case-cap"><div><h3 class="case-name">Polaris</h3><p class="case-line">All tokens, all chains, one app</p></div><span class="case-go">View project</span></div>
     </a>
   </section>
@@ -1407,12 +1408,12 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     </div>
     <div class="build-grid">
       <div class="build" aria-disabled="true" data-cursor="soon">
-        <div class="build-frame"><span class="build-tape">Under construction</span></div>
-        <div class="case-cap"><div><h3 class="case-name">Alexandria Car Clinic</h3><p class="case-line">Design &amp; development, end to end</p></div><span class="build-soon">Coming soon</span></div>
+        <div class="build-frame"><img alt="" loading="lazy" src="media/building/alexandria.webp" style="object-position:12% 50%"><span class="build-tape">Under construction</span></div>
+        <div class="case-cap"><h3 class="case-name">Alexandria Car Clinic</h3><span class="build-soon">Coming soon</span></div>
       </div>
       <div class="build" aria-disabled="true" data-cursor="soon">
-        <div class="build-frame"><span class="build-tape">Under construction</span></div>
-        <div class="case-cap"><div><h3 class="case-name">Tokiwa Matcha</h3><p class="case-line">Design &amp; development, end to end</p></div><span class="build-soon">Coming soon</span></div>
+        <div class="build-frame"><img alt="" loading="lazy" src="media/building/tokiwa.webp"><span class="build-tape">Under construction</span></div>
+        <div class="case-cap"><h3 class="case-name">Tokiwa Matcha</h3><span class="build-soon">Coming soon</span></div>
       </div>
     </div>
   </section>
