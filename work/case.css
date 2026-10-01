@@ -97,6 +97,7 @@ a{color:inherit}
 .shot{margin:clamp(28px,5vh,60px) 0;border-radius:32px;overflow:hidden;background:#e4e3e0;box-shadow:var(--lift)}
 .shot img,.shot video{width:100%;height:auto}
 .shot.cover video,.shot.cover img{aspect-ratio:16/9;object-fit:cover}
+.shot.dark{background:#0d0a26}
 
 .blk{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:clamp(20px,4vw,70px);
   padding:clamp(40px,8vh,90px) 0;align-items:start}

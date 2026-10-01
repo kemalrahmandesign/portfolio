@@ -17,3 +17,19 @@ Recorded with `tools/reel` (FigJam-style "Kemal" cursor, cursor chat, smooth zoo
 Not here yet: anything from the trading app (app.osmosis.zone), including
 1-Click Trading. That host was blocked from the recording environment, and
 1-Click Trading also needs a connected wallet.
+
+## From Kemal's own recording (app.osmosis.zone)
+
+| File | Length | Shows |
+|---|---|---|
+| `app-1ct-full.mp4` | 34s | 1920x1200. Buy/Sell/Swap tabs, 50% BTC to OSMO quote, route expanded, profile, 1-Click Trading enabled, success toasts, "59 minutes remaining". macOS cursor painted out and replaced with the FigJam cursor; the Keplr approval window is cut |
+| `app-1ct-full-framed.mp4` | 34s | Same, 1920x1080, in a rounded window on the purple gradient |
+
+Re-cut with `tools/reel/retouch/` (track.py finds the macOS arrow and hand,
+edit.py paints them out, draws the cursor, cuts and zooms).
+
+## web/
+
+Lighter encodes (1600px, CRF 24) and posters used by `work/osmosis.html`:
+`cover` (hero-quick), `ecosystem`, `trade` and `oneclick` (the two halves of
+app-1ct-full), and `tokens`.
