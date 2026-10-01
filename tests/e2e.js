@@ -26,8 +26,10 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   const arc = await E(()=>{const u=document.getElementById('underside').getBoundingClientRect(),
     t=document.querySelector('#underside text').getBoundingClientRect();
     return {undersideOnScreen:u.top<innerHeight, textOnScreen:t.top<innerHeight&&t.width>0, textW:Math.round(t.width)};});
-  ok('the underside is the studio flipped upside down, melting into the page', (await E(()=>{const i=document.getElementById('uFlip'); const c=getComputedStyle(i);
-    return c.transform==='matrix(1, 0, 0, -1, 0, 0)' && (c.maskImage||c.webkitMaskImage||'').includes('gradient') && getComputedStyle(document.querySelector('.underside .fill')).fill==='none';})));
+  ok('the underside is the studio flipped upside down, with the black arc layered over it', (await E(()=>{const i=document.getElementById('uFlip'); const c=getComputedStyle(i);
+    const f=getComputedStyle(document.querySelector('.underside .fill')).fill;
+    return c.transform==='matrix(1, 0, 0, -1, 0, 0)' && (c.maskImage||c.webkitMaskImage||'').includes('gradient') && f.startsWith('rgb(10') &&
+      getComputedStyle(document.querySelector('.underside svg')).zIndex==='1';})));
   ok('arc revealed', arc.undersideOnScreen && arc.textOnScreen, JSON.stringify(arc));
   ok('no sideways shift', (await E(()=>Math.round(document.querySelector('h1').getBoundingClientRect().left))) === x0);
   await p.waitForTimeout(400);

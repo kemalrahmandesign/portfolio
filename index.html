@@ -621,7 +621,9 @@ h1{
    size as the stage above it, flipped about its middle, so the row of pixels
    at the top of this copy is the row at the bottom of the hero: the seam is
    invisible and the floor reads as reflecting into itself. It then dissolves
-   into the page tone, so there is no edge and no line under the video. */
+   into the page tone, so there is no edge and no line under the video. The
+   black arc and its note sit on top of it (the svg is z-index 1), so the
+   reflection shows in the corners either side of the arc. */
 .u-flip{
   position:absolute;left:0;top:0;width:100%;height:100svh;
   object-fit:cover;object-position:center bottom;transform:scaleY(-1);
@@ -629,10 +631,10 @@ h1{
           mask-image:linear-gradient(to bottom,#000 0,#000 18%,transparent 100%);
 }
 @media (max-aspect-ratio:1/1),(min-aspect-ratio:2/1){ .u-flip{object-fit:contain;object-position:center center} }
-.underside svg{display:block;width:100%;height:100%}
-.underside .fill{fill:none}
+.underside svg{display:block;width:100%;height:100%;position:relative;z-index:1}
+.underside .fill{fill:var(--ink)}
 .underside text{
-  fill:rgba(10,10,10,.72);font-family:var(--font-display);font-weight:700;
+  fill:#fff;font-family:var(--font-display);font-weight:700;
   letter-spacing:-.01em;
 }
 
@@ -2064,11 +2066,11 @@ html.wall-in #wall{transform:translateY(0);transition:none}
        tag  [x, y]         where the writing sits
        curl  path in a 0..1 box from the tag toward the object */
   const PROPS = [
-    { k:'moto',  label:'ka chow',        hit:[22.2, 74.4, 28.9, 37.5], tag:[14.1, 46.2], tilt:-5, bow: .50 },
-    { k:'skis',  label:'powder plower',  hit:[40.6, 56.1,  5.0, 38.0], tag:[31.9, 34.9], tilt:-3, bow:-.44 },
-    { k:'gtr',   label:'reverb + loops', hit:[67.9, 63.0,  8.0, 38.0], tag:[71.4, 32.4], tilt:-2, bow: .42 },
-    { k:'ball',  label:'goaaaaaaal',     hit:[92.3, 86.9,  6.0, 10.0], tag:[90.0, 67.9], tilt:-4, bow: .38 },
-    { k:'board', label:'do a kickflip',  hit:[14.7, 90.4, 18.0,  8.0], tag:[30.9, 92.9], tilt:-2, bow: .40 },
+    { k:'moto',  label:'ka chow',        hit:[22.1, 64.9, 28.9, 37.5], tag:[23.5, 41.5], tilt:-5, bow: .50, gap:-0.9 },
+    { k:'skis',  label:'powder plower',  hit:[40.5, 56.4,  5.0, 38.0], tag:[32.0, 37.3], tilt:-3, bow:-.44 },
+    { k:'gtr',   label:'reverb + loops', hit:[67.6, 63.8,  8.0, 38.0], tag:[73.2, 34.3], tilt:-2, bow: .42 },
+    { k:'ball',  label:'goaaaaaaal',     hit:[92.3, 87.3,  6.0, 10.0], tag:[93.4, 72.9], tilt:-4, bow: .38 },
+    { k:'board', label:'do a kickflip',  hit:[14.7, 90.4, 18.0,  8.0], tag:[30.5, 90.0], tilt:-2, bow: .40 },
   ];
 
   const props = document.getElementById('props');
@@ -2194,8 +2196,10 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       const rdir = Math.min(ra / Math.max(Math.abs(aimx), 1e-6), rb / Math.max(Math.abs(aimy), 1e-6));
       /* Stops a little OUTSIDE the object's outline, not on it: the arrow
          points at the thing from the white space around it. */
-      const gap = size * 0.5;
-      const stop = Math.min(rdir + gap, L * 0.88);
+      /* `gap` is in label sizes and may be negative: the bike's box is so big
+         that its arrow is meant to go a little way INTO it. */
+      const gap = size * (d.gap === undefined ? 0.5 : d.gap);
+      const stop = Math.max(0, Math.min(rdir + gap, L * 0.88));
       const tx = ex - aimx * stop, ty = ey - aimy * stop;
       vx = tx - sx; vy = ty - sy;
       const nx = -aimy, ny = aimx;                      // unit normal
