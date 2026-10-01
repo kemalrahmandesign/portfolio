@@ -877,6 +877,17 @@ h1{
   max-width:min(22em,100%);margin-inline:auto;
 }
 .lede .w{display:inline-block;opacity:var(--o,1);transition:opacity .18s linear}
+/* Typed in, a character at a time, like someone at a keyboard. Every
+   character is in the layout from the start (just not painted), so the lines
+   never reflow as it goes. The caret rides on the last typed one. */
+.lede .c{position:relative}
+.about.typing .lede .c:not(.t){color:transparent}
+.lede .c.last::after{
+  content:"";position:absolute;left:100%;top:.12em;height:.88em;width:.075em;margin-left:.04em;
+  background:var(--ink);animation:caret 1s steps(1) infinite;
+}
+@keyframes caret{50%{opacity:0}}
+.about.typing .about-cue{opacity:0}
 /* The cue: a handwritten note and an arrow that bobs, in the studio's
    Kaushan Script. It leaves as soon as the reading starts. */
 .about-cue{
@@ -1421,7 +1432,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       <div class="case-cap"><div><h3 class="case-name">Loco Exotics</h3><p class="case-line">A car repair shop, told like a film</p></div><span class="case-go">View project</span></div>
     </a>
     <a class="case" href="work/polaris.html" data-cursor="view">
-      <div class="case-frame"><div class="case-img"><img alt="Polaris app" loading="lazy" src="https://framerusercontent.com/images/ajWSdaaKEhCdiBEaPDr7HYxfOrk.png?scale-down-to=2048"></div></div>
+      <div class="case-frame"><div class="case-img"><img alt="Polaris app" loading="lazy" src="https://framerusercontent.com/images/ajWSdaaKEhCdiBEaPDr7HYxfOrk.png?scale-down-to=2048" style="object-position:50% 4%"></div></div>
       <div class="case-cap"><div><h3 class="case-name">Polaris</h3><p class="case-line">All tokens, all chains, one app</p></div><span class="case-go">View project</span></div>
     </a>
   </section>
@@ -2714,12 +2725,46 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     words.forEach((w, i) => {
       if (i) ph.append(' ');
       const s = document.createElement('span');
-      s.className = 'w'; s.textContent = w;
+      s.className = 'w';
+      [...w].forEach(ch => { const c = document.createElement('span'); c.className = 'c'; c.textContent = ch; s.append(c); });
       ph.append(s);
     });
     return [...ph.querySelectorAll('.w')];
   }) : [];
   const allWords = phrases.flat();
+  const chars = allWords.flatMap(w => [...w.querySelectorAll('.c')]);
+  const helloChars = phrases[0] ? phrases[0].flatMap(w => [...w.querySelectorAll('.c')]).length : 0;
+
+  /* ---- about: typed in ----
+     "Hi, I'm Kemal!" goes in at a human pace with a beat after the comma
+     and another once it is done, then the rest of the paragraph follows
+     quickly, still pale, for the scroll to fill in. */
+  let typeTimer = 0;
+  function setTyped(n){
+    chars.forEach((c, i) => { c.classList.toggle('t', i < n); c.classList.toggle('last', i === n - 1); });
+  }
+  function finishTyping(){
+    clearTimeout(typeTimer);
+    setTyped(chars.length);
+    about.classList.remove('typing');
+    setTimeout(() => chars.forEach(c => c.classList.remove('last')), 1400);
+  }
+  function typeAbout(){
+    clearTimeout(typeTimer);
+    about.classList.add('typing'); setTyped(0);
+    let i = 0;
+    const step = () => {
+      i++; setTyped(i);
+      if (i >= chars.length){ finishTyping(); return; }
+      const ch = chars[i - 1].textContent, hello = i <= helloChars;
+      let d = hello ? 70 + Math.random() * 70 : 11 + Math.random() * 15;
+      if (/[,.!]/.test(ch)) d += hello ? 260 : 110;
+      if (i === helloChars) d += 340;
+      typeTimer = setTimeout(step, d);
+    };
+    typeTimer = setTimeout(step, 450);
+  }
+  function armTyping(){ clearTimeout(typeTimer); about.classList.add('typing'); setTyped(0); }
 
   /* Read by scrolling. Progress through the tall section maps onto the
      words: everything up to the reading point is full ink, the next few
@@ -2736,12 +2781,16 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       w.style.setProperty('--o', o.toFixed(2));
     });
     about.classList.toggle('read', -r.top > 24);
+    /* Scrolling on means the reader is ahead of the typing: finish it. */
+    if (-r.top > 24 && about.classList.contains('typing')) finishTyping();
   }
   if (lede && !still){
     addEventListener('scroll', readAbout, { passive: true });
     addEventListener('resize', readAbout);
     new MutationObserver(readAbout).observe(document.getElementById('work'), { attributes: true, attributeFilter: ['hidden'] });
     readAbout();
+    armTyping();
+    onView(lede, 0.4, typeAbout, armTyping);
   }
 
   /* ---- section titles: a bounce and a scribble ----

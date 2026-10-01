@@ -92,6 +92,16 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   const wk = await w.evaluate(()=>({veil:+getComputedStyle(document.getElementById('cover')).opacity, top:Math.round(document.getElementById('cases').getBoundingClientRect().top)}));
   ok('Work from a case page shows the work, not a white screen', wk.veil===0 && Math.abs(wk.top)<140, JSON.stringify(wk));
   await w.close();
+  // the About text types in
+  const ty = await open('index.html#about'); await ty.waitForSelector('#work:not([hidden])',{timeout:8000}); await ty.waitForTimeout(1300);
+  const t1 = await ty.evaluate(()=>{const cs=[...document.querySelectorAll('#about .lede .c')]; const typed=cs.map(c=>c.classList.contains('t'));
+    const n=typed.filter(Boolean).length; return {n, total:cs.length, prefix:typed.every((v,i)=>!v||typed.slice(0,i).every(Boolean)), typing:document.getElementById('about').classList.contains('typing'),
+      caret:!!document.querySelector('#about .lede .c.last')};});
+  ok('about types in as a growing prefix, with a caret', t1.n>0 && t1.n<t1.total && t1.prefix && t1.typing && t1.caret, JSON.stringify(t1));
+  await ty.waitForTimeout(7000);
+  const t2 = await ty.evaluate(()=>({all:[...document.querySelectorAll('#about .lede .c')].every(c=>c.classList.contains('t')), typing:document.getElementById('about').classList.contains('typing'), hello:document.querySelector('#about .lede .ph').textContent}));
+  ok('and finishes the whole paragraph, hello first', t2.all && !t2.typing && /^Hi, I.m Kemal!/.test(t2.hello), JSON.stringify(t2));
+  await ty.close();
   ok('no JS errors', errs.length===0, errs.join(' | '));
   await b.close();
 })();
