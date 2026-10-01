@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kemal Rahman</title>
+<script>try{if(sessionStorage.getItem('wallIn')==='1')document.documentElement.classList.add('wall-in')}catch(e){}</script>
 <link rel="icon" href="media/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="media/favicon-180.png">
@@ -525,6 +526,15 @@ h1{
   pointer-events:auto;cursor:pointer;border-radius:50%;
 }
 .prop-hit:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+/* A larger target than the drawn box: the hotspots are the objects' own
+   outlines, which are tight, so each reaches 18px past its edge. The numbers
+   in PROPS (which also steer the arrows) are untouched. */
+.prop-hit::after{content:"";position:absolute;inset:-18px;border-radius:inherit}
+/* While the take plays, or a press is waiting for the wave to finish, the
+   props are inert and their writing and arrows are gone. */
+.hero.is-leaving .prop-hit,.hero.armed .prop-hit{pointer-events:none}
+.hero.is-leaving .prop-tag,.hero.is-leaving .prop-curls,
+.hero.armed .prop-tag,.hero.armed .prop-curls{opacity:0;transition:opacity .15s ease}
 
 .prop-tag{
   position:absolute;margin:0;pointer-events:none;
@@ -625,17 +635,16 @@ h1{
    than the skip-to-end bar: this is fast forward, not a cut. */
 .skip{
   position:absolute;right:var(--pad);bottom:var(--pad);z-index:4;
-  appearance:none;border:0;cursor:pointer;font:inherit;
-  display:inline-flex;align-items:center;gap:.5em;
-  height:42px;padding:0 18px;border-radius:50px;
-  background:#fff;color:var(--ink);
-  font-size:14px;font-weight:600;letter-spacing:-.017em;
-  box-shadow:var(--lift);
+  appearance:none;border:0;cursor:pointer;background:none;padding:10px;
+  display:inline-flex;align-items:center;justify-content:center;
+  color:rgba(10,10,10,.38);
   opacity:0;transform:translateY(8px);pointer-events:none;
-  transition:opacity 320ms ease 260ms,transform 320ms cubic-bezier(.16,1,.3,1) 260ms;
+  transition:opacity 320ms ease 260ms,transform 320ms cubic-bezier(.16,1,.3,1) 260ms,color .2s ease;
 }
 .hero.is-leaving .skip{opacity:1;transform:none;pointer-events:auto}
-.skip:hover{transform:translateX(3px)}
+.skip:hover,.skip:focus-visible{color:rgba(10,10,10,.75)}
+.skip:active{transform:scale(.92)}
+.skip.ffwd{color:rgba(10,10,10,.7)}
 .skip svg{display:block}
 
 /* ---------- the handoff ---------- */
@@ -928,7 +937,7 @@ h1{
    The picture is the card. It is 124% of its frame's height and drifts
    against the scroll while the frame does not, so the card reads as a window.
    Under it, the name and one line, and a pill that says where it goes. */
-.cases{padding:clamp(60px,12vh,140px) 0 clamp(60px,12vh,150px)}
+.cases{position:relative;z-index:2;padding:2svh 0 clamp(60px,12vh,150px)}
 .case{
   display:block;position:relative;color:var(--ink);text-decoration:none;
   margin-bottom:clamp(40px,8vh,96px);
@@ -1067,7 +1076,14 @@ h1{
    viewport measured in script rather than 100vw, because 100vw includes the
    scrollbar and would overflow the page by its width. */
 .montage{
-  height:200vh;position:relative;
+  /* One screen tall: there is no pinned stretch any more. The frame finishes
+     growing as the section arrives and then simply scrolls away with it. The
+     next section is pulled up underneath so its title is already showing in
+     the strip below the frame, saying there is more. */
+  /* --fh is the frame's final height. The next section is pulled up until
+     its title sits 14px under the frame. */
+  --fh:min(53.4375vw, 90svh);
+  height:100svh;position:relative;margin-bottom:calc(-1 * (100svh - var(--fh) - 14px));
   width:var(--vw,100%);
   margin-left:calc((var(--vw,100%) - 100%) / -2);
   margin-right:calc((var(--vw,100%) - 100%) / -2);
@@ -1086,15 +1102,15 @@ h1{
    it rather than starting one screen down. */
 .montage-stage{
   position:sticky;top:0;height:100svh;
-  display:grid;place-items:center;overflow:hidden;pointer-events:none;
+  display:grid;place-items:start center;padding-top:2svh;box-sizing:border-box;overflow:hidden;pointer-events:none;
 }
 .montage-frame{
   --grow:0;
-  /* A 16:9 block the whole way: it grows in 16:9 and stops at 90% of the
+  /* A 16:9 block the whole way: it grows in 16:9 and stops at 95% of the
      window (whichever of width or height runs out first), leaving a border
      of page round it. Kemal found the stretch to full bleed odd on scroll,
      and the reel is 16:9, so now nothing in it is ever cropped either. */
-  --end:min(90vw, 160svh);
+  --end:min(95vw, 160svh);
   width:calc(30vw + (var(--end) - 30vw) * var(--grow));
   aspect-ratio:16/9;
   /* At --grow 0 the frame is entirely under the fold, not peeking over it.
@@ -1114,34 +1130,6 @@ h1{
    its own, so in flow it collapsed to 0x0 and never counted as on screen. */
 .montage-frame{position:relative}
 .montage-frame video,.montage-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-
-/* ---------- what a prop opens ---------- */
-/* display:grid beats the hidden attribute, so it has to be restated: the
-   sheet was invisible and still swallowing every click on the page. */
-.prop-sheet[hidden]{display:none}
-.prop-sheet{
-  position:fixed;inset:0;z-index:80;display:grid;place-items:end center;
-  background:rgba(10,10,10,0);transition:background .3s ease;
-}
-.prop-sheet.open{background:rgba(10,10,10,.22)}
-.ps-card{
-  width:min(560px,calc(100% - 32px));margin-bottom:clamp(16px,4vh,56px);
-  background:#fff;border-radius:20px;padding:clamp(22px,3vw,34px);
-  box-shadow:var(--lift);position:relative;
-  transform:translateY(18px);opacity:0;
-  transition:transform .32s cubic-bezier(.16,1,.3,1),opacity .32s ease;
-}
-.prop-sheet.open .ps-card{transform:none;opacity:1}
-.ps-close{
-  position:absolute;top:14px;right:14px;width:32px;height:32px;
-  appearance:none;border:0;border-radius:50%;background:var(--bg);
-  font-size:20px;line-height:1;color:var(--ink);cursor:pointer;
-}
-.ps-title{
-  margin:0 0 .35em;font-family:var(--font-hand);font-weight:400;
-  font-size:clamp(26px,3vw,38px);line-height:1;
-}
-.ps-body{margin:0;font-size:16px;line-height:1.55;color:rgba(10,10,10,.6)}
 
 /* ---------- the cursor ----------
    A soft dot that trails the pointer, swells on anything clickable, and
@@ -1200,11 +1188,14 @@ html.cursored,html.cursored *{cursor:none !important}
    coverage has to be absolute. The curve is the same language as the
    overscroll arc, so the wall reads as the same object arriving. */
 #wall{
-  position:fixed;left:0;right:0;top:0;height:132vh;z-index:60;
+  position:fixed;left:0;right:0;top:0;height:132vh;z-index:90;
   background:var(--ink);pointer-events:none;
   border-radius:0 0 50% 50% / 0 0 16vh 16vh;
   transform:translateY(-100%);
 }
+/* Arriving from a case study page, which dropped this same wall: start
+   covered, then lift it away once the page underneath is ready. */
+html.wall-in #wall{transform:translateY(0);transition:none}
 #wall.down{transform:translateY(0);transition:transform 520ms cubic-bezier(.5,0,.75,0)}
 #wall.gone{transform:translateY(100%);transition:transform 620ms cubic-bezier(.22,1,.3,1)}
 
@@ -1277,7 +1268,7 @@ html.cursored,html.cursored *{cursor:none !important}
         <svg class="ring" aria-hidden="true" focusable="false">
           <rect width="100%" height="100%" pathLength="100"/>
         </svg>
-        Cool Sh*t
+        Come on in
         <span class="arw" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
                stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
@@ -1298,12 +1289,11 @@ html.cursored,html.cursored *{cursor:none !important}
 
 
 
-  <button class="skip" id="skip" type="button">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+  <button class="skip" id="skip" type="button" aria-label="Fast forward" title="Fast forward">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M3 5.4c0-1 1.1-1.6 2-1.1l8.6 5.4a1.3 1.3 0 0 1 0 2.2L5 17.7c-.9.5-2-.1-2-1.1z"/>
       <path d="M12.4 5.4c0-1 1.1-1.6 2-1.1L23 9.7a1.3 1.3 0 0 1 0 2.2l-8.6 5.8c-.9.5-2-.1-2-1.1z"/>
     </svg>
-    Fast forward
   </button>
 </section>
 
@@ -1344,7 +1334,7 @@ html.cursored,html.cursored *{cursor:none !important}
       <li class="xp-card">
         <span class="xp-mono" aria-hidden="true">K</span>
         <div><h3 class="xp-who">Kemal Rahman Design</h3>
-          <p class="xp-what">Founder</p></div>
+          <p class="xp-what">Founder. Design and development, end to end</p></div>
         <span class="xp-when">2026 &ndash; now</span>
       </li>
       <li class="xp-fam">
@@ -1394,16 +1384,16 @@ html.cursored,html.cursored *{cursor:none !important}
       <span class="sec-note">the good stuff</span>
     </div>
     <a class="case" href="work/osmosis.html" data-cursor="view">
-      <div class="case-frame"><div class="case-img"><img alt="Osmosis trading interface" loading="lazy" src="https://framerusercontent.com/images/85N2HgM9XOiUkqYxx1eO2fb2kSI.png?scale-down-to=2048"></div></div>
+      <div class="case-frame"><div class="case-img"><video muted loop playsinline preload="metadata" poster="media/osmosis/web/cover.jpg" src="media/osmosis/web/cover.mp4" aria-label="Osmosis"></video></div></div>
       <div class="case-cap"><div><h3 class="case-name">Osmosis</h3><p class="case-line">Designing a trading floor for a financial system still being invented</p></div><span class="case-go">View project</span></div>
-    </a>
-    <a class="case" href="work/polaris.html" data-cursor="view">
-      <div class="case-frame"><div class="case-img"><img alt="Polaris app" loading="lazy" src="https://framerusercontent.com/images/ajWSdaaKEhCdiBEaPDr7HYxfOrk.png?scale-down-to=2048"></div></div>
-      <div class="case-cap"><div><h3 class="case-name">Polaris</h3><p class="case-line">All tokens, all chains, one app</p></div><span class="case-go">View project</span></div>
     </a>
     <a class="case" href="work/loco.html" data-cursor="view">
       <div class="case-frame"><div class="case-img"><video muted loop playsinline preload="metadata" poster="media/loco/hero-poster.jpg" src="media/loco/hero.mp4" aria-label="Loco Exotics"></video></div></div>
       <div class="case-cap"><div><h3 class="case-name">Loco Exotics</h3><p class="case-line">A car repair shop, told like a film</p></div><span class="case-go">View project</span></div>
+    </a>
+    <a class="case" href="work/polaris.html" data-cursor="view">
+      <div class="case-frame"><div class="case-img"><img alt="Polaris app" loading="lazy" src="https://framerusercontent.com/images/ajWSdaaKEhCdiBEaPDr7HYxfOrk.png?scale-down-to=2048"></div></div>
+      <div class="case-cap"><div><h3 class="case-name">Polaris</h3><p class="case-line">All tokens, all chains, one app</p></div><span class="case-go">View project</span></div>
     </a>
   </section>
 
@@ -1418,11 +1408,11 @@ html.cursored,html.cursored *{cursor:none !important}
     <div class="build-grid">
       <div class="build" aria-disabled="true" data-cursor="soon">
         <div class="build-frame"><span class="build-tape">Under construction</span></div>
-        <div class="case-cap"><h3 class="case-name">Alexandria Car Clinic</h3><span class="build-soon">Coming soon</span></div>
+        <div class="case-cap"><div><h3 class="case-name">Alexandria Car Clinic</h3><p class="case-line">Design &amp; development, end to end</p></div><span class="build-soon">Coming soon</span></div>
       </div>
       <div class="build" aria-disabled="true" data-cursor="soon">
         <div class="build-frame"><span class="build-tape">Under construction</span></div>
-        <div class="case-cap"><h3 class="case-name">Tokiwa Matcha</h3><span class="build-soon">Coming soon</span></div>
+        <div class="case-cap"><div><h3 class="case-name">Tokiwa Matcha</h3><p class="case-line">Design &amp; development, end to end</p></div><span class="build-soon">Coming soon</span></div>
       </div>
     </div>
   </section>
@@ -1435,7 +1425,7 @@ html.cursored,html.cursored *{cursor:none !important}
       <h2 class="sec-title">Want to work together?</h2>
       <span class="sec-note">I don&rsquo;t bite, promise</span>
     </div>
-    <form class="form" id="helloForm" action="https://formsubmit.co/kemal203@gmail.com" method="POST">
+    <form class="form" id="helloForm" action="https://formsubmit.co/kemalrahmandesign@gmail.com" method="POST">
       <div class="form-body">
         <label class="cap-field"><span class="sr">Your name</span><input name="name" required autocomplete="name" placeholder="Your name"></label>
         <label class="cap-field"><span class="sr">Email</span><input name="email" type="email" required autocomplete="email" placeholder="Your email"></label>
@@ -1445,9 +1435,9 @@ html.cursored,html.cursored *{cursor:none !important}
       <div class="form-done" role="status"><b>Got it, thank you!</b><span>I&rsquo;ll be in touch soon.</span></div>
     </form>
     <p class="form-msg" role="status"></p>
-    <a class="hello-mail" href="mailto:kemal203@gmail.com">or email <u>kemal203@gmail.com</u></a>
+    <a class="hello-mail" href="mailto:kemalrahmandesign@gmail.com">or email <u>kemalrahmandesign@gmail.com</u></a>
     <div class="bye-stage" id="byeStage" aria-hidden="true"></div>
-    <p class="bye-foot">Made by Kemal Rahman, with a lot of coffee and one cat.</p>
+    <p class="bye-foot">Made by Kemal Rahman, and supervised by Nova the cat.</p>
   </section>
 
 </main>
@@ -1457,14 +1447,6 @@ html.cursored,html.cursored *{cursor:none !important}
     <path d="M5.2 3.1a1 1 0 0 1 1.4-.4l12.1 7.4a1 1 0 0 1-.2 1.8l-5 1.5a1 1 0 0 0-.6.5l-2.3 4.8a1 1 0 0 1-1.8-.1z"/>
   </svg>
   <span class="cur-tag"></span>
-</div>
-
-<div class="prop-sheet" id="propSheet" hidden>
-  <div class="ps-card" role="dialog" aria-modal="true" aria-labelledby="psTitle">
-    <button class="ps-close" type="button" aria-label="Close">&times;</button>
-    <h3 class="ps-title" id="psTitle"></h3>
-    <p class="ps-body"></p>
-  </div>
 </div>
 
 <div id="wall" aria-hidden="true"></div>
@@ -1764,14 +1746,30 @@ html.cursored,html.cursored *{cursor:none !important}
     }
     show(poster, 0);
     requestAnimationFrame(() => hero.classList.add('is-in'));
+    /* The wall a case study page dropped is still covering the screen: let
+       it fall away once what is underneath has settled. */
+    const liftWall = delay => {
+      if (!document.documentElement.classList.contains('wall-in')) return;
+      try { sessionStorage.removeItem('wallIn'); } catch (e) {}
+      setTimeout(() => {
+        const w = document.getElementById('wall');
+        w.classList.add('down');
+        document.documentElement.classList.remove('wall-in');
+        void w.offsetWidth;
+        w.classList.remove('down'); w.classList.add('gone');
+        setTimeout(() => w.classList.remove('gone'), 800);
+      }, delay);
+    };
     /* Arriving from a case study page with a section in the address goes
        straight to it, skipping the greeting and the walk. */
     const deep = location.hash.slice(1);
     if (['about','experience','reel','cases','building','contact'].includes(deep)){
       waveEnded = true;
       goTo(deep);
+      liftWall(750);
       return;
     }
+    liftWall(350);
 
   /* Mobile plays the full sequence too. It used to be excluded along with
      reduced motion, which left phones on a bare poster and made the call to
@@ -2048,8 +2046,12 @@ html.cursored,html.cursored *{cursor:none !important}
     curls.setAttribute('aria-hidden', 'true');
     props.appendChild(curls);
     PROPS.forEach(d => {
-      const hit = document.createElement('button');
-      hit.type = 'button';
+      /* Not a button: the props only answer to hover (and focus), they open
+         nothing, so they must not look pressable to the cursor or to a
+         screen reader. */
+      const hit = document.createElement('div');
+      hit.tabIndex = 0;
+      hit.setAttribute('role', 'img');
       hit.className = 'prop-hit';
       hit.dataset.k = d.k;
       hit.setAttribute('aria-label', d.label);
@@ -2075,7 +2077,6 @@ html.cursored,html.cursored *{cursor:none !important}
       hit.addEventListener('pointerleave', off);
       hit.addEventListener('focus', on);
       hit.addEventListener('blur', off);
-      hit.addEventListener('click', () => openProp(d));
     });
   }
 
@@ -2228,30 +2229,6 @@ html.cursored,html.cursored *{cursor:none !important}
   /* Again once the handwriting has loaded: the line is drawn from the tag's
      measured box, and before the face arrives that box is the wrong width. */
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeProps);
-
-  /* Clicking a prop is meant to open the story behind it. The stories are not
-     written yet, so this opens the shell with a placeholder rather than
-     leaving five buttons that do nothing when pressed. */
-  const propSheet = document.getElementById('propSheet');
-  function openProp(d){
-    if (!propSheet) return;
-    propSheet.querySelector('.ps-title').textContent = d.label;
-    propSheet.querySelector('.ps-body').textContent =
-      d.note || 'This one is still to be written. Tell me what you want it to say.';
-    propSheet.hidden = false;
-    requestAnimationFrame(() => propSheet.classList.add('open'));
-  }
-  function closeProp(){
-    if (!propSheet) return;
-    propSheet.classList.remove('open');
-    setTimeout(() => { propSheet.hidden = true; }, 320);
-  }
-  if (propSheet){
-    propSheet.addEventListener('click', e => {
-      if (e.target === propSheet || e.target.closest('.ps-close')) closeProp();
-    });
-    addEventListener('keydown', e => { if (e.key === 'Escape' && !propSheet.hidden) closeProp(); });
-  }
 
   /* Calibration. ?props on the query string makes the whole set draggable.
 
@@ -2595,7 +2572,9 @@ html.cursored,html.cursored *{cursor:none !important}
   function growMontage(){
     if (!montage || !frame || !innerHeight) return;
     const r = montage.getBoundingClientRect();
-    const t = Math.min(1, Math.max(0, (innerHeight - r.top) / (innerHeight * 1.15)));
+    /* Fully grown when the section's top is 95% of the way up the window,
+       so it is at its biggest just before it reaches the top, not after. */
+    const t = Math.min(1, Math.max(0, (innerHeight - r.top) / (innerHeight * 0.95)));
     frame.style.setProperty('--grow', t.toFixed(4));
   }
   addEventListener('scroll', growMontage, { passive: true });
@@ -2768,14 +2747,14 @@ html.cursored,html.cursored *{cursor:none !important}
         _subject: 'Portfolio: ' + d.get('name') + ' wants to work together' };
       btn.disabled = true; msg.textContent = 'Sending...';
       try {
-        const r = await fetch('https://formsubmit.co/ajax/kemal203@gmail.com', {
+        const r = await fetch('https://formsubmit.co/ajax/kemalrahmandesign@gmail.com', {
           method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
           body: JSON.stringify(body) });
         if (!r.ok) throw new Error(r.status);
         form.classList.add('sent');
       } catch (e){
         const text = `Hi Kemal, let's work together.\n\n${body.name} <${body.email}>`;
-        location.href = 'mailto:kemal203@gmail.com?subject=' + encodeURIComponent(body._subject) +
+        location.href = 'mailto:kemalrahmandesign@gmail.com?subject=' + encodeURIComponent(body._subject) +
           '&body=' + encodeURIComponent(text);
         msg.textContent = 'Opening your email app instead.';
       } finally { btn.disabled = false; }

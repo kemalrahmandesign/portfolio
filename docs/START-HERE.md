@@ -14,7 +14,7 @@ build step and no framework. That is deliberate: see "Do not" below.
 
 **The hero:** a stylised 3D cartoon Kemal stands in a white studio among his
 hobbies (motorcycle, skis, guitar and amp, skateboard, football). He waves while
-the masthead animates in, then idles. The "Cool Sh\*t" call to action sends him
+the masthead animates in, then idles. The "Come on in" call to action sends him
 walking to his desk in one continuous take; he sits, his cat Nova settles on the
 PC, the camera pushes into the monitor, it powers on white, and the rest of the
 site is underneath.
@@ -59,7 +59,26 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-**Session 4, seventh pass (latest).** Cursor link state, third attempt: Kemal
+**Session 4, launch pass (latest).** The CTA now reads "Come on in" (was
+"Cool Sh*t"). Props: no clicking (the sheet is gone; they are divs now, hover
+and focus only), inert and unlabelled while the take plays, every hotspot
+reaches 18px past its drawn box via `::after` (the PROPS numbers are
+untouched since they also steer the arrows; **Kemal still wants to recalibrate
+the squiggles himself with `?props`**). Fast forward is just a muted 30px
+double-play icon. Montage: ends at 95% width x 80% height, fully grown when
+the section is 95% of the way up, one screen tall (no pinned hold), and
+"Things I've made" is pulled up under it so the title peeks. Case order:
+Osmosis, Loco, Polaris, and the "next story" chain follows it. Email is
+kemalrahmandesign@gmail.com (FormSubmit will email an **activation link to that
+address on the first submission**). Footer: "supervised by Nova the cat". Roles:
+Osmosis and Polaris were two designers (his boss, the lead, and him); Polaris
+was a new concept start to finish; Loco and current work are end-to-end design
+and dev. The Osmosis card plays `media/osmosis/web/cover.mp4` like Loco's (another
+session's recordings landed on the deploy branch). Case pages drop the black wall on any menu
+choice and the main site starts under it (`sessionStorage.wallIn`, `html.wall-in`).
+**Still open before sharing:** the four social trinkets still link to `#`.
+
+**Session 4, seventh pass.** Cursor link state, third attempt: Kemal
 wanted no bounce and it looked pixelated (a transform-scaled SVG on a promoted
 layer is upscaled from a bitmap). It is now 24px to 30px by real width/height
 with a plain 160ms ease, so it stays sharp. Never scale the cursor by transform. Nav
@@ -159,7 +178,7 @@ it should be **friendly, not serious**. Kept: the About kinetic type. Built:
 | Contact | form + next clients; built without a reference, on request |
 | Cursor | a pointer arrow with a label pill, FigJam-like |
 | Mobile | letterboxed 16:9; **the 9:16 regeneration is in `BACKLOG.md`** |
-| Tests | `tests/e2e.js` 61, `tests/mobile.js` 5, `tests/pages.js` 15 |
+| Tests | `tests/e2e.js` ~64, `tests/mobile.js` 5, `tests/pages.js` 30 |
 
 ## Working with Kemal
 

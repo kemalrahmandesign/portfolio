@@ -109,8 +109,8 @@ he waves you in.
   the generations do. Kemal can drop the files into the chat.
 - **The prop arrows** still need work. Kemal's coordinates are in and correct;
   the geometry of the curl is what he is unhappy with.
-- **Real social URLs.** Every link in the hero is still `href="#"`.
-- **"Cool Sh\*t" or "My work".** Floated, never decided. Copy comes last.
+- **Real social URLs.** Every link in the hero is still `href="#"`. **Launch blocker.**
+- **CTA copy:** settled on "Come on in".
 - **The agency's name.** The experience list says "Own agency" because there is
   no name to put there yet.
 - **Case study content.** Four image blocks with placeholder gradients. They

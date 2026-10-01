@@ -229,3 +229,12 @@ a{color:inherit}
   .rise{opacity:1;transform:none;transition:none}
   html{scroll-behavior:auto}
 }
+
+/* The black wall. Choosing anything in the menu drops it from the top, the
+   same wall the main site uses, and the page you asked for is there when it
+   lifts. */
+#wall{
+  position:fixed;left:0;right:0;top:0;height:132vh;z-index:90;background:var(--ink);pointer-events:none;
+  border-radius:0 0 50% 50% / 0 0 16vh 16vh;transform:translateY(-100%);
+}
+#wall.down{transform:translateY(0);transition:transform 520ms cubic-bezier(.5,0,.75,0)}

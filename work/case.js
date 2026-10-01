@@ -57,7 +57,21 @@
      A pointer opens the pills on hover and the face goes home; a finger taps
      the face to roll the card down. */
   const nav = document.getElementById('topnav');
+  const wall = document.getElementById('wall');
+  /* Every way out of the page, the face included, drops the wall first and
+     leaves when it covers. The main site is told to start under it. */
+  const leave = href => {
+    if (!wall || still){ location.href = href; return; }
+    try { sessionStorage.setItem('wallIn', '1'); } catch (e) {}
+    wall.classList.add('down');
+    setTimeout(() => { location.href = href; }, 560);
+  };
+  addEventListener('pageshow', e => { if (e.persisted && wall) wall.classList.remove('down'); });
   if (nav){
+    nav.querySelectorAll('.tn-drop a').forEach(a => a.addEventListener('click', e => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+      e.preventDefault(); leave(a.getAttribute('href'));
+    }));
     const face = document.getElementById('tnFace');
     const touchy = matchMedia('(hover: none)').matches;
     if (!touchy){
@@ -81,7 +95,7 @@
       nav.addEventListener('pointerleave', () => nav.classList.remove('open'));
       nav.addEventListener('focusin', () => nav.classList.add('open'));
       nav.addEventListener('focusout', e => { if (!nav.contains(e.relatedTarget)) nav.classList.remove('open'); });
-      face.addEventListener('click', () => { location.href = '../index.html'; });
+      face.addEventListener('click', () => leave('../index.html'));
     } else {
       const set = o => { nav.classList.toggle('dropped', o); face.setAttribute('aria-expanded', o ? 'true' : 'false'); };
       face.addEventListener('click', () => set(!nav.classList.contains('dropped')));
