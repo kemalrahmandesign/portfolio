@@ -1,0 +1,80 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+const P=new URLSearchParams(location.search);
+const W=+P.get('w')||1920,H=+P.get('h')||1080;
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true,alpha:false});
+renderer.setPixelRatio(1);renderer.setSize(W,H);
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+const pmrem=new THREE.PMREMGenerator(renderer);
+scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
+scene.environmentIntensity=0.9;
+const bg=document.createElement('canvas');bg.width=W;bg.height=H;const g=bg.getContext('2d');
+let gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#16120f');gr.addColorStop(1,'#070605');g.fillStyle=gr;g.fillRect(0,0,W,H);
+gr=g.createRadialGradient(W/2,H*0.5,0,W/2,H*0.5,H*0.75);gr.addColorStop(0,'rgba(255,120,30,0.22)');gr.addColorStop(0.45,'rgba(255,100,20,0.07)');gr.addColorStop(1,'rgba(0,0,0,0)');
+g.fillStyle=gr;g.fillRect(0,0,W,H);
+// subtle grain to avoid banding
+const id=g.getImageData(0,0,W,H);for(let i=0;i<id.data.length;i+=4){const n=(Math.random()-0.5)*4;id.data[i]+=n;id.data[i+1]+=n;id.data[i+2]+=n;}g.putImageData(id,0,0);
+const bgt=new THREE.CanvasTexture(bg);bgt.colorSpace=THREE.SRGBColorSpace;scene.background=bgt;
+const camera=new THREE.PerspectiveCamera(30,W/H,0.01,100);
+// key + rim lights
+const key=new THREE.DirectionalLight(0xffffff,1.5);key.position.set(3,4,5);scene.add(key);
+const rim=new THREE.DirectionalLight(0xff8a2a,3.0);rim.position.set(-4,1,-3);scene.add(rim);
+const rim2=new THREE.DirectionalLight(0xffb070,1.5);rim2.position.set(4,-1,-3);scene.add(rim2);
+
+const dl=new DRACOLoader().setDecoderPath('./node_modules/three/examples/jsm/libs/draco/gltf/');
+const gltf=await new GLTFLoader().setDRACOLoader(dl).loadAsync('./iphone15.glb');
+const phone=gltf.scene;
+const box=new THREE.Box3().setFromObject(phone);
+const size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+window.info={size:size.toArray(),center:center.toArray()};
+phone.position.sub(center);
+phone.rotation.y=Math.PI;phone.position.applyAxisAngle(new THREE.Vector3(0,1,0),Math.PI);
+const pivot=new THREE.Group();pivot.add(phone);scene.add(pivot);
+const s=1/Math.max(size.x,size.y,size.z);pivot.scale.setScalar(s);
+
+let screen=null;
+phone.traverse(o=>{if(o.isMesh&&o.name==='xXDHkMplTIDAXLN')screen=o;});
+const tex=new THREE.Texture();tex.colorSpace=THREE.SRGBColorSpace;tex.flipY=false;tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(1,-1);tex.offset.set(0,1);
+tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+screen.material=new THREE.MeshBasicMaterial({map:tex,toneMapped:false});
+const loader=new THREE.ImageBitmapLoader();loader.setOptions({imageOrientation:'none'});
+const cache={};
+async function setFrame(i){
+  const url=P.get('test')?'./uvtest.png':`./frames/${String(i).padStart(3,'0')}.jpg`;
+  const bmp=cache[url]||(cache[url]=await loader.loadAsync(url));
+  tex.image=bmp;tex.needsUpdate=true;
+}
+// ground shadow-ish glow
+window.render=async(t,frame,cam)=>{
+  await setFrame(frame);
+  pivot.rotation.set(cam.rx,cam.ry,cam.rz);
+  pivot.position.set(cam.px||0,cam.py||0,0);
+  camera.position.set(0,0,cam.dist);camera.lookAt(0,0,0);
+  camera.updateProjectionMatrix();
+  renderer.render(scene,camera);
+  return renderer.domElement.toDataURL('image/png');
+};
+const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ac=acc.getContext('2d');
+window.renderBlur=async(frame,cams)=>{
+  await setFrame(frame);
+  ac.globalAlpha=1;ac.clearRect(0,0,W,H);
+  cams.forEach((cam,k)=>{
+    pivot.rotation.set(cam.rx,cam.ry,cam.rz);pivot.position.set(cam.px||0,cam.py||0,0);
+    camera.position.set(0,0,cam.dist);camera.lookAt(0,0,0);
+    renderer.render(scene,camera);
+    ac.globalAlpha=1/(k+1);ac.drawImage(renderer.domElement,0,0);
+  });
+  return acc.toDataURL('image/jpeg',0.96);
+};
+window.ready=true;
+</script></body></html>
