@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kemal Rahman</title>
+<link rel="icon" href="media/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="media/favicon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500;700&family=Kaushan+Script&display=swap" rel="stylesheet">
@@ -1054,7 +1057,8 @@ h1{
    A sticky viewport-height stage the reel grows inside. Scroll position
    through the tall parent drives --grow, so the clip opens from the bottom
    centre and finishes full frame, shedding its radius on the way.
-   Placeholder until the real montage exists. */
+   The reel inside is media/reel.mp4 (webm for browsers without H.264), cover-
+   cropped, so everything that has to be read sits in its middle 80%. */
 /* Out of the work column and across the whole window.
 
    Negating the padding was not enough: .work is capped at --stage-max and
@@ -1107,7 +1111,11 @@ h1{
   color:#8d8b87;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
   will-change:width,transform;
 }
-.montage-frame video,.montage-frame img{width:100%;height:100%;object-fit:cover;display:block}
+/* Pinned to the frame rather than sized by it. The frame is a centring grid,
+   and a percentage-sized video in an auto grid track contributes no size of
+   its own, so in flow it collapsed to 0x0 and never counted as on screen. */
+.montage-frame{position:relative}
+.montage-frame video,.montage-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 
 /* ---------- what a prop opens ---------- */
 /* display:grid beats the hidden attribute, so it has to be restated: the
@@ -1369,7 +1377,13 @@ html.cursored,html.cursored *{cursor:none !important}
 
   <section class="montage" id="reel">
     <div class="montage-stage">
-      <div class="montage-frame" id="montageFrame">Montage goes here</div>
+      <div class="montage-frame" id="montageFrame">
+        <video id="reelVideo" muted loop playsinline preload="metadata" poster="media/reel-poster.jpg"
+               aria-label="Selected work, 2024 to 2026: Vanta, Loco Exotics, Flowerbx, Osmosis, G-Force and Polaris">
+          <source src="media/reel.mp4" type="video/mp4">
+          <source src="media/reel.webm" type="video/webm">
+        </video>
+      </div>
     </div>
   </section>
 
@@ -1837,6 +1851,10 @@ html.cursored,html.cursored *{cursor:none !important}
     document.documentElement.classList.add('scrolls');
     heroShell.style.display = 'none';
     cover.classList.remove('take');
+    /* hardCut() raises the cover with an inline opacity, which beats the
+       .clear rule: without this the page was revealed underneath a cover
+       that never lifted, a blank white screen. */
+    cover.style.opacity = '';
     cover.classList.add('clear');
     window.scrollTo(0, 0);
   }
@@ -2584,6 +2602,16 @@ html.cursored,html.cursored *{cursor:none !important}
   }
   addEventListener('scroll', growMontage, { passive: true });
   addEventListener('resize', growMontage);
+
+  /* The reel plays only while it is on screen, and not at all for anyone who
+     asked for less motion: they get the poster, which is the reel's title card.
+     It loops seamlessly, so pausing and resuming never shows a seam. */
+  const reel = document.getElementById('reelVideo');
+  if (reel && !reduced){
+    new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) reel.play().catch(() => {}); else reel.pause();
+    }), { threshold: 0.25 }).observe(reel);
+  }
 
 
   cta.addEventListener('click', enter);

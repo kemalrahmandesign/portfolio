@@ -1,0 +1,114 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+const P=new URLSearchParams(location.search);
+const W=+P.get('w')||1920,H=+P.get('h')||1080;
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(1);renderer.setSize(W,H);
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+const pmrem=new THREE.PMREMGenerator(renderer);
+scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;scene.environmentIntensity=0.8;
+// background
+const bg=document.createElement('canvas');bg.width=W;bg.height=H;const g=bg.getContext('2d');
+let gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#16120f');gr.addColorStop(1,'#070605');g.fillStyle=gr;g.fillRect(0,0,W,H);
+gr=g.createRadialGradient(W/2,H*0.5,0,W/2,H*0.5,H*0.8);gr.addColorStop(0,'rgba(255,130,40,0.20)');gr.addColorStop(0.45,'rgba(255,100,20,0.06)');gr.addColorStop(1,'rgba(0,0,0,0)');
+g.fillStyle=gr;g.fillRect(0,0,W,H);
+const id=g.getImageData(0,0,W,H);for(let i=0;i<id.data.length;i+=4){const n=(Math.random()-0.5)*4;id.data[i]+=n;id.data[i+1]+=n;id.data[i+2]+=n;}g.putImageData(id,0,0);
+const bgt=new THREE.CanvasTexture(bg);bgt.colorSpace=THREE.SRGBColorSpace;scene.background=bgt;
+const camera=new THREE.PerspectiveCamera(28,W/H,0.1,200);
+const key=new THREE.DirectionalLight(0xffffff,1.6);key.position.set(5,8,6);scene.add(key);
+const rim=new THREE.DirectionalLight(0xff8a2a,2.5);rim.position.set(-6,3,-6);scene.add(rim);
+const rim2=new THREE.DirectionalLight(0xffb070,1.2);rim2.position.set(6,1,-5);scene.add(rim2);
+
+const dl=new DRACOLoader().setDecoderPath('./node_modules/three/examples/jsm/libs/draco/gltf/');
+const gltf=await new GLTFLoader().setDRACOLoader(dl).loadAsync('./mbp16.glb');
+const mac=gltf.scene;mac.updateMatrixWorld(true);
+const img=await new THREE.ImageBitmapLoader().setOptions({imageOrientation:'flipY'}).loadAsync(P.get('img')||'./polaris.png');
+const tex=new THREE.Texture(img);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=renderer.capabilities.getMaxAnisotropy();tex.needsUpdate=true;
+window.info=[];
+mac.traverse(o=>{if(o.isMesh){const bb=new THREE.Box3().setFromObject(o);window.info.push([o.name,o.material.name,bb.min.toArray().map(v=>+v.toFixed(3)),bb.max.toArray().map(v=>+v.toFixed(3))]);
+  if(o.name==='Object_123'){o.material=new THREE.MeshBasicMaterial({map:tex,toneMapped:false});window.screenMesh=o;}}});
+// Space Black finish: darken the light aluminium materials
+window.tinted=[];
+{const seen=new Set();mac.traverse(o=>{if(o.isMesh&&o!==window.screenMesh&&!seen.has(o.material)){seen.add(o.material);const m=o.material,cl=m.color;
+  if(cl&&cl.r>0.45&&cl.g>0.45&&cl.b>0.45&&P.get('silver')==null){window.tinted.push(m.name);cl.set(0x2e2c2e);if(m.roughness!==undefined)m.roughness=Math.max(m.roughness,0.38);}}});}
+// ---- split lid from base at the hinge ----
+const HZ=+(P.get('hz')||-12.6), HY=+(P.get('hy')||-0.2), YT=0.8, ZT=-13.1;
+const baseG=new THREE.Group(), lid=new THREE.Group(); lid.position.set(0,HY,HZ);
+const meshes=[];mac.traverse(o=>{if(o.isMesh)meshes.push(o);});
+for(const o of meshes){
+  let g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();
+  g.applyMatrix4(o.matrixWorld);
+  const pos=g.attributes.position, n=pos.count/3;
+  const lidTris=[],baseTris=[];
+  for(let t=0;t<n;t++){let cy=0,cz=0;for(let k=0;k<3;k++){cy+=pos.getY(t*3+k);cz+=pos.getZ(t*3+k);}cy/=3;cz/=3;
+    ((cy>YT)?lidTris:baseTris).push(t);}
+  const make=(tris)=>{const ng=new THREE.BufferGeometry();
+    for(const name in g.attributes){const at=g.attributes[name],isz=at.itemSize,arr=new at.array.constructor(tris.length*3*isz);
+      tris.forEach((t,i)=>{for(let k=0;k<3*isz;k++)arr[i*3*isz+k]=at.array[t*3*isz+k];});
+      ng.setAttribute(name,new THREE.BufferAttribute(arr,isz,at.normalized));}
+    return ng;};
+  if(baseTris.length){const m=new THREE.Mesh(make(baseTris),o.material);m.name=o.name;baseG.add(m);}
+  if(lidTris.length){const lg=make(lidTris);lg.translate(0,-HY,-HZ);const m=new THREE.Mesh(lg,o.material);m.name=o.name;lid.add(m);if(o===window.screenMesh)window.screenMesh=m;}
+}
+const model=new THREE.Group();model.add(baseG);model.add(lid);
+const box=new THREE.Box3().setFromObject(model);const c=new THREE.Box3().setFromObject(baseG).getCenter(new THREE.Vector3());
+const S=0.25;model.scale.setScalar(S);model.position.set(-c.x*S,-box.min.y*S,-c.z*S);
+const pivot=new THREE.Group();pivot.add(model);scene.add(pivot);
+const CLOSED=1.93;
+// measure where the closed lid lands (in model units) and compute a flush offset
+lid.rotation.x=CLOSED;model.updateMatrixWorld(true);
+const lb=new THREE.Box3().setFromObject(window.screenMesh,true);
+const bb=new THREE.Box3().setFromObject(baseG,true);
+// in world units (scaled); convert back to model units
+const off=new THREE.Vector3(0,(bb.max.y-lb.min.y)/S+(+(P.get("gap")||-0.7)),(bb.max.z-0.6*S-lb.max.z)/S);
+window.closeInfo={lid:[lb.min.toArray(),lb.max.toArray()],base:[bb.min.toArray(),bb.max.toArray()],off:off.toArray()};
+// hinge bar across the back, shown only when the lid is (nearly) closed
+lid.position.set(0,HY+off.y,HZ+off.z);model.updateMatrixWorld(true);
+const lidAll=new THREE.Box3().setFromObject(lid,true);
+const barH=lidAll.max.y-(bb.max.y-0.12), barD=0.34;
+const bar=new THREE.Mesh(new THREE.BoxGeometry(7.3,barH,barD),new THREE.MeshStandardMaterial({color:0x1a191b,metalness:0.7,roughness:0.45}));
+bar.position.set(0,(bb.max.y-0.12)+barH/2,bb.min.z+barD/2+0.02);pivot.add(bar);window.bar=bar;
+window.closeInfo.bar=[barH,bar.position.toArray(),lidAll.max.toArray()];
+{const C=Math.cos(CLOSED),Sn=Math.sin(CLOSED),d=(1-C)*(1-C)+Sn*Sn;
+ const py=((1-C)*off.y - Sn*off.z)/d, pz=(Sn*off.y + (1-C)*off.z)/d;
+ const inner=new THREE.Group();inner.position.set(0,-py,-pz);
+ [...lid.children].forEach(ch=>inner.add(ch));lid.add(inner);
+ lid.position.set(0,HY+py,HZ+pz);window.closeInfo.hinge=[HY+py,HZ+pz];}
+lid.rotation.x=0;
+window.setLid=(a)=>{lid.rotation.x=a;window.bar.visible=a>1.75;}; // lid's modelled open angle is the reference (lid param 0 = as modelled)
+const accC=document.createElement('canvas');accC.width=W;accC.height=H;const ac=accC.getContext('2d');
+window.renderBlur=async(cams)=>{
+  ac.globalAlpha=1;ac.clearRect(0,0,W,H);
+  cams.forEach((s,k)=>{
+    window.setLid(s.lid);
+    // screen brightness ramps up as it opens
+    window.screenMesh.material.color.setScalar(s.glow);
+    pivot.rotation.set(s.rx,s.ry,0);pivot.position.set(0,s.py||0,0);
+    camera.position.set(0,s.cy,s.dist);camera.lookAt(0,s.ly,s.lz||0);
+    renderer.render(scene,camera);
+    ac.globalAlpha=1/(k+1);ac.drawImage(renderer.domElement,0,0);
+  });
+  return accC.toDataURL('image/jpeg',0.96);
+};
+{window.setLid(0);pivot.rotation.set(0,0,0);pivot.updateMatrixWorld(true);
+ const g=window.screenMesh.geometry,pos=g.attributes.position,mw=window.screenMesh.matrixWorld,v=new THREE.Vector3();
+ let mn=new THREE.Vector3(1e9,1e9,1e9),mx=new THREE.Vector3(-1e9,-1e9,-1e9);const pts=[];
+ for(let i=0;i<pos.count;i++){v.fromBufferAttribute(pos,i).applyMatrix4(mw);mn.min(v);mx.max(v);pts.push(v.clone());}
+ // plane normal from the extreme points: bottom edge (min y) and top edge (max y)
+ const lo=pts.reduce((a,p)=>p.y<a.y?p:a),hi=pts.reduce((a,p)=>p.y>a.y?p:a);
+ const up=new THREE.Vector3(0,hi.y-lo.y,hi.z-lo.z);const len=up.length();up.normalize();
+ const n=new THREE.Vector3(1,0,0).cross(up).normalize(); // points toward the viewer (+z-ish)
+ if(n.z<0)n.negate();
+ const c=new THREE.Vector3((mn.x+mx.x)/2,(lo.y+hi.y)/2,(lo.z+hi.z)/2);
+ window.screenInfo={center:c.toArray(),normal:n.toArray(),width:mx.x-mn.x,height:len};}
+window.ready=true;
+</script></body></html>

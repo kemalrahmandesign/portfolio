@@ -189,3 +189,15 @@ would spin with him.
 with no board, 30 credits. The board is then built in code, which is free,
 reads as silver without a chrome texture at this size, and can be spun, popped
 and scraped on its own.
+
+## reel.mp4, reel.webm, reel-poster.jpg
+
+The montage in the `#reel` section. 1920x1080, 60fps, 14.97s, silent, and it
+loops without a seam. `reel.mp4` is H.264 at CRF 21 (8.4 MB); `reel.webm` is
+VP9 at CRF 34 (6.2 MB) for browsers without H.264, which includes the
+Playwright Chromium the tests run in. The poster is the reel's title card
+("Selected work" over the Vanta window) and is all a visitor who asked for
+reduced motion sees.
+
+It plays only while the frame is on screen and pauses when it leaves. The edit,
+the shot list and how to rebuild it are in `montage/README.md`.

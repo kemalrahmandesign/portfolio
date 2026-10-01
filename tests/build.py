@@ -37,6 +37,7 @@ n = html.count(".mp4'")
 html = html.replace(".mp4'", ".webm'")
 
 os.makedirs(MEDIA, exist_ok=True)
+shutil.copy(os.path.join(ROOT, 'favicon.ico'), SITE)
 open(os.path.join(SITE, 'index.html'), 'w').write(html)
 shutil.copytree(os.path.join(ROOT, 'tests', 'fonts'), os.path.join(SITE, 'fonts'), dirs_exist_ok=True)
 shutil.copytree(os.path.join(ROOT, 'vendor'), os.path.join(SITE, 'vendor'), dirs_exist_ok=True)
