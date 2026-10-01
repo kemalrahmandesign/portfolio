@@ -2700,7 +2700,9 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       if (n) tl.fromTo(n, { opacity: 0, scale: 0.3, rotation: -30 },
         { opacity: 0.8, scale: 1, rotation: -6, duration: 0.8, ease: 'back.out(3)' }, '-=0.5');
     };
-    arm(); onView(h, 0.6, play, arm);
+    /* The work title is meant to be seen peeking under the montage, so it
+       plays as soon as a sliver is on screen. */
+    arm(); onView(h, h.closest('#cases') ? 0.03 : 0.6, play, arm);
   });
 
   /* ---- experience: cards on a spring ----
