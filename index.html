@@ -567,7 +567,7 @@ h1{
 .prop-curls{
   position:absolute;inset:0;width:100%;height:100%;overflow:visible;
   pointer-events:none;
-  stroke:rgba(10,10,10,.5);stroke-width:1.7;fill:none;
+  stroke:rgba(10,10,10,.5);stroke-width:2.1;fill:none;
   stroke-linecap:round;stroke-linejoin:round;
 }
 /* Hidden outright while off, not only by the dash. Each line starts at a
@@ -2050,11 +2050,11 @@ html.wall-in #wall{transform:translateY(0);transition:none}
        tag  [x, y]         where the writing sits
        curl  path in a 0..1 box from the tag toward the object */
   const PROPS = [
-    { k:'moto',  label:'ka chow',        hit:[24.8, 56.9, 26, 30], tag:[14.1, 46.2], tilt:-5, bow: .50 },
-    { k:'skis',  label:'powder plower',  hit:[39.7, 41.8,  5, 33], tag:[30.0, 35.3], tilt:-3, bow:-.44 },
-    { k:'gtr',   label:'reverb + loops', hit:[69.2, 52.1,  8, 19], tag:[71.4, 32.4], tilt:-2, bow: .42 },
-    { k:'ball',  label:'goaaaaaaal',     hit:[94.2, 85.4,  6,  5], tag:[84.5, 65.0], tilt:-4, bow: .38 },
-    { k:'board', label:'do a kickflip',  hit:[19.9, 93.2, 15,  8], tag:[30.9, 92.9], tilt:-2, bow: .40 },
+    { k:'moto',  label:'ka chow',        hit:[22.2, 74.4, 28.9, 37.5], tag:[14.1, 46.2], tilt:-5, bow: .50 },
+    { k:'skis',  label:'powder plower',  hit:[40.6, 56.1,  5.0, 38.0], tag:[31.9, 34.9], tilt:-3, bow:-.44 },
+    { k:'gtr',   label:'reverb + loops', hit:[67.9, 63.0,  8.0, 38.0], tag:[71.4, 32.4], tilt:-2, bow: .42 },
+    { k:'ball',  label:'goaaaaaaal',     hit:[92.3, 86.9,  6.0, 10.0], tag:[90.0, 67.9], tilt:-4, bow: .38 },
+    { k:'board', label:'do a kickflip',  hit:[14.7, 90.4, 18.0,  8.0], tag:[30.9, 92.9], tilt:-2, bow: .40 },
   ];
 
   const props = document.getElementById('props');
@@ -2174,8 +2174,14 @@ html.wall-in #wall{transform:translateY(0);transition:none}
          run's own length stops a short run being consumed by its own
          endpoint. */
       const ra = Math.max(1, w / 2), rb = Math.max(1, h / 2);
-      const rdir = 1 / Math.hypot(aimx / ra, aimy / rb);
-      const stop = Math.min(rdir, L * 0.30);
+      /* The hotspot is the object's own outline, a rectangle, so the distance
+         to stop at is to that rectangle's edge along the approach, not to an
+         ellipse inscribed in it: the corners of the box are still object. */
+      const rdir = Math.min(ra / Math.max(Math.abs(aimx), 1e-6), rb / Math.max(Math.abs(aimy), 1e-6));
+      /* Stops a little OUTSIDE the object's outline, not on it: the arrow
+         points at the thing from the white space around it. */
+      const gap = size * 0.5;
+      const stop = Math.min(rdir + gap, L * 0.88);
       const tx = ex - aimx * stop, ty = ey - aimy * stop;
       vx = tx - sx; vy = ty - sy;
       const nx = -aimy, ny = aimx;                      // unit normal
@@ -2196,7 +2202,12 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       const ux = aimx, uy = aimy;
       /* The loop and the head shrink on a short run rather than crowding out
          the curve they are supposed to decorate. */
-      const trim = Math.min(1, L / 200);
+      /* Scaled by the run actually available between the writing and the
+         object's edge, not by the distance to its centre: a label tucked right
+         against its object has only a short run, and a full-size loop and head
+         there swing back over the writing and onto the object. */
+      const avail = Math.hypot(tx - sx, ty - sy);
+      const trim = Math.min(1, avail / 230);
       const head = Math.max(8, size * 0.50 * trim);
       const A = 0.46;                    // half the head's spread, radians
       const cosA = Math.cos(A), sinA = Math.sin(A);
@@ -2210,36 +2221,46 @@ html.wall-in #wall{transform:translateY(0);transition:none}
          swoop, curl, arrive: which is how the reference draws it, and is
          also what a hand does when it doubles back before pointing. */
       const lr = Math.max(8, size * 0.72 * trim);
-      /* Far enough back that the loop and the head read as two marks rather
-         than as one knot: two radii of loop plus a head and a bit. */
-      const back = lr * 2 + head * 1.5;
+      /* The loop is a prolate trochoid: the path a pen draws when it rolls
+         forward while circling. It leaves and rejoins the line travelling
+         straight along it, with no corner at either end, and crosses itself
+         once in between, which is the hand-drawn doubling back. `R` is the
+         loop's radius and `cc` how far it creeps forward per radian; cc < R is
+         what makes it cross. */
+      const R = lr * 0.8, cc = R * 0.5;
+      const adv = 2 * Math.PI * cc;               // how far along the line the loop takes
+      /* Far enough back that the loop clears the head with room to spare. */
+      const back = adv + head * 1.6;
       const lx = tx - aimx * back, ly = ty - aimy * back;
-      // the main curve now finishes at the loop rather than at the tip
-      const k1x = sx + vx * .34 + nx * b, k1y = sy + vy * .34 + ny * b;
-      const k2x = lx - aimx * L * .22,    k2y = ly - aimy * L * .22;
-      /* The loop has to CROSS itself. An arc that returns near where it
-         started reads as a bead threaded on the line, which is what the last
-         two attempts drew; the reference is a hand doubling back over its
-         own stroke, and the crossing is the whole character of it.
-
-         So it is written as two cubics in the line's own frame: `a` runs
-         along the direction of travel, `o` runs across it. The first swings
-         forward and up and over, the second comes back down and behind the
-         entry point, and the straight run to the tip then passes through the
-         first one. That intersection is the cross. */
-      const sg = b >= 0 ? 1 : -1;
-      const P = (a, o) => `${(lx + aimx * a * lr + nx * o * lr * sg).toFixed(1)},` +
-                          `${(ly + aimy * a * lr + ny * o * lr * sg).toFixed(1)}`;
+      // the main curve finishes where the loop starts
+      /* The bow and the approach are sized by the run actually drawn, not by
+         the distance to the object's centre. Sized by the centre they were
+         several times too big for a short run and flung the first control
+         point out sideways, which is the sharp flick at the start. */
+      const bb = (d.bow || .28) * avail;
+      const k1x = sx + vx * .34 + nx * bb, k1y = sy + vy * .34 + ny * bb;
+      const k2x = lx - aimx * avail * .22, k2y = ly - aimy * avail * .22;
+      const sg = bb >= 0 ? 1 : -1;
+      const noLoop = avail < 56;
+      let pd = `M${sx.toFixed(1)},${sy.toFixed(1)} ` +
+        `C${k1x.toFixed(1)},${k1y.toFixed(1)} ${k2x.toFixed(1)},${k2y.toFixed(1)} ${lx.toFixed(1)},${ly.toFixed(1)}`;
+      const N = noLoop ? 0 : 40;
+      for (let i = 1; i <= N; i++){
+        const th = (i / N) * Math.PI * 2;
+        const pa = cc * th + R * Math.sin(th), po = R * (1 - Math.cos(th));
+        pd += ` L${(lx + aimx * pa + nx * po * sg).toFixed(1)},${(ly + aimy * pa + ny * po * sg).toFixed(1)}`;
+      }
+      if (noLoop){
+        /* A single bowed stroke into the object, still arriving along the aim. */
+        const e1x = sx + (tx - sx) * .3 + nx * (d.bow || .28) * avail * .5, e1y = sy + (ty - sy) * .3 + ny * (d.bow || .28) * avail * .5;
+        const e2x = tx - aimx * avail * .35,           e2y = ty - aimy * avail * .35;
+        pd = `M${sx.toFixed(1)},${sy.toFixed(1)} C${e1x.toFixed(1)},${e1y.toFixed(1)} ${e2x.toFixed(1)},${e2y.toFixed(1)} ${tx.toFixed(1)},${ty.toFixed(1)}`;
+      } else {
+        pd += ` L${tx.toFixed(1)},${ty.toFixed(1)}`;
+      }
       path.setAttribute('d',
-        `M${sx.toFixed(1)},${sy.toFixed(1)} ` +
-        `C${k1x.toFixed(1)},${k1y.toFixed(1)} ${k2x.toFixed(1)},${k2y.toFixed(1)} ` +
-        `${lx.toFixed(1)},${ly.toFixed(1)} ` +
-        `C${P(1.2, 0)} ${P(1.9, 1.1)} ${P(1.0, 1.7)} ` +
-        `C${P(0.1, 2.3)} ${P(-0.9, 1.2)} ${P(-0.2, 0.3)} ` +
-        `L${tx.toFixed(1)},${ty.toFixed(1)} ` +
-        `M${b1x.toFixed(1)},${b1y.toFixed(1)} L${tx.toFixed(1)},${ty.toFixed(1)} ` +
+        pd + ` M${b1x.toFixed(1)},${b1y.toFixed(1)} L${tx.toFixed(1)},${ty.toFixed(1)} ` +
         `L${b2x.toFixed(1)},${b2y.toFixed(1)}`);
-      void c1x; void c1y; void c2x; void c2y;
       const len = path.getTotalLength();
       if (len) path.style.setProperty('--len', Math.ceil(len * 1.02));
     });

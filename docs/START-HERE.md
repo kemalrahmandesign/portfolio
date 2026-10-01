@@ -59,7 +59,16 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-**Session 4, polish pass after launch (latest).** CTA is now "Cool stuff".
+**Session 4, props pass (latest).** PROPS are Kemal's recalibrated numbers,
+then his box edits applied: bike taller (reaches its bottom) and wider, skis +15%
+down, guitar and ball doubled downward, board 20% wider. The squiggle was
+rebuilt: the loop is a smooth prolate trochoid (no corner where it rejoins the
+line), the bow and loop are sized by the run actually drawn (short runs flung
+the control point out and made a sharp flick), the arrow stops at the box
+RECTANGLE's edge plus a small gap so it stays in the white space, tiny runs
+get a single bowed stroke, and the stroke is 2.1 (was 1.7).
+
+**Session 4, polish pass after launch.** CTA is now "Cool stuff".
 Montage title gap is 48px (was 14, too close). Alexandria and Tokiwa cards
 use Kemal's images (`media/building/`), no "end to end" line. Polaris images
 are Kemal's replacements (`media/polaris/`: home, a crop of home for the news
