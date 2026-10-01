@@ -109,7 +109,7 @@ he waves you in.
   the generations do. Kemal can drop the files into the chat.
 - **The prop arrows** still need work. Kemal's coordinates are in and correct;
   the geometry of the curl is what he is unhappy with.
-- **Real social URLs.** Every link in the hero is still `href="#"`. **Launch blocker.**
+- ~~Real social URLs~~ done: Instagram, LinkedIn, X and email, in the studio and under the contact form.
 - **CTA copy:** settled on "Come on in".
 - **The agency's name.** The experience list says "Own agency" because there is
   no name to put there yet.
