@@ -615,12 +615,24 @@ h1{
    arc exactly instead of approximately. */
 .underside{
   position:absolute;left:0;right:0;top:100%;height:52vh;
-  z-index:0;pointer-events:none;
+  z-index:0;pointer-events:none;overflow:hidden;
 }
+/* The studio again, upside down. It is the same picture at exactly the same
+   size as the stage above it, flipped about its middle, so the row of pixels
+   at the top of this copy is the row at the bottom of the hero: the seam is
+   invisible and the floor reads as reflecting into itself. It then dissolves
+   into the page tone, so there is no edge and no line under the video. */
+.u-flip{
+  position:absolute;left:0;top:0;width:100%;height:100svh;
+  object-fit:cover;object-position:center bottom;transform:scaleY(-1);
+  -webkit-mask-image:linear-gradient(to bottom,#000 0,#000 18%,transparent 100%);
+          mask-image:linear-gradient(to bottom,#000 0,#000 18%,transparent 100%);
+}
+@media (max-aspect-ratio:1/1),(min-aspect-ratio:2/1){ .u-flip{object-fit:contain;object-position:center center} }
 .underside svg{display:block;width:100%;height:100%}
-.underside .fill{fill:var(--ink)}
+.underside .fill{fill:none}
 .underside text{
-  fill:#fff;font-family:var(--font-display);font-weight:700;
+  fill:rgba(10,10,10,.72);font-family:var(--font-display);font-weight:700;
   letter-spacing:-.01em;
 }
 
@@ -1094,9 +1106,9 @@ h1{
      next section is pulled up underneath so its title is already showing in
      the strip below the frame, saying there is more. */
   /* --fh is the frame's final height. The next section is pulled up until
-     its title sits 48px under the frame. */
+     its title sits 104px under the frame. */
   --fh:min(53.4375vw, 90svh);
-  height:100svh;position:relative;margin-bottom:calc(-1 * (100svh - var(--fh) - 48px));
+  height:100svh;position:relative;margin-bottom:calc(-1 * (100svh - var(--fh) - 104px));
   width:var(--vw,100%);
   margin-left:calc((var(--vw,100%) - 100%) / -2);
   margin-right:calc((var(--vw,100%) - 100%) / -2);
@@ -1311,6 +1323,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
 </section>
 
   <div class="underside" id="underside" aria-hidden="true">
+    <img class="u-flip" id="uFlip" alt="">
     <svg preserveAspectRatio="none"><path class="fill"/><path id="arcpath" fill="none"/>
       <text><textPath href="#arcpath" startOffset="50%" text-anchor="middle"
         >there&rsquo;s nothing down here&hellip; but maybe click that button &#129300;</textPath></text>
@@ -1758,6 +1771,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     poster.onerror = () => stage.classList.add('is-empty');
     A.onerror = B.onerror = C.onerror = () => stage.classList.add('is-empty');
     poster.src = src(POSTER);
+    { const uf = document.getElementById('uFlip'); if (uf) uf.src = src(POSTER); }
     document.querySelectorAll('.social img, .hello-social img').forEach(
       img => { img.src = src('media/social-' + img.dataset.k + '.png'); });
     if (faceImg){

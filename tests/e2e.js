@@ -26,6 +26,8 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   const arc = await E(()=>{const u=document.getElementById('underside').getBoundingClientRect(),
     t=document.querySelector('#underside text').getBoundingClientRect();
     return {undersideOnScreen:u.top<innerHeight, textOnScreen:t.top<innerHeight&&t.width>0, textW:Math.round(t.width)};});
+  ok('the underside is the studio flipped upside down, melting into the page', (await E(()=>{const i=document.getElementById('uFlip'); const c=getComputedStyle(i);
+    return c.transform==='matrix(1, 0, 0, -1, 0, 0)' && (c.maskImage||c.webkitMaskImage||'').includes('gradient') && getComputedStyle(document.querySelector('.underside .fill')).fill==='none';})));
   ok('arc revealed', arc.undersideOnScreen && arc.textOnScreen, JSON.stringify(arc));
   ok('no sideways shift', (await E(()=>Math.round(document.querySelector('h1').getBoundingClientRect().left))) === x0);
   await p.waitForTimeout(400);
@@ -149,9 +151,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   await p.evaluate(()=>{const r=document.getElementById('reel'); scrollTo(0, r.getBoundingClientRect().top + scrollY - innerHeight*0.05);}); await p.waitForTimeout(300);
   const peek = await E(()=>{const t=document.querySelector('#cases .sec-title').getBoundingClientRect(); const f=document.getElementById('montageFrame').getBoundingClientRect();
     return {titleTop:Math.round(t.top), vh:innerHeight, frameBottom:Math.round(f.bottom), grow:+getComputedStyle(document.getElementById('montageFrame')).getPropertyValue('--grow')};});
-  await p.waitForTimeout(1500);
-  ok('the peeking title has actually appeared', (await E(()=>[...document.querySelectorAll('#cases .sec-title .w')].every(w=>+getComputedStyle(w).opacity>0.9))));
-  ok('Things I\u2019ve made peeks in under the montage at full size', peek.titleTop<peek.vh && peek.titleTop>=peek.frameBottom+30 && peek.grow>0.99, JSON.stringify(peek));
+  ok('Things I\u2019ve made sits a good way under the montage, not tight against it', peek.titleTop-peek.frameBottom>=80 && peek.grow>0.99, JSON.stringify(peek));
 
   // the reel: about and experience
   ok('about words keep their spaces', (await E(()=>
