@@ -192,9 +192,9 @@ and scraped on its own.
 
 ## reel.mp4, reel.webm, reel-poster.jpg
 
-The montage in the `#reel` section. 1920x1080, 60fps, 15.18s, silent, and it
-loops without a seam. `reel.mp4` is H.264 at CRF 21 (7.6 MB); `reel.webm` is
-VP9 at CRF 34 (5.6 MB) for browsers without H.264, which includes the
+The montage in the `#reel` section. 1920x1080, 60fps, 14.97s, silent, and it
+loops without a seam. `reel.mp4` is H.264 at CRF 21 (8.4 MB); `reel.webm` is
+VP9 at CRF 34 (6.2 MB) for browsers without H.264, which includes the
 Playwright Chromium the tests run in. The poster is the reel's title card
 ("Selected work" over the Vanta window) and is all a visitor who asked for
 reduced motion sees.

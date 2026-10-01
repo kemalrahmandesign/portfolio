@@ -34,7 +34,10 @@ async function bmp(k,i){const u=url(k,i);if(cache.has(u)){const v=cache.get(u);c
 const PS0={x:-23,y:-96,w:1966,h:1272,sx:0.983,sy:1.0209};
 const PS_T0={x:-23+0.983*990,y:-96+1.0209*227.5};      // "trade" in Polaris at the hand-off
 const OS_T={x:680,y:631};                               // "trade" in Osmosis hero
-const PS_F0=520,PS_F1=543,PS_ZEND=5.14,PS_L=Math.log(PS_ZEND);
+/* cut points, in edit frames */
+const A={VA:0,LA:72,FL1:108,OSA:138,GF:166,VC:263,PM:325,PS:460,OSB:478,FL2:562,VA2:662,LB:700};
+const LB_END=A.LB+134,VC2=LB_END-4,SH0=VC2+60,SH1=VC2+86;
+const PS_F0=A.PS,PS_F1=A.PS+23,PS_ZEND=5.14,PS_L=Math.log(PS_ZEND);
 function psState(f){const u=clamp((f-PS_F0)/(PS_F1-PS_F0));const z=Math.exp(PS_L*u);
   const vcE={x:PS_T0.x-(OS_T.x-960)/PS_ZEND,y:PS_T0.y-(OS_T.y-540)/PS_ZEND};
   const g=(1-1/z)/(1-1/PS_ZEND);const vc={x:lerp(960,vcE.x,g),y:lerp(540,vcE.y,g)};
@@ -46,51 +49,56 @@ const about=(s,p,q=p)=>({s,fx:p.x,fy:p.y,tx:q.x-p.x,ty:q.y-p.y});
 const punch=(f,a,amt=0.07,len=10,drift=0.02,dlen=40)=>({...id,s:1+amt*(1-outCubic(seg(f,a,a+len)))+drift*seg(f,a,a+dlen)});
 
 const SHOTS=[
- // 1. Vanta: off-white page, the window opens on the car (type sits on top)
- {k:'VA',a:0,b:72,map:pw([[0,0],[0.4,0.3],[1.2,1.3]]),xf:f=>({...id,s:1+0.03*seg(f,0,72)}),
+ // Vanta: off-white page, the window opens on the car (type sits on top)
+ {k:'VA',a:A.VA,b:A.LA,map:pw([[0,0],[0.4,0.3],[1.2,1.3]]),xf:f=>({...id,s:1+0.03*seg(f,0,72)}),
   alpha:f=>seg(f,18,26),filter:()=> 'brightness(1.02)'},
- // 2. Loco: the name lands
- {k:'LA',a:72,b:108,map:lt=>lt*1.63,xf:f=>punch(f,72)},
- // 3. Flowerbx: everything in season
- {k:'FL',a:108,b:138,map:lt=>0.3+lt*2,xf:f=>punch(f,108,0.06)},
- // 4. Osmosis, first half: dive into the hero, then keep diving
- {k:'OS',a:138,b:170,map:lt=>0.45+lt*2.25,xf:f=>about(1+0.6*inCubic(seg(f,160,170)),OS_T),blur:f=>f>=158?6:1},
- // 5. G-Force: pulled back out of the dive, then whipped off left
- {k:'GF',a:166,b:277,idx:f=>f-166+1,alpha:f=>seg(f,166,170),xf:f=>({...id,tx:-W*inOutCubic(seg(f,263,275))}),blur:f=>f<172||f>=262?8:1},
- // 6. Vanta: whipped in from the right, side profile into x-ray
- {k:'VC',a:263,b:325,map:lt=>0.1+lt,xf:f=>({...id,tx:W-W*inOutCubic(seg(f,263,275))}),blur:f=>f<276?8:1},
- // 7. Loco: the service gear, then into its dark centre
- {k:'LB',a:325,b:385,map:pw([[0,0.12],[0.667,1.5],[1.0,1.85]]),xf:f=>punch(f,325,0.08,10,0)},
- // 8. Polaris: half spin, lid opens, push into the screen
- {k:'PM',a:385,b:520,idx:f=>f-385+1,xf:f=>({...id,s:1+0.1*(1-outCubic(seg(f,385,397)))}),filter:f=>`brightness(${f<395?lerp(0.25,1.16,outCubic(seg(f,385,395))):lerp(1.16,1,seg(f,440,478))}) contrast(1.04)`,blur:f=>f<392||f>=500?6:1},
- // 9. Polaris screenshot: keep pushing, straight into "trade"
- {k:'PS',a:520,b:543,still:true,blur:()=>6},
- // 10. Osmosis, second half: "trade" hands over, then the swaps
- {k:'OS',a:538,b:622,map:lt=>1.95+(lt-5/60)*2.0,alpha:f=>seg(f,538,543),
-  xf:f=>{if(f<543){const st=psState(f);return about(1.5*st.z/PS_ZEND,OS_T,st.P);}return about(1+0.5*(1-outCubic(seg(f,543,559))),OS_T);},
-  filter:f=>f>=614?`brightness(${lerp(1,2.6,inCubic(seg(f,614,622)))}) saturate(${lerp(1,0.6,seg(f,614,622))})`:'none',blur:f=>f<556?6:1},
- // 11. Flowerbx: out of the white, close on the ranunculus
- {k:'FL',a:622,b:682,map:lt=>1.8+lt*1.2,xf:f=>({...id,s:1+0.03*seg(f,622,682)}),filter:f=>`brightness(${lerp(2.4,1,outCubic(seg(f,622,634)))})`},
- // 12. Vanta: the name, on black
- {k:'VA',a:682,b:718,map:lt=>1.40+lt*0.95,xf:f=>punch(f,682,0.07)},
- // 13. Loco: rotor reveal, then push into the disc
- {k:'LB',a:718,b:778,map:lt=>1.93+lt*1.22,xf:f=>about(1+(LB2_PUSH-1)*inCubic(seg(f,770,778)),ROTOR),blur:f=>f>=770?6:1},
- // 14. Vanta: out of the brake disc to the whole x-ray car
- {k:'VC',a:774,b:852,map:lt=>0.95+lt*1.2,alpha:f=>seg(f,774,778),
-  xf:f=>{const r=1-outQuart(seg(f,774,804));return {s:1+(VC2_S0-1)*r,fx:VCWHEEL.x,fy:VCWHEEL.y,tx:(ROTOR.x-VCWHEEL.x)*r,ty:(ROTOR.y-VCWHEEL.y)*r};},blur:f=>f<790?8:1},
+ // Loco: the name lands
+ {k:'LA',a:A.LA,b:A.FL1,map:lt=>lt*1.63,xf:f=>punch(f,A.LA)},
+ // Flowerbx: everything in season
+ {k:'FL',a:A.FL1,b:A.OSA,map:lt=>0.3+lt*2,xf:f=>punch(f,A.FL1,0.06)},
+ // Osmosis, first half: dive into the hero, then keep diving
+ {k:'OS',a:A.OSA,b:A.GF+4,map:lt=>0.45+lt*2.25,xf:f=>about(1+0.6*inCubic(seg(f,A.GF-6,A.GF+4)),OS_T),blur:f=>f>=A.GF-8?6:1},
+ // G-Force: pulled back out of the dive, then whipped off left
+ {k:'GF',a:A.GF,b:A.VC+14,idx:f=>f-A.GF+1,alpha:f=>seg(f,A.GF,A.GF+4),xf:f=>({...id,tx:-W*inOutCubic(seg(f,A.VC,A.VC+12))}),blur:f=>f<A.GF+6||f>=A.VC-1?8:1},
+ // Vanta: whipped in from the right, side profile into x-ray, then a dip to dark
+ {k:'VC',a:A.VC,b:A.PM,map:lt=>0.1+lt,xf:f=>({...id,tx:W-W*inOutCubic(seg(f,A.VC,A.VC+12))}),
+  filter:f=>f>=A.PM-8?`brightness(${lerp(1,0.15,inCubic(seg(f,A.PM-8,A.PM)))})`:'none',blur:f=>f<A.VC+13?8:1},
+ // Polaris: half spin, lid opens, push into the screen
+ {k:'PM',a:A.PM,b:A.PS,idx:f=>f-A.PM+1,xf:f=>({...id,s:1+0.1*(1-outCubic(seg(f,A.PM,A.PM+12)))}),
+  filter:f=>`brightness(${f<A.PM+10?lerp(0.25,1.16,outCubic(seg(f,A.PM,A.PM+10))):lerp(1.16,1,seg(f,A.PM+55,A.PM+93))}) contrast(1.04)`,blur:f=>f<A.PM+7||f>=A.PM+115?6:1},
+ // Polaris screenshot: keep pushing, straight into "trade"
+ {k:'PS',a:PS_F0,b:PS_F1,still:true,blur:()=>6},
+ // Osmosis, second half: "trade" hands over, then the swaps
+ {k:'OS',a:A.OSB,b:A.FL2,map:lt=>1.95+(lt-(PS_F1-A.OSB)/60)*2.0,alpha:f=>seg(f,A.OSB,PS_F1),
+  xf:f=>{if(f<PS_F1){const st=psState(f);return about(1.5*st.z/PS_ZEND,OS_T,st.P);}return about(1+0.5*(1-outCubic(seg(f,PS_F1,PS_F1+16))),OS_T);},
+  filter:f=>f>=A.FL2-8?`brightness(${lerp(1,2.6,inCubic(seg(f,A.FL2-8,A.FL2)))}) saturate(${lerp(1,0.6,seg(f,A.FL2-8,A.FL2))})`:'none',blur:f=>f<PS_F1+13?6:1},
+ // Flowerbx: out of the white, the long push through the field to the ranunculus
+ {k:'FL',a:A.FL2,b:A.VA2,map:lt=>1.0+lt*1.2,xf:f=>({...id,s:1+0.03*seg(f,A.FL2,A.VA2)}),filter:f=>`brightness(${lerp(2.4,1,outCubic(seg(f,A.FL2,A.FL2+12)))})`},
+ // Vanta: the name, from nothing to full, then cut
+ {k:'VA',a:A.VA2,b:A.LB,map:lt=>1.15+lt,xf:f=>punch(f,A.VA2,0.06)},
+ // Loco: one shot, gear through the full transition to the rotor and caliper, then a push into the disc
+ {k:'LB',a:A.LB,b:LB_END,map:pw([[0,0.12],[0.64,1.40],[1.64,2.40],[2.24,3.15]]),
+  xf:f=>f<A.LB+20?punch(f,A.LB,0.07,10,0):about(1+(LB2_PUSH-1)*inCubic(seg(f,LB_END-8,LB_END)),ROTOR),blur:f=>f>=LB_END-8?6:1},
+ // Vanta: out of the brake disc to the whole x-ray car, then it shrinks back into a window and is gone
+ {k:'VC',a:VC2,b:SH1+8,map:lt=>0.95+lt*1.2,alpha:f=>seg(f,VC2,VC2+4)*(1-seg(f,SH1+2,SH1+8)),
+  xf:f=>{if(f>=SH0){const k=shrinkK(f);return {s:k,fx:960,fy:540,tx:0,ty:0};}
+    const r=1-outQuart(seg(f,VC2,VC2+30));return {s:1+(VC2_S0-1)*r,fx:VCWHEEL.x,fy:VCWHEEL.y,tx:(ROTOR.x-VCWHEEL.x)*r,ty:(ROTOR.y-VCWHEEL.y)*r};},
+  clip:f=>{if(f<SH0)return null;const k=shrinkK(f),w=W*k,h=H*k;return {w,h,r:Math.min(h/2,28*seg(f,SH0,SH0+12))};},
+  blur:f=>f<VC2+16||f>=SH0?7:1},
 ];
-const EDIT_N=943;
-const WARP=[[172,262,1.3],[392,440,1.3]];           // [editFrom, editTo, speed]
+function shrinkK(f){return f<SH1?lerp(1,0.075,inOutCubic(seg(f,SH0,SH1))):lerp(0.075,0,inCubic(seg(f,SH1,SH1+8)));}
+const EDIT_N=SH1+14;
+const WARP=[[172,262,1.3],[A.PM+7,A.PM+55,1.3]];           // [editFrom, editTo, speed]
 const KN=(()=>{const k=[[0,0]];let o=0,e=0;for(const[a,b,sp]of WARP){o+=a-e;k.push([o,a]);o+=(b-a)/sp;k.push([o,b]);e=b;}o+=EDIT_N-e;k.push([o,EDIT_N]);return k;})();
 const toEdit=fo=>{for(let i=1;i<KN.length;i++)if(fo<=KN[i][0]){const[a,b]=[KN[i-1],KN[i]];return lerp(a[1],b[1],(fo-a[0])/(b[0]-a[0]));}return EDIT_N;};
 const N=Math.round(KN[KN.length-1][0]);
 const LABELS=[
- {a:186,b:258,name:'G-Force',kind:'iOS app'},
- {a:281,b:322,name:'Vanta',kind:'Exotic auto repair · Web'},
- {a:333,b:380,name:'Loco Exotics',kind:'Car repair · Web'},
- {a:430,b:500,name:'Polaris',kind:'Trading app · Product'},
- {a:566,b:612,name:'Osmosis',kind:'DEX · Product',y:190},
- {a:634,b:678,name:'Flowerbx',kind:'Florist · Demo',ink:true},
+ {a:A.GF+20,b:A.VC-5,name:'G-Force',kind:'iOS app'},
+ {a:A.VC+18,b:A.PM-3,name:'Vanta',kind:'Exotic auto repair · Web'},
+ {a:A.PM+45,b:A.PM+115,name:'Polaris',kind:'Trading app · Product'},
+ {a:A.OSB+28,b:A.OSB+74,name:'Osmosis',kind:'DEX · Product',y:190},
+ {a:A.FL2+12,b:A.VA2-6,name:'Flowerbx',kind:'Florist · Demo',ink:true},
+ {a:A.LB+8,b:A.LB+84,name:'Loco Exotics',kind:'Car repair · Web'},
 ];
 
 /* ---------- type ---------- */
@@ -123,19 +131,6 @@ function drawLabels(ctx,f){
     kinetic(ctx,[{t:l.name,font:'700 52px "Inter Tight"',ls:-1.5}],150,y,f,{fin:l.a,fout:l.b-14,st:0.9,dur:16,ost:0.5,odur:12,align:'left',color:c1,shadow:sh,down:0.3});
     kinetic(ctx,[{t:l.kind.toUpperCase(),font:'500 18px "JetBrains Mono"',ls:3.5}],153,y+41,f,{fin:l.a+4,fout:l.b-12,st:0.35,dur:14,ost:0.2,odur:10,align:'left',color:c2,shadow:sh});}
 }
-const OUT_A=838;
-function drawOutro(ctx,f){
-  if(f<OUT_A)return;
-  const p=inOutCubic(seg(f,OUT_A,OUT_A+14));ctx.fillStyle=BG;ctx.fillRect(0,H*(1-p),W,H*p+1);
-  kinetic(ctx,[{t:'One designer.',font:'800 150px "Inter Tight"',ls:-6}],960,478,f,{fin:OUT_A+8,fout:OUT_A+74,st:1.1,dur:18,ost:0.6,odur:14,color:INK});
-  kinetic(ctx,[{t:'Every ',font:'800 150px "Inter Tight"',ls:-6},{t:'discipline.',font:'italic 400 182px "Instrument Serif"',ls:-2}],960,640,f,{fin:OUT_A+16,fout:OUT_A+78,st:1.1,dur:18,ost:0.6,odur:14,color:INK});
-  // signature, written on
-  const wp=seg(f,OUT_A+34,OUT_A+60),wo=seg(f,OUT_A+76,OUT_A+88);
-  if(wp>0&&wo<1){ctx.save();ctx.translate(1235,742);ctx.rotate(-0.09);ctx.font='400 66px "Kaushan Script"';ctx.letterSpacing='0px';
-    const tw=ctx.measureText('Kemal Rahman').width;ctx.beginPath();ctx.rect(-8,-80,(tw+16)*inOutCubic(wp),120);ctx.clip();
-    ctx.globalAlpha=1-wo;ctx.fillStyle=INK;ctx.fillText('Kemal Rahman',0,-30*inCubic(wo)*0);ctx.restore();}
-}
-
 /* ---------- compose one instant ---------- */
 const work=document.createElement('canvas');work.width=W;work.height=H;const wc=work.getContext('2d');
 const outC=document.getElementById('out'),oc=outC.getContext('2d');
@@ -150,15 +145,16 @@ function compose(ctx,f,pairs){
     const a=s.alpha?s.alpha(f):1;if(a<=0)continue;
     ctx.save();ctx.globalAlpha=a;const fl=s.filter?s.filter(f):'none';if(fl&&fl!=='none')ctx.filter=fl;
     if(s.still){const st=psState(f);ctx.translate(960,540);ctx.scale(st.z,st.z);ctx.translate(-st.vc.x,-st.vc.y);ctx.drawImage(b,PS0.x,PS0.y,PS0.w,PS0.h);}
-    else{const x=s.xf?s.xf(f):id;ctx.translate(x.fx+x.tx,x.fy+x.ty);ctx.scale(x.s,x.s);ctx.translate(-x.fx,-x.fy);
+    else{const c=s.clip?s.clip(f):null;if(c){ctx.beginPath();ctx.roundRect(960-c.w/2,540-c.h/2,c.w,c.h,c.r);ctx.clip();}
+      const x=s.xf?s.xf(f):id;ctx.translate(x.fx+x.tx,x.fy+x.ty);ctx.scale(x.s,x.s);ctx.translate(-x.fx,-x.fy);
       const sc=Math.max(W/b.width,H/b.height),dw=b.width*sc,dh=b.height*sc;ctx.drawImage(b,(W-dw)/2,(H-dh)/2,dw,dh);}
     ctx.restore();}
-  drawIntro(ctx,f);drawLabels(ctx,f);drawOutro(ctx,f);
+  drawIntro(ctx,f);drawLabels(ctx,f);
 }
 function blurN(f){let n=1;for(const s of active(f))if(s.blur)n=Math.max(n,s.blur(f));return n;}
 window.N=N;
-window.renderFrame=async(fo,q=0.95)=>{
-  const f=toEdit(fo);const n=blurN(f);const ts=n===1?[f]:Array.from({length:n},(_,k)=>toEdit(fo+((k+0.5)/n-0.5)*SHUTTER));
+window.renderFrame=async(fo,q=0.95,edit=false)=>{
+  const map=edit?(x=>x):toEdit;const f=map(fo);const n=blurN(f);const ts=n===1?[f]:Array.from({length:n},(_,k)=>map(fo+((k+0.5)/n-0.5)*SHUTTER));
   oc.globalAlpha=1;oc.clearRect(0,0,W,H);
   for(let k=0;k<ts.length;k++){const t=Math.max(0,ts[k]);const pairs=await need(t);compose(wc,t,pairs);oc.globalAlpha=1/(k+1);oc.drawImage(work,0,0);}
   oc.globalAlpha=1;return outC.toDataURL('image/jpeg',q);

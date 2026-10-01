@@ -4,9 +4,10 @@
 in `media/` (`reel.mp4`, `reel.webm`, `reel-poster.jpg`); this file is the same
 encode, kept here so it is easy to find.
 
-1920x1080, 60fps, 15.18s, silent, and it loops without a seam: the first and
-last frames are both the blank page colour (`#f1f0ee`), so the type that opens
-it can arrive straight out of the type that closes it.
+1920x1080, 60fps, 14.97s, silent, and it loops without a seam. It opens on the
+blank page colour (`#f1f0ee`) with Vanta's window growing out of it, and it
+ends with the last shot shrinking back into a window on that same colour and
+disappearing, so the last frame and the first are the same blank page.
 
 ## The edit
 
@@ -21,19 +22,17 @@ shot starts.
 | 1.8s | Flowerbx, "Everything in season" | `flowerdemo` at 2x | Hard cut |
 | 2.3s | Osmosis, first half: dive into the hero | `osmosis` 0.45-1.6s at 2.25x | Digital zoom into the hero, motion blurred |
 | 2.8s | G-Force on the iPhone, pulled back out of the dive | 3D render | Whip pan left |
-| 4.0s | Vanta, side profile into x-ray | `luxury-clipC` 0.1-1.1s | Hard cut on the punch |
-| 5.1s | Loco, the service gear, then into its dark centre | `loco-clip2` 0.1-1.85s | Out of the dark |
-| 6.1s | Polaris on the MacBook Pro: half spin, lid opens, push into the screen | 3D render | The push ends with the screen exactly filling the frame |
-| 8.1s | Polaris screenshot, still pushing, straight into "trade" | `polaris.png` | "Track and **trade** everything" becomes "Discover and **trade** TIA" |
-| 8.4s | Osmosis, second half: TIA to DYDX, the swap card, Akash | `osmosis` 1.95-4.75s at 2x | Bloom to white |
-| 9.8s | Flowerbx, close on the ranunculus | `flowerdemo` 1.8-3.0s | Hard cut to black |
-| 10.8s | Vanta, the name | `luxury-clipA` 1.4-1.97s | Hard cut |
-| 11.4s | Loco, rotor and caliper, then a push into the disc | `loco-clip2` 1.93-3.15s | Match cut: the rotor becomes Vanta's x-ray wheel and pulls out |
-| 12.4s | Vanta x-ray, "ONE CAR. EVERY DISCIPLINE." | `luxury-clipC` 0.95-2.27s | Page colour wipes up |
-| 13.4s | "One designer. Every *discipline*." and the signature | type | Type leaves, page is blank, loop |
+| 4.0s | Vanta, side profile into x-ray | `luxury-clipC` 0.1-1.1s | Dip to dark |
+| 5.1s | Polaris on the MacBook Pro: half spin, lid opens, push into the screen | 3D render | The push ends with the screen exactly filling the frame |
+| 7.1s | Polaris screenshot, still pushing, straight into "trade" | `polaris.png` | "Track and **trade** everything" becomes "Discover and **trade** TIA" |
+| 7.5s | Osmosis, second half: TIA to DYDX, the swap card, Akash | `osmosis` 1.95-4.75s at 2x | Bloom to white |
+| 8.8s | Flowerbx, the long push through the field to the ranunculus | `flowerdemo` 1.0-3.0s at 1.2x | Hard cut to black |
+| 10.5s | Vanta, the name animating in from nothing to full | `luxury-clipA` 1.15-1.78s | Cut the moment it is full |
+| 11.1s | Loco, one shot: the service gear, the full transition into the rotor and caliper, then a push into the disc | `loco-clip2` 0.12-3.15s (gear 2x, transition 1x, rotor 1.25x) | Match cut: the rotor becomes Vanta's x-ray wheel and pulls out |
+| 13.3s | Vanta x-ray, "ONE CAR. EVERY DISCIPLINE." | `luxury-clipC` 0.95-2.27s | Shrinks back into a window on the page colour and is gone, which is where the reel starts |
 
 Project labels (name, then a mono line saying what it is) sit bottom left on
-the longer shots. Everything that has to be read stays inside the middle 80%,
+the longer shots (top left on Osmosis, whose own footer text sits bottom left). Everything that has to be read stays inside the middle 80%,
 because the site shows the reel with `object-fit: cover` and crops the sides
 on anything narrower than 16:9.
 

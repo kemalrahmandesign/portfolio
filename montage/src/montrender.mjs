@@ -10,6 +10,6 @@ console.log('fonts',JSON.stringify(await p.evaluate('window.fontsOK')));
 const N=await p.evaluate('window.N');fs.mkdirSync(OUT,{recursive:true});
 const list=only||Array.from({length:N},(_,i)=>i);const t0=Date.now();
 for(const f of list){const fn=`${OUT}/${String(f).padStart(4,'0')}.jpg`;if(!only&&fs.existsSync(fn))continue;
-  const d=await p.evaluate(f=>window.renderFrame(f),f);fs.writeFileSync(fn,Buffer.from(d.split(',')[1],'base64'));
+  const d=await p.evaluate(([f,e])=>window.renderFrame(f,0.95,e),[f,!!process.env.EDIT]);fs.writeFileSync(fn,Buffer.from(d.split(',')[1],'base64'));
   if(!only&&f%60===0)console.log(f,((Date.now()-t0)/1000).toFixed(0)+'s');}
 await b.close();
