@@ -1840,6 +1840,10 @@ html.cursored,html.cursored *{cursor:none !important}
     document.documentElement.classList.add('scrolls');
     heroShell.style.display = 'none';
     cover.classList.remove('take');
+    /* hardCut() raises the cover with an inline opacity, which beats the
+       .clear rule: without this the page was revealed underneath a cover
+       that never lifted, a blank white screen. */
+    cover.style.opacity = '';
     cover.classList.add('clear');
     window.scrollTo(0, 0);
   }
