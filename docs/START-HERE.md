@@ -59,7 +59,13 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-**Session 4, props pass (latest).** PROPS are Kemal's recalibrated numbers,
+**Session 4, underside pass (latest).** The hero overscroll no longer shows
+a black arc: `#uFlip` is the starting studio flipped upside down at exactly
+the stage's size, so its top row is the hero's bottom row (seamless), masked to
+dissolve into the page tone; the curved note is ink text over it. Unverified by
+eye (the test site uses a flat grey stand-in). Montage title gap is now 104px.
+
+**Session 4, props pass.** PROPS are Kemal's recalibrated numbers,
 then his box edits applied: bike taller (reaches its bottom) and wider, skis +15%
 down, guitar and ball doubled downward, board 20% wider. The squiggle was
 rebuilt: the loop is a smooth prolate trochoid (no corner where it rejoins the
