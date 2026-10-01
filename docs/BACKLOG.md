@@ -92,6 +92,17 @@ he waves you in.
 
 ## 4. Smaller, still open
 
+- **Character scenes (Kemal's idea, not started).** Experience: him as an
+  explorer on a tiny plane, Charlie Brown scale (body bigger than the plane),
+  the plane looping behind and in front of the section and exiting as it is
+  reached. Work: chef hat, a pan, food flying through the air and landing in it,
+  timed to the flip. Currently building: him operating a crane, the Alexandria
+  and Tokiwa images as the crates it carries. Approach: separate transparent
+  pieces (character pose or rigged mesh, pan, food, plane, crane, crates)
+  animated in code with GSAP, no video. Needs new Higgsfield generations
+  (credits: `get_cost` first, quote it, and he must say go). The container
+  cannot see generated images, so he has to paste results back.
+
 - **Case study layout.** Kemal floated trying something other than three
   cards stacked ("just a future thought"). No direction yet.
 - **The walk is still the weak spot.** Session 4 removed the CSS filter,
