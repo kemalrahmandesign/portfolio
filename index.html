@@ -1090,22 +1090,20 @@ h1{
 }
 .montage-frame{
   --grow:0;
-  /* Width and height are both interpolated, and there is no aspect-ratio.
-
-     With `aspect-ratio:16/9` the frame could never fill the screen: at 100%
-     of a 1440x900 window that is 1440x810, which leaves 90px of page under
-     it at the moment it is supposed to have taken over. It opens at 16:9 and
-     ends at exactly the viewport, and the clip inside is cover-cropped, so
-     the shape change is never visible as a stretch. */
-  width:calc(30% + 70% * var(--grow));
-  height:calc(16.875vw + (100svh - 16.875vw) * var(--grow));
+  /* A 16:9 block the whole way: it grows in 16:9 and stops at 90% of the
+     window (whichever of width or height runs out first), leaving a border
+     of page round it. Kemal found the stretch to full bleed odd on scroll,
+     and the reel is 16:9, so now nothing in it is ever cropped either. */
+  --end:min(90vw, 160svh);
+  width:calc(30vw + (var(--end) - 30vw) * var(--grow));
+  aspect-ratio:16/9;
   /* At --grow 0 the frame is entirely under the fold, not peeking over it.
      78% left a 155px strip sitting on the About copy before a single pixel
      had been scrolled, which is why it read as appearing rather than
      growing: there was nothing to watch it come from. 110% of its own
      height clears the bottom edge at every size it takes. */
   transform:translateY(calc((1 - var(--grow)) * 62%));
-  border-radius:calc(28px - 28px * var(--grow));
+  border-radius:calc(28px - 10px * var(--grow));
   background:#e4e3e0;overflow:hidden;
   display:grid;place-items:center;
   color:#8d8b87;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
