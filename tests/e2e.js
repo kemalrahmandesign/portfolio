@@ -148,7 +148,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
     return {titleTop:Math.round(t.top), vh:innerHeight, frameBottom:Math.round(f.bottom), grow:+getComputedStyle(document.getElementById('montageFrame')).getPropertyValue('--grow')};});
   await p.waitForTimeout(1500);
   ok('the peeking title has actually appeared', (await E(()=>[...document.querySelectorAll('#cases .sec-title .w')].every(w=>+getComputedStyle(w).opacity>0.9))));
-  ok('Things I\u2019ve made peeks in under the montage at full size', peek.titleTop<peek.vh-40 && peek.titleTop>=peek.frameBottom-4 && peek.grow>0.99, JSON.stringify(peek));
+  ok('Things I\u2019ve made peeks in under the montage at full size', peek.titleTop<peek.vh && peek.titleTop>=peek.frameBottom+30 && peek.grow>0.99, JSON.stringify(peek));
 
   // the reel: about and experience
   ok('about words keep their spaces', (await E(()=>

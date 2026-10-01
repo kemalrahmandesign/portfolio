@@ -59,7 +59,19 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-**Session 4, launch pass (latest).** The CTA now reads "Come on in" (was
+**Session 4, polish pass after launch (latest).** CTA is now "Cool stuff".
+Montage title gap is 48px (was 14, too close). Alexandria and Tokiwa cards
+use Kemal's images (`media/building/`), no "end to end" line. Polaris images
+are Kemal's replacements (`media/polaris/`: home, a crop of home for the news
+section, and the token page); no Framer hotlinks remain on that page. The old
+archetypes image is gone: Polaris section 03 is an interactive map of the
+eleven archetypes (`#archMap`, data in `work/case.js`). Placement on the map
+(how long they hold x how well they know crypto) and the "what it changed in
+Polaris" lines were written by the assistant from the reference image and the
+old case study, NOT by Kemal; the heart marks in his reference image were not
+reproduced because their meaning is unknown.
+
+**Session 4, launch pass.** The CTA now reads "Come on in" (was
 "Cool Sh*t"). Props: no clicking (the sheet is gone; they are divs now, hover
 and focus only), inert and unlabelled while the take plays, every hotspot
 reaches 18px past its drawn box via `::after` (the PROPS numbers are
