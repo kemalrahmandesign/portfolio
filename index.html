@@ -1046,6 +1046,18 @@ h1{
 .form-done span{font-family:var(--font-hand);font-size:24px;display:inline-block;transform:rotate(-4deg);margin-top:10px}
 .form-msg{margin:14px 0 0;font-size:15px;min-height:1.4em}
 .hp{position:absolute;left:-9999px}
+.hello-find{margin:clamp(22px,4vh,38px) 0 0;font-size:14px;color:var(--grey)}
+/* The same four trinkets as the studio floor, bigger, sitting under the form
+   and swaying on their own clocks; hovering one gives it the same shake. */
+.hello-social{display:flex;justify-content:center;gap:clamp(14px,2.4vw,34px);margin:6px 0 clamp(14px,3vh,26px)}
+.hello-social a{display:block;width:clamp(64px,7vw,104px);aspect-ratio:1}
+.hello-social img{width:100%;height:100%;object-fit:contain;display:block;animation:sway 6s ease-in-out infinite;transform-origin:50% 12%}
+.hello-social a:nth-child(2) img{animation-duration:7.1s;animation-delay:-1.4s}
+.hello-social a:nth-child(3) img{animation-duration:6.5s;animation-delay:-2.9s}
+.hello-social a:nth-child(4) img{animation-duration:7.6s;animation-delay:-4.2s}
+.hello-social a:hover img,.hello-social a:focus-visible img{animation:shake .46s cubic-bezier(.36,.07,.19,.97) 1 both}
+.hello-social a:focus-visible{outline:2px solid var(--ink);outline-offset:6px;border-radius:14px}
+@media (prefers-reduced-motion:reduce){ .hello-social img{animation:none} }
 .hello-mail{display:inline-block;margin-top:6px;font-size:15px;color:var(--ink);text-decoration:none;opacity:.65}
 .hello-mail u{text-underline-offset:3px}
 .hello-mail:hover{opacity:1}
@@ -1280,10 +1292,10 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   <div class="props" id="props" aria-hidden="false"></div>
 
   <div class="social" id="social">
-    <a href="#" aria-label="Instagram"><img alt="" src="" data-k="ig"></a>
-    <a href="#" aria-label="LinkedIn"><img alt="" src="" data-k="li"></a>
-    <a href="#" aria-label="Email"><img alt="" src="" data-k="em"></a>
-    <a href="#" aria-label="X"><img alt="" src="" data-k="xx"></a>
+    <a href="https://www.instagram.com/k.e.m.a.l__r?stkn=MXc3OHoxNnE1OWtwaA%3D%3D&amp;utm_source=qr" target="_blank" rel="noopener" aria-label="Instagram"><img alt="" src="" data-k="ig"></a>
+    <a href="https://www.linkedin.com/in/kemal-rahman203?utm_source=share_via&amp;utm_content=profile&amp;utm_medium=member_ios" target="_blank" rel="noopener" aria-label="LinkedIn"><img alt="" src="" data-k="li"></a>
+    <a href="mailto:kemalrahmandesign@gmail.com" aria-label="Email"><img alt="" src="" data-k="em"></a>
+    <a href="https://x.com/kemal_rahman_?s=11" target="_blank" rel="noopener" aria-label="X"><img alt="" src="" data-k="xx"></a>
   </div>
 
 
@@ -1436,6 +1448,13 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       <div class="form-done" role="status"><b>Got it, thank you!</b><span>I&rsquo;ll be in touch soon.</span></div>
     </form>
     <p class="form-msg" role="status"></p>
+    <p class="hello-find">or find me here</p>
+    <div class="hello-social" id="helloSocial">
+      <a href="https://www.instagram.com/k.e.m.a.l__r?stkn=MXc3OHoxNnE1OWtwaA%3D%3D&amp;utm_source=qr" target="_blank" rel="noopener" aria-label="Instagram"><img alt="" src="" data-k="ig"></a>
+    <a href="https://www.linkedin.com/in/kemal-rahman203?utm_source=share_via&amp;utm_content=profile&amp;utm_medium=member_ios" target="_blank" rel="noopener" aria-label="LinkedIn"><img alt="" src="" data-k="li"></a>
+    <a href="mailto:kemalrahmandesign@gmail.com" aria-label="Email"><img alt="" src="" data-k="em"></a>
+    <a href="https://x.com/kemal_rahman_?s=11" target="_blank" rel="noopener" aria-label="X"><img alt="" src="" data-k="xx"></a>
+    </div>
     <a class="hello-mail" href="mailto:kemalrahmandesign@gmail.com">or email <u>kemalrahmandesign@gmail.com</u></a>
     <div class="bye-stage" id="byeStage" aria-hidden="true"></div>
     <p class="bye-foot">Made by Kemal Rahman, and supervised by Nova the cat.</p>
@@ -1739,7 +1758,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     poster.onerror = () => stage.classList.add('is-empty');
     A.onerror = B.onerror = C.onerror = () => stage.classList.add('is-empty');
     poster.src = src(POSTER);
-    document.querySelectorAll('.social img').forEach(
+    document.querySelectorAll('.social img, .hello-social img').forEach(
       img => { img.src = src('media/social-' + img.dataset.k + '.png'); });
     if (faceImg){
       faceImg.onerror = () => topnav.classList.add('no-face');

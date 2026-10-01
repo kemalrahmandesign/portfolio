@@ -88,7 +88,7 @@ was a new concept start to finish; Loco and current work are end-to-end design
 and dev. The Osmosis card plays `media/osmosis/web/cover.mp4` like Loco's (another
 session's recordings landed on the deploy branch). Case pages drop the black wall on any menu
 choice and the main site starts under it (`sessionStorage.wallIn`, `html.wall-in`).
-**Still open before sharing:** the four social trinkets still link to `#`.
+The four social trinkets now link to Kemal's real accounts, and repeat larger under the contact form (`.hello-social`). Their images still come from the Higgsfield CDN fallback (`media/social-*.png` are not in the repo), so the contact row is blank in the test site.
 
 **Session 4, seventh pass.** Cursor link state, third attempt: Kemal
 wanted no bounce and it looked pixelated (a transform-scaled SVG on a promoted

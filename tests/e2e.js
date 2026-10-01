@@ -34,6 +34,9 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('springs back', (await E(()=>getComputedStyle(document.getElementById('heroSlide')).transform))==='none');
 
   // socials
+  const want = {Instagram:'instagram.com/k.e.m.a.l__r', LinkedIn:'linkedin.com/in/kemal-rahman203', X:'x.com/kemal_rahman_', Email:'mailto:kemalrahmandesign@gmail.com'};
+  const sl = await E(()=>[...document.querySelectorAll('.social a, .hello-social a')].map(a=>[a.getAttribute('aria-label'),a.getAttribute('href')]));
+  ok('both rows of socials point at the real accounts', sl.length===8 && sl.every(([k,h])=>h.includes(want[k])), JSON.stringify(sl.map(x=>x[0])));
   ok('socials sway idle', (await E(()=>getComputedStyle(document.querySelector('.social img')).animationName))==='sway');
   await p.hover('.social a'); await p.waitForTimeout(80);
   const sh = await E(()=>{const c=getComputedStyle(document.querySelector('.social img'));return c.animationName+'|'+c.animationIterationCount;});
@@ -247,6 +250,8 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
      (await E(()=>Math.max(...[...document.querySelectorAll('.stage video')].map(x=>x.playbackRate))))>1);
   await p.waitForSelector('#work:not([hidden])',{timeout:15000});
   await p.waitForTimeout(1800);
+  await E(()=>{window.__cov2=false; const w=document.getElementById('wall');
+    (function f(){const r=w.getBoundingClientRect(); if (r.top<=0 && r.bottom>=innerHeight) window.__cov2=true; else requestAnimationFrame(f);})();});
   await p.click('#tnFace');
   await p.waitForTimeout(240);
   const topAt = () => E(()=>Math.round(document.getElementById('wall').getBoundingClientRect().top));
@@ -255,8 +260,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
      starts off-screen negative and climbs toward 0. */
   ok('wall falls from above on the second run', a1 < 0 && a2 > a1, a1+' -> '+a2);
   await p.waitForTimeout(150);
-  ok('wall covers on the second run too',
-     (await E(()=>{const r=document.getElementById('wall').getBoundingClientRect();return r.top<=0&&r.bottom>=innerHeight;})));
+  ok('wall covers on the second run too', (await E(()=>window.__cov2)));
   await p.waitForTimeout(1400);
 
   await p.setViewportSize({width:390,height:844}); await p.waitForTimeout(300);
