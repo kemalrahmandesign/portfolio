@@ -221,11 +221,14 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
      covers for about 150ms before the swap, and where in the run that lands
      depends on how busy the page was; a fixed sample point tests the
      scheduler, not the wall. */
-  const covers = () => E(()=>{const r=document.getElementById('wall').getBoundingClientRect();
-    return r.top<=0 && r.bottom>=innerHeight;});
+  /* Sampled inside the page on every animation frame, from before the click,
+     so a busy page (the montage reel is decoding video) cannot make the test
+     miss a 150ms window between its own round trips. */
+  await E(()=>{window.__cov=false; const w=document.getElementById('wall');
+    (function f(){const r=w.getBoundingClientRect(); if (r.top<=0 && r.bottom>=innerHeight) window.__cov=true; else if(!window.__stop) requestAnimationFrame(f);})();});
   await p.click('#tnFace');
-  let sawCover = false;
-  for (let i=0;i<20 && !sawCover;i++){ await p.waitForTimeout(40); sawCover = await covers(); }
+  await p.waitForTimeout(1200);
+  const sawCover = await E(()=>window.__cov);
   ok('wall covers before the swap', sawCover);
   await p.waitForTimeout(1500);
   const backState = await E(()=>({workHidden:document.getElementById('work').hidden,
