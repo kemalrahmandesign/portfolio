@@ -138,7 +138,9 @@ def ring(frame, x, y, r, width, alpha):
     c = R * ss
     d.ellipse([c - r * ss, c - r * ss, c + r * ss, c + r * ss], outline=COLOR + (int(255 * alpha),), width=max(1, int(width * ss)))
     patch = patch.resize((2 * R, 2 * R), Image.LANCZOS)
-    frame.alpha_composite(patch, *_clip(frame, patch, x - R, y - R))
+    dest, src = _clip(frame, patch, x - R, y - R)
+    if src[2]:
+        frame.alpha_composite(patch, dest, src)
 
 
 def draw_cursor(frame, t, px, py, k):
@@ -160,7 +162,9 @@ def draw_cursor(frame, t, px, py, k):
                 ring(frame, px, py, (0.2 + 1.15 * kk) * 22 * k, 3 * k, 0.95 * (1 - kk))
     s_arrow = k / SDPR * (1 - 0.18 * press)
     arr = scaled(S_ARROW, s_arrow, "arrow")
-    frame.alpha_composite(arr, *(_clip(frame, arr, px - TIP[0] * SDPR * s_arrow, py - TIP[1] * SDPR * s_arrow)))
+    dest, src = _clip(frame, arr, px - TIP[0] * SDPR * s_arrow, py - TIP[1] * SDPR * s_arrow)
+    if src[2]:
+        frame.alpha_composite(arr, dest, src)
 
     # tag or chat bubble
     i = bisect.bisect_right(talk_t, t) - 1
@@ -175,13 +179,17 @@ def draw_cursor(frame, t, px, py, k):
     tg = scaled(img, s_tag, key)
     ox = px + TAG_OFF[0] * k - PAD * SDPR * (s_tag - k / SDPR)
     oy = py + TAG_OFF[1] * k - PAD * SDPR * (s_tag - k / SDPR)
-    frame.alpha_composite(tg, *(_clip(frame, tg, ox, oy)))
+    dest, src = _clip(frame, tg, ox, oy)
+    if src[2]:
+        frame.alpha_composite(tg, dest, src)
 
 
 def _clip(frame, img, x, y):
     """alpha_composite needs a non-negative dest; crop the sprite instead."""
     x, y = int(round(x)), int(round(y))
-    sx, sy = max(0, -x), max(0, -y)
+    sx, sy = min(img.width, max(0, -x)), min(img.height, max(0, -y))
+    if sx >= img.width or sy >= img.height or x >= frame.width or y >= frame.height:
+        return (0, 0), (0, 0, 0, 0)  # fully off-frame: draw nothing
     return (max(0, x), max(0, y)), (sx, sy, img.width, img.height)
 
 

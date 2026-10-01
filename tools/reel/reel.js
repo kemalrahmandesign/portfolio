@@ -48,6 +48,7 @@ class Reel {
     userDataDir = process.env.USER_DATA_DIR,
     extensions = process.env.EXTENSIONS, // comma-separated unpacked extension dirs
     colorScheme = 'dark',
+    before, // async (page) => {} run after load, before recording starts
     display = Number(process.env.REEL_DISPLAY || 90 + Math.floor(Math.random() * 400)),
   }) {
     this.name = name;
@@ -113,6 +114,7 @@ class Reel {
 
     await this.page.mouse.move(this.pos.x, this.pos.y);
     if (url) await this.goto(url);
+    if (before) await before(this.page);
     await this._record();
   }
 
@@ -153,7 +155,8 @@ class Reel {
   }
 
   // Resolve a target (selector string, Locator, or {x,y}) to a viewport point.
-  async point(target, { at = 'center', dx = 0, dy = 0, scroll = true } = {}) {
+  // Selectors may target a[href]; a hovered link has its href parked in data-reel-href.
+  async point(target, { at = 'center', dx = 0, dy = 0, scroll = false } = {}) {
     if (target && typeof target.x === 'number' && target.width === undefined) return { x: target.x + dx, y: target.y + dy };
     const loc = typeof target === 'string' ? this.page.locator(target).first() : target;
     await loc.waitFor({ state: 'visible', timeout: 15000 });
@@ -197,6 +200,10 @@ class Reel {
       if (k >= 1) break;
       await sleep(8);
     }
+    // Re-hit-test once the overlay has parked a hovered link's href, so
+    // Chrome's link-preview bubble clears.
+    await sleep(30);
+    await this.page.mouse.move(this.pos.x + 0.01, this.pos.y);
     return p;
   }
 
@@ -234,6 +241,15 @@ class Reel {
       await sleep(duration / steps);
     }
     await sleep(250);
+  }
+
+  // Smooth-scroll until target sits at `at` (0 top .. 1 bottom) of the viewport.
+  async reveal(target, { at = 0.45, duration } = {}) {
+    const loc = typeof target === 'string' ? this.page.locator(target).first() : target;
+    await loc.waitFor({ state: 'attached', timeout: 15000 });
+    const b = await loc.evaluate((e) => { const r = e.getBoundingClientRect(); return { y: r.y, h: r.height }; });
+    const dy = b.y + b.h / 2 - this.h * at;
+    if (Math.abs(dy) > 4) await this.scroll(dy, { duration: duration ?? Math.min(2400, 700 + Math.abs(dy) * 0.9) });
   }
 
   // Camera. zoom 1 = full frame. focus: 'cursor' (follows with a dead zone),
