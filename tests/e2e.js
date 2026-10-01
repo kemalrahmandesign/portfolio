@@ -75,7 +75,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('fast forward hidden before press', (await E(()=>getComputedStyle(document.getElementById('skip')).opacity))==='0');
   await p.click('#cta'); await p.waitForTimeout(800);
   ok('fast forward is just the icon, muted', (await E(()=>{const k=document.getElementById('skip'); const c=getComputedStyle(k);
-    return k.textContent.trim()==='' && c.backgroundColor==='rgba(0, 0, 0, 0)' && k.querySelector('svg').getBoundingClientRect().width>=28 && +c.color.match(/[\d.]+/g)[3]<0.6;})));
+    return k.textContent.trim()==='' && c.backgroundColor==='rgba(0, 0, 0, 0)' && k.querySelector('svg').getBoundingClientRect().width>=28 && +getComputedStyle(k.querySelector('svg')).opacity<0.6;})));
   ok('props are inert and unlabelled while the take plays', (await E(()=>{
     return [...document.querySelectorAll('.prop-hit')].every(h=>getComputedStyle(h).pointerEvents==='none') &&
       [...document.querySelectorAll('.prop-tag')].every(t=>+getComputedStyle(t).opacity<0.1);})));
@@ -176,7 +176,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('no reel chrome left', (await E(()=>!document.querySelector('.chrome,.ch-k,.xp-dot'))));
   const hello = await E(()=>({fields:[...document.querySelectorAll('#contact form input:not(.hp)')].map(i=>i.name),
     send:!!document.querySelector('#contact .send')}));
-  ok('contact email is the new address', (await E(()=>document.querySelector('.hello-mail').href==='mailto:kemalrahmandesign@gmail.com')));
+  ok('contact has no separate email line, the email icon does the job', (await E(()=>!document.querySelector('.hello-mail') && !!document.querySelector('.hello-social a[href="mailto:kemalrahmandesign@gmail.com"]'))));
   ok('contact is just name, email and a button', hello.fields.join()==='name,email' && hello.send, JSON.stringify(hello));
   const build = await E(()=>[...document.querySelectorAll('#building .build')].map(b=>({n:b.querySelector('.case-name').textContent, link:!!b.closest('a')||b.tagName==='A'})));
   ok('currently building shows both clients, not clickable', build.length===2 && build.map(b=>b.n).join()==='Alexandria Car Clinic,Tokiwa Matcha' && build.every(b=>!b.link), JSON.stringify(build));
