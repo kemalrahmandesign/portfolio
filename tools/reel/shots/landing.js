@@ -123,6 +123,20 @@ const takes = {
       await r.wait(800);
     }),
 
+  // Snappy, no cursor (render with --no-cursor): ease in on the headline while
+  // the token flips, then pan right to the swap card.
+  heroquick: () =>
+    shot(o('heroquick'), async (r) => {
+      await r.move({ x: 960, y: 1060 }, { duration: 200 }); // park the mouse off the hero
+      await r.wait(300);
+      await r.zoom(1.75, { focus: { x: 520, y: 330 }, speed: 1.9 });
+      await r.wait(2300);
+      await r.zoom(1.75, { focus: { x: 1400, y: 380 }, speed: 1.5 });
+      await r.wait(1700);
+      await r.unzoom({ speed: 1.9 });
+      await r.wait(700);
+    }),
+
   // One long scroll-through for b-roll.
   tour: () =>
     shot(o('tour'), async (r) => {
