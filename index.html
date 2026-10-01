@@ -651,14 +651,18 @@ h1{
   position:absolute;right:var(--pad);bottom:var(--pad);z-index:4;
   appearance:none;border:0;cursor:pointer;background:none;padding:10px;
   display:inline-flex;align-items:center;justify-content:center;
-  color:rgba(10,10,10,.38);
+  color:var(--ink);
   opacity:0;transform:translateY(8px);pointer-events:none;
   transition:opacity 320ms ease 260ms,transform 320ms cubic-bezier(.16,1,.3,1) 260ms,color .2s ease;
 }
 .hero.is-leaving .skip{opacity:1;transform:none;pointer-events:auto}
-.skip:hover,.skip:focus-visible{color:rgba(10,10,10,.75)}
+.skip svg{opacity:.38;transition:opacity .2s ease}
+/* The two triangles overlap by a sliver. Muted with a translucent colour
+   that sliver was painted twice and showed as a darker band; muting the whole
+   icon as one layer (opacity on the svg) flattens it first. */
+.skip:hover svg,.skip:focus-visible svg{opacity:.75}
 .skip:active{transform:scale(.92)}
-.skip.ffwd{color:rgba(10,10,10,.7)}
+.skip.ffwd svg{opacity:.7}
 .skip svg{display:block}
 
 /* ---------- the handoff ---------- */
@@ -1072,9 +1076,6 @@ h1{
 .hello-social a:hover img,.hello-social a:focus-visible img{animation:shake .46s cubic-bezier(.36,.07,.19,.97) 1 both}
 .hello-social a:focus-visible{outline:2px solid var(--ink);outline-offset:6px;border-radius:14px}
 @media (prefers-reduced-motion:reduce){ .hello-social img{animation:none} }
-.hello-mail{display:inline-block;margin-top:6px;font-size:15px;color:var(--ink);text-decoration:none;opacity:.65}
-.hello-mail u{text-underline-offset:3px}
-.hello-mail:hover{opacity:1}
 @media (max-width:640px){
   .form-body{flex-direction:column;align-items:stretch;border-radius:28px;padding:10px}
   .cap-field + .cap-field{border-left:0;border-top:1.5px solid rgba(10,10,10,.12)}
@@ -1435,7 +1436,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     </div>
     <div class="build-grid">
       <div class="build" aria-disabled="true" data-cursor="soon">
-        <div class="build-frame"><img alt="" loading="lazy" src="media/building/alexandria.webp" style="object-position:12% 50%"><span class="build-tape">Under construction</span></div>
+        <div class="build-frame"><img alt="" loading="lazy" src="media/building/alexandria.webp" style="object-position:0% 50%"><span class="build-tape">Under construction</span></div>
         <div class="case-cap"><h3 class="case-name">Alexandria Car Clinic</h3><span class="build-soon">Coming soon</span></div>
       </div>
       <div class="build" aria-disabled="true" data-cursor="soon">
@@ -1470,7 +1471,6 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     <a href="mailto:kemalrahmandesign@gmail.com" aria-label="Email"><img alt="" src="" data-k="em"></a>
     <a href="https://x.com/kemal_rahman_?s=11" target="_blank" rel="noopener" aria-label="X"><img alt="" src="" data-k="xx"></a>
     </div>
-    <a class="hello-mail" href="mailto:kemalrahmandesign@gmail.com">or email <u>kemalrahmandesign@gmail.com</u></a>
     <div class="bye-stage" id="byeStage" aria-hidden="true"></div>
     <p class="bye-foot">Made by Kemal Rahman, and supervised by Nova the cat.</p>
   </section>
@@ -2070,7 +2070,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     { k:'skis',  label:'powder plower',  hit:[40.5, 56.4,  5.0, 38.0], tag:[32.0, 37.3], tilt:-3, bow:-.44 },
     { k:'gtr',   label:'reverb + loops', hit:[67.6, 63.8,  8.0, 38.0], tag:[73.2, 34.3], tilt:-2, bow: .42 },
     { k:'ball',  label:'goaaaaaaal',     hit:[92.3, 87.3,  6.0, 10.0], tag:[93.4, 72.9], tilt:-4, bow: .38 },
-    { k:'board', label:'do a kickflip',  hit:[14.7, 90.4, 18.0,  8.0], tag:[30.5, 90.0], tilt:-2, bow: .40 },
+    { k:'board', label:'do a kickflip',  hit:[14.7, 90.4, 18.0,  8.0], tag:[30.5, 90.0], tilt:-2, bow: .40, nudge:[1600, 8] },
   ];
 
   const props = document.getElementById('props');
@@ -2143,7 +2143,11 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       hit.style.height = h + 'px';
 
       tag.style.setProperty('--tagsz', size.toFixed(1) + 'px');
-      tag.style.top  = py(d.tag[1]) + 'px';
+      /* A few pixels of per-screen correction: `nudge` is [widest window it
+         applies to, px down], for laptop-sized screens where the written label
+         sits a touch high against its object. */
+      const nudge = d.nudge && innerWidth <= d.nudge[0] ? d.nudge[1] : 0;
+      tag.style.top  = (py(d.tag[1]) + nudge) + 'px';
       /* Written against the frame, then clamped to the window. The frame is
          wider than the window at most shapes, so a label sitting near its
          edge, which is exactly where the ball and the board are, would be
@@ -2164,7 +2168,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
          sits just off the object. */
       const tw = tag.getBoundingClientRect().width || size * 5;
       const ex = px(hx), ey = py(hy);
-      const ax = parseFloat(tag.style.left), ay = py(d.tag[1]);
+      const ax = parseFloat(tag.style.left), ay = py(d.tag[1]) + nudge;
       const sx = ax + (ex > ax ? 1 : -1) * (tw / 2 + size * 0.28);
       const sy = ay + size * 0.42;
       /* The head has to point AT the object, and the bow is what kept it
