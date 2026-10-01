@@ -56,14 +56,22 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('label writes itself in on hover', wrote.on && wrote.w>40 && parseFloat(wrote.dash)<0.6, JSON.stringify(wrote));
   await p.mouse.move(700,700); await p.waitForTimeout(400);
   ok('label clears on leave', !(await E(()=>document.querySelector('.prop-tag').classList.contains('on'))));
-  await p.click('.prop-hit[data-k="ball"]'); await p.waitForTimeout(420);
-  ok('prop opens a sheet', (await E(()=>!document.getElementById('propSheet').hidden)));
-  await p.keyboard.press('Escape'); await p.waitForTimeout(400);
-  ok('sheet closes on escape', (await E(()=>document.getElementById('propSheet').hidden)));
+  /* The props answer to hover only: nothing opens, and the cursor must not
+     treat them as pressable. */
+  ok('props are not buttons and open nothing', (await E(()=>!document.getElementById('propSheet') &&
+    [...document.querySelectorAll('.prop-hit')].every(h=>h.tagName!=='BUTTON'))));
+  const hitSize = await E(()=>[...document.querySelectorAll('.prop-hit')].map(h=>{
+    const r=h.getBoundingClientRect(); const a=getComputedStyle(h,'::after'); return Math.round(Math.min(r.width,r.height))+'|'+a.inset;}));
+  ok('every hotspot reaches past its drawn box', hitSize.every(x=>x.endsWith('-18px -18px -18px -18px')||x.includes('-18px')), hitSize.join(' '));
 
   // cta -> take
   ok('fast forward hidden before press', (await E(()=>getComputedStyle(document.getElementById('skip')).opacity))==='0');
   await p.click('#cta'); await p.waitForTimeout(800);
+  ok('fast forward is just the icon, muted', (await E(()=>{const k=document.getElementById('skip'); const c=getComputedStyle(k);
+    return k.textContent.trim()==='' && c.backgroundColor==='rgba(0, 0, 0, 0)' && k.querySelector('svg').getBoundingClientRect().width>=28 && +c.color.match(/[\d.]+/g)[3]<0.6;})));
+  ok('props are inert and unlabelled while the take plays', (await E(()=>{
+    return [...document.querySelectorAll('.prop-hit')].every(h=>getComputedStyle(h).pointerEvents==='none') &&
+      [...document.querySelectorAll('.prop-tag')].every(t=>+getComputedStyle(t).opacity<0.1);})));
   ok('fast forward shown during take', (await E(()=>getComputedStyle(document.getElementById('skip')).opacity))==='1');
   ok('socials gone during take', (await E(()=>getComputedStyle(document.querySelector('.social')).opacity))==='0');
   ok('menu out of the shot', (await E(()=>getComputedStyle(document.getElementById('topnav')).opacity))==='0');
@@ -119,10 +127,10 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
     await p.evaluate(v=>scrollTo(0,v), reelTop+d); await p.waitForTimeout(150);
     grow.push(d+':'+(await E(()=>getComputedStyle(document.getElementById('montageFrame')).getPropertyValue('--grow').trim())));
   }
-  ok('montage grows as its section arrives',
-     parseFloat(grow[1].split(':')[1])>0.1 && parseFloat(grow[4].split(':')[1])>0.75, grow.join(' '));
-  /* Sticky: pinned to the top while its section passes, then carried off by
-     it. Nothing to fade, nothing to toggle. */
+  ok('montage is full size by the time it reaches the top',
+     parseFloat(grow[1].split(':')[1])>0.1 && parseFloat(grow[4].split(':')[1])>=0.999, grow.join(' '));
+  const frameSz = await E(()=>{const f=document.getElementById('montageFrame').getBoundingClientRect(); return {w:Math.round(f.width/document.documentElement.clientWidth*100), h:Math.round(f.height/innerHeight*100)};});
+  ok('montage ends at 95% of the window width', frameSz.w===95, JSON.stringify(frameSz));
   ok('montage stage is sticky', (await E(()=>getComputedStyle(document.querySelector('.montage-stage')).position))==='sticky');
   /* Full window, not the width of the centred column it lives in. */
   ok('montage spans the window', (await E(()=>{
@@ -132,12 +140,13 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
     const a=document.querySelector('.lede').getBoundingClientRect();
     const vw=document.documentElement.clientWidth;
     return Math.abs(a.left-(vw-a.right))<4;})));
-  const reelBot = await E(()=>{const r=document.getElementById('reel'); return r.offsetTop+r.offsetHeight;});
-  await p.evaluate(v=>scrollTo(0,v), reelBot-1400); await p.waitForTimeout(200);
-  const p1 = await E(()=>Math.round(document.querySelector('.montage-stage').getBoundingClientRect().top));
-  await p.evaluate(v=>scrollTo(0,v), reelBot-200); await p.waitForTimeout(200);
-  const p2 = await E(()=>Math.round(document.querySelector('.montage-stage').getBoundingClientRect().top));
-  ok('montage pins, then leaves with its section', p1===0 && p2<0, p1+' -> '+p2);
+  /* No pinned stretch: one screen tall, and the next section's title is
+     already in view under the frame when the frame is at its biggest. */
+  ok('montage is one screen tall, not a long pin', (await E(()=>document.getElementById('reel').offsetHeight===innerHeight)));
+  await p.evaluate(()=>{const r=document.getElementById('reel'); scrollTo(0, r.getBoundingClientRect().top + scrollY - innerHeight*0.05);}); await p.waitForTimeout(300);
+  const peek = await E(()=>{const t=document.querySelector('#cases .sec-title').getBoundingClientRect(); const f=document.getElementById('montageFrame').getBoundingClientRect();
+    return {titleTop:Math.round(t.top), vh:innerHeight, frameBottom:Math.round(f.bottom), grow:+getComputedStyle(document.getElementById('montageFrame')).getPropertyValue('--grow')};});
+  ok('Things I\u2019ve made peeks in under the montage at full size', peek.titleTop<peek.vh-40 && peek.titleTop>=peek.frameBottom-4 && peek.grow>0.99, JSON.stringify(peek));
 
   // the reel: about and experience
   ok('about words keep their spaces', (await E(()=>
@@ -160,12 +169,13 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('no reel chrome left', (await E(()=>!document.querySelector('.chrome,.ch-k,.xp-dot'))));
   const hello = await E(()=>({fields:[...document.querySelectorAll('#contact form input:not(.hp)')].map(i=>i.name),
     send:!!document.querySelector('#contact .send')}));
+  ok('contact email is the new address', (await E(()=>document.querySelector('.hello-mail').href==='mailto:kemalrahmandesign@gmail.com')));
   ok('contact is just name, email and a button', hello.fields.join()==='name,email' && hello.send, JSON.stringify(hello));
   const build = await E(()=>[...document.querySelectorAll('#building .build')].map(b=>({n:b.querySelector('.case-name').textContent, link:!!b.closest('a')||b.tagName==='A'})));
   ok('currently building shows both clients, not clickable', build.length===2 && build.map(b=>b.n).join()==='Alexandria Car Clinic,Tokiwa Matcha' && build.every(b=>!b.link), JSON.stringify(build));
   const cases = await E(()=>({n:document.querySelectorAll('.case').length,
     titles:document.querySelectorAll('.case-title,.case-meta').length}));
-  ok('three case studies, each linking to its page', cases.n===3 && (await E(()=>[...document.querySelectorAll('.case')].map(c=>c.getAttribute('href')).join())) === 'work/osmosis.html,work/polaris.html,work/loco.html', JSON.stringify(cases));
+  ok('three case studies, each linking to its page', cases.n===3 && (await E(()=>[...document.querySelectorAll('.case')].map(c=>c.getAttribute('href')).join())) === 'work/osmosis.html,work/loco.html,work/polaris.html', JSON.stringify(cases));
   await p.evaluate(()=>{const c=document.querySelectorAll('.case')[1];
     scrollTo(0, c.getBoundingClientRect().top + scrollY - innerHeight*0.25);});
   await p.waitForTimeout(700);

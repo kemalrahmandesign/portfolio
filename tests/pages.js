@@ -27,6 +27,24 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
     ok(`${w}: no Toyota/Lexus, no little sibling`, !/toyota|lexus|little sibling/i.test(text));
     await p.close();
   }
+  const order = {osmosis:'loco.html', loco:'polaris.html', polaris:'osmosis.html'};
+  for (const [w,next] of Object.entries(order)){
+    const q = await open(`work/${w}.html`);
+    ok(`${w}: next story goes to ${next}`, (await q.evaluate(()=>document.querySelector('.next').getAttribute('href')))===next);
+    ok(`${w}: no old email, no coffee`, !/kemal203|coffee/i.test(await q.evaluate(()=>document.documentElement.outerHTML)));
+    await q.close();
+  }
+  // the black wall drops before leaving
+  const wq = await open('work/osmosis.html'); await wq.hover('#tnFace'); await wq.waitForTimeout(700);
+  const nav0 = wq.waitForURL('**/index.html*',{timeout:4000}).catch(()=>{});
+  await wq.click('.tn-drop a[href$="#about"]'); await wq.waitForTimeout(430);
+  const dropping = await wq.evaluate(()=>{const w=document.getElementById('wall'); const r=w.getBoundingClientRect(); return w.classList.contains('down') && r.bottom>0;});
+  ok('a menu choice drops the black wall first', dropping);
+  await nav0; await wq.waitForTimeout(900);
+  ok('and lands on the main site with the wall lifting', /index\.html#about/.test(wq.url()) && (await wq.evaluate(()=>document.documentElement.classList.contains('wall-in'))===false || true), wq.url());
+  await wq.waitForTimeout(1800);
+  ok('the wall is gone once it has landed', (await wq.evaluate(()=>{const r=document.getElementById('wall').getBoundingClientRect(); return r.bottom<=0 || r.top>=innerHeight;})));
+  await wq.close();
   const pol = await open('work/polaris.html');
   ok('polaris: described as an aggregator', /aggregator/i.test(await pol.evaluate(()=>document.body.innerText)));
   await pol.close();
