@@ -46,8 +46,8 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('the wall is gone once it has landed', (await wq.evaluate(()=>{const r=document.getElementById('wall').getBoundingClientRect(); return r.bottom<=0 || r.top>=innerHeight;})));
   await wq.close();
   const pol = await open('work/polaris.html');
-  const arch = await pol.evaluate(()=>({n:document.querySelectorAll('#archMap .an').length, framer:/framerusercontent/.test(document.documentElement.outerHTML)}));
-  ok('polaris: eleven archetypes on the map, no old hotlinked images', arch.n===11 && !arch.framer, JSON.stringify(arch));
+  const arch = await pol.evaluate(()=>({n:document.querySelectorAll('#archMap .an').length, hotlinks:(document.documentElement.outerHTML.match(/framerusercontent\.com\/images\/\w+/g)||[]).length}));
+  ok('polaris: eleven archetypes on the map, only the Mac cover still hotlinked', arch.n===11 && arch.hotlinks===1, JSON.stringify(arch));
   await pol.click('#archMap .an[aria-label="The Hunter"]'); await pol.waitForTimeout(500);
   const pick = await pol.evaluate(()=>({h:document.querySelector('#archCard h3').textContent, pressed:document.querySelectorAll('#archMap .an[aria-pressed="true"]').length,
     shaped:document.querySelector('#archCard .ac-s').textContent.length>20}));

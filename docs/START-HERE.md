@@ -59,7 +59,12 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-**Session 4, underside pass (latest).** The hero overscroll no longer shows
+**Session 4, late fixes (latest).** Polaris cover (case page and main card) is
+back to the old Framer Mac image (ajWSdaaK), per Kemal. The news block now uses
+the full-size home screen: the earlier tight crop of it was only 1080px wide and
+looked blurry. The only Framer hotlink left on the Polaris page is that cover.
+
+**Session 4, underside pass.** The hero overscroll no longer shows
 a black arc: `#uFlip` is the starting studio flipped upside down at exactly
 the stage's size, so its top row is the hero's bottom row (seamless), masked to
 dissolve into the page tone; the curved note is ink text over it. Unverified by
