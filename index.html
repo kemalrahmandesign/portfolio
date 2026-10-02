@@ -211,6 +211,8 @@ body{
   from{transform:translate(0,0) scale(1)}
   to  {transform:translate(-5.25%,6.3%) scale(1.5)}
 }
+.stage video.fixc{filter:url(#fixc)}
+.stage video.fixc.zoom{filter:none}
 .stage video.zoom{
   animation:pushin 1400ms cubic-bezier(.33,0,.2,1) forwards;
 }
@@ -1252,6 +1254,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   </div>
 </nav>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><filter id="fixc" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="1.029 0.003 -0.032 0 0  0.074 0.873 0.052 0 0  -0.066 -0.009 1.074 0 0  0 0 0 1 0"/></filter></svg>
 <div class="hero-shell" id="heroShell">
   <div class="hero-slide" id="heroSlide">
 <section class="hero" id="hero">
@@ -1894,7 +1897,8 @@ html.wall-in #wall{transform:translateY(0);transition:none}
        when the press landed inside the first five seconds. Gating the button
        until the wave ends removes the trigger; this removes the bug. */
     const W = (live !== C) ? C : ([A, B].find(v => v !== live) || C);
-    take = W;                           // what fast forward seeks
+    take = W;
+    W.classList.add('fixc');            // pull the walk's skin and red back to the idle's
 
     /* The click has to go somewhere even if the take does not play.
        playOnce waits for the clip to reach readyState 2 before it starts
@@ -2030,7 +2034,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       started = true; entered = true; looping = false;
       hero.classList.add('is-leaving');
       W = (live !== C) ? C : ([A, B].find(v => v !== live) || C);
-      take = W; ready = false;
+      take = W; ready = false; W.classList.add('fixc');
       W.loop = false; W.onended = null; W.src = blobUrl || src(CLIPS.walk.src); W.preload = 'auto';
       W.playbackRate = 1;
       const go = () => atTime(W, 0, () => {
@@ -2044,7 +2048,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     const back = () => {                // scrolled all the way back up
       started = false; ready = false; entered = false; zoomed = covered = false;
       W.pause(); W.playbackRate = 1;
-      W.classList.remove('zoom'); cover.classList.remove('take');
+      W.classList.remove('zoom', 'fixc'); cover.classList.remove('take');
       hero.classList.remove('is-leaving');
       idleLoop();
     };
@@ -2134,7 +2138,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     { k:'skis',  label:'powder plower',  hit:[40.5, 56.4,  5.0, 38.0], tag:[32.0, 37.3], tilt:-3, bow:-.44 },
     { k:'gtr',   label:'reverb + loops', hit:[67.6, 63.8,  8.0, 38.0], tag:[73.2, 34.3], tilt:-2, bow: .42 },
     { k:'ball',  label:'goaaaaaaal',     hit:[92.3, 87.3,  6.0, 10.0], tag:[93.4, 72.9], tilt:-4, bow: .38 },
-    { k:'board', label:'do a kickflip',  hit:[14.7, 90.4, 18.0,  8.0], tag:[30.5, 90.0], tilt:-2, bow: .40, nudge:[1600, 8] },
+    { k:'board', label:'“do a kickflip”',  hit:[14.7, 90.4, 18.0,  8.0], tag:[30.5, 92.8], tilt:-2, bow: .40, nudge:[1600, 8] },
   ];
 
   const props = document.getElementById('props');
@@ -2586,7 +2590,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       /* Every layer goes back to how it started. The take's playbackRate in
          particular: left at 4 it made the whole sequence run at 4x the second
          time through, and `skip.disabled` left the button dead. */
-      [A, B, C].forEach(v => { v.classList.remove('zoom'); v.pause(); v.playbackRate = 1; });
+      [A, B, C].forEach(v => { v.classList.remove('zoom', 'fixc'); v.pause(); v.playbackRate = 1; });
       take = null;
       live = null;
       poster.style.transition = 'none'; poster.style.opacity = '1'; poster.style.zIndex = '2';
