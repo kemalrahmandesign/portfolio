@@ -10,7 +10,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   await p.route('**/d2ol7oe51mr4n9.cloudfront.net/**', r=>r.fulfill({status:200,body:'x'}));
   await p.route('**/framerusercontent.com/**', r=>r.abort());
   await p.goto('http://127.0.0.1:8099/index.html',{waitUntil:'load'}); await p.waitForTimeout(1500);
-  await p.tap('#cta'); await p.waitForTimeout(300); await p.tap('#skip').catch(()=>{});
+  await p.tap('#cta'); await p.waitForTimeout(300);
   await p.waitForSelector('#work:not([hidden])',{timeout:20000}); await p.waitForTimeout(1500);
   await p.tap('#tnFace'); await p.waitForTimeout(700);
   const drop = await p.evaluate(()=>({on:document.getElementById('topnav').classList.contains('dropped'),

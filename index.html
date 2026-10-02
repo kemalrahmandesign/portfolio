@@ -421,7 +421,7 @@ h1{
    The headline, the button and the skip link are small, so promoting them
    costs nothing. They share a duration and easing and start in the same frame,
    so they still leave together. */
-#headline,.tagline,.cta,.skip{transition:opacity 420ms ease}
+#headline,.tagline,.cta{transition:opacity 420ms ease}
 .hero.is-leaving #headline,
 .hero.is-leaving .tagline{opacity:0}
 /* .cta carries a 550ms entry delay from .is-in; restate the transition so
@@ -637,33 +637,6 @@ h1{
   fill:#fff;font-family:var(--font-display);font-weight:700;
   letter-spacing:-.01em;
 }
-
-/* ---------- fast forward ----------
-   This used to be a text link that skipped the intro, and it was on screen
-   from the first frame: an exit offered before there was anything to exit.
-   It now does the opposite job. It appears only once the take is running and
-   it does not cut away; it seeks the clip to the start of the push-in, so the
-   move into the monitor still plays, just sooner.
-
-   The icon is the transport symbol for exactly that, two triangles, rather
-   than the skip-to-end bar: this is fast forward, not a cut. */
-.skip{
-  position:absolute;right:var(--pad);bottom:var(--pad);z-index:4;
-  appearance:none;border:0;cursor:pointer;background:none;padding:10px;
-  display:inline-flex;align-items:center;justify-content:center;
-  color:var(--ink);
-  opacity:0;transform:translateY(8px);pointer-events:none;
-  transition:opacity 320ms ease 260ms,transform 320ms cubic-bezier(.16,1,.3,1) 260ms,color .2s ease;
-}
-.hero.is-leaving .skip{opacity:1;transform:none;pointer-events:auto}
-.skip svg{opacity:.38;transition:opacity .2s ease}
-/* The two triangles overlap by a sliver. Muted with a translucent colour
-   that sliver was painted twice and showed as a darker band; muting the whole
-   icon as one layer (opacity on the svg) flattens it first. */
-.skip:hover svg,.skip:focus-visible svg{opacity:.75}
-.skip:active{transform:scale(.92)}
-.skip.ffwd svg{opacity:.7}
-.skip svg{display:block}
 
 /* ---------- the handoff ---------- */
 /* The monitor's power-on flicker happens inside the clip, so this cover has
@@ -1263,7 +1236,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
 </head>
 <body>
 
-<nav class="topnav away" id="topnav" aria-label="Sections">
+<nav class="topnav" id="topnav" aria-label="Sections">
   <button class="tn-face" id="tnFace" type="button" aria-expanded="false" aria-label="Back to the studio">
     <img alt="" src="" id="tnFaceImg">
   </button>
@@ -1327,12 +1300,6 @@ html.wall-in #wall{transform:translateY(0);transition:none}
 
 
 
-  <button class="skip" id="skip" type="button" aria-label="Fast forward" title="Fast forward">
-    <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M3 5.4c0-1 1.1-1.6 2-1.1l8.6 5.4a1.3 1.3 0 0 1 0 2.2L5 17.7c-.9.5-2-.1-2-1.1z"/>
-      <path d="M12.4 5.4c0-1 1.1-1.6 2-1.1L23 9.7a1.3 1.3 0 0 1 0 2.2l-8.6 5.8c-.9.5-2-.1-2-1.1z"/>
-    </svg>
-  </button>
 </section>
 
   <div class="underside" id="underside" aria-hidden="true">
@@ -1623,7 +1590,6 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   const stage = document.getElementById('stage');
   const poster = document.getElementById('poster');
   const cta = document.getElementById('cta');
-  const skip = document.getElementById('skip');
   const cover = document.getElementById('cover');
   const work = document.getElementById('work');
   const A = document.getElementById('vidA');
@@ -2051,12 +2017,22 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   if (SCRUB && !reduced) {
     const PX = 3400;                    // wheel pixels for the whole take
     let target = 0, prog = 0, W = null, started = false, ready = false, zoomed = false, covered = false, raf = 0;
+    /* Seeking a streamed mp4 is what made this choppy: every seek is a network
+       range request plus a decode from the previous keyframe. So the clip is
+       pulled down whole into a blob first and played from memory, and going
+       forward is real playback at an adjusted rate (decoded in order, which is
+       what a decoder is good at) rather than a seek per frame. Only rewinding
+       has to seek. */
+    let blobUrl = null;
+    fetch(src(CLIPS.walk.src)).then(r => r.ok ? r.blob() : Promise.reject())
+      .then(b => { blobUrl = URL.createObjectURL(b); }).catch(() => {});
     const begin = () => {
       started = true; entered = true; looping = false;
-      hero.classList.add('is-leaving'); topnav.classList.add('away');
+      hero.classList.add('is-leaving');
       W = (live !== C) ? C : ([A, B].find(v => v !== live) || C);
       take = W; ready = false;
-      W.loop = false; W.onended = null; W.src = src(CLIPS.walk.src); W.preload = 'auto';
+      W.loop = false; W.onended = null; W.src = blobUrl || src(CLIPS.walk.src); W.preload = 'auto';
+      W.playbackRate = 1;
       const go = () => atTime(W, 0, () => {
         ready = true; show(W, WALK_XF);
         setTimeout(() => [A, B, C].forEach(v => { if (v !== W) v.pause(); }), WALK_XF + 80);
@@ -2067,20 +2043,31 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     };
     const back = () => {                // scrolled all the way back up
       started = false; ready = false; entered = false; zoomed = covered = false;
+      W.pause(); W.playbackRate = 1;
       W.classList.remove('zoom'); cover.classList.remove('take');
-      hero.classList.remove('is-leaving'); topnav.classList.remove('away');
+      hero.classList.remove('is-leaving');
       idleLoop();
     };
     function frame(){
       if (revealed || !started) return;
-      prog += (target - prog) * 0.12;
+      prog += (target - prog) * 0.07;
       if (ready && W.duration) {
-        const end = W.duration, t = Math.min(end - 0.01, prog * end);
-        if (!W.seeking && Math.abs(W.currentTime - t) > 0.012) W.currentTime = t;
-        const z = t >= end - ZOOM, c = t >= end - TAKE;
+        const end = W.duration, t = Math.min(end - 0.02, prog * end), cur = W.currentTime, gap = t - cur;
+        if (gap > 0.03) {
+          // Ahead of the clip: let it play, faster the further behind it is.
+          W.playbackRate = Math.max(0.0625, Math.min(4, gap * 3));
+          if (W.paused) W.play().catch(() => {});
+        } else if (gap < -0.25) {
+          // Behind it: rewinding has to seek.
+          if (!W.paused) W.pause();
+          if (!W.seeking) W.currentTime = t;
+        } else if (!W.paused) {
+          W.pause();                    // close enough: hold the frame
+        }
+        const z = cur >= end - ZOOM, c = cur >= end - TAKE;
         if (z !== zoomed) { zoomed = z; W.classList.toggle('zoom', z); }
         if (c !== covered) { covered = c; cover.classList.toggle('take', c); }
-        if (target >= 1 && prog > 0.995) { reveal(); return; }
+        if (target >= 1 && prog > 0.985 && cur >= end - 0.15) { reveal(); return; }
       }
       if (target <= 0 && prog < 0.004 && ready) { back(); return; }
       raf = requestAnimationFrame(frame);
@@ -2566,7 +2553,6 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     if (walling || !revealed) return;
     walling = true;
     setNav(false);
-    topnav.classList.add('away');       // the studio has no menu over it
     /* Park it above the fold with no transition before dropping it.
 
        On the second run it was still carrying `gone`, which is
@@ -2602,8 +2588,6 @@ html.wall-in #wall{transform:translateY(0);transition:none}
          time through, and `skip.disabled` left the button dead. */
       [A, B, C].forEach(v => { v.classList.remove('zoom'); v.pause(); v.playbackRate = 1; });
       take = null;
-      skip.disabled = false;
-      skip.classList.remove('ffwd');
       live = null;
       poster.style.transition = 'none'; poster.style.opacity = '1'; poster.style.zIndex = '2';
       live = poster;
@@ -2732,32 +2716,6 @@ html.wall-in #wall{transform:translateY(0);transition:none}
 
 
   cta.addEventListener('click', enter);
-  /* Fast forward: run the clip faster, do not jump over it.
-
-     The first version seeked to just before the push-in, which got you to the
-     monitor but threw away the walk, the sit and the cat. Kemal wanted the
-     tape sped up, which is also the thing the icon promises. playbackRate is
-     the honest version of that and no container can refuse it, where a seek
-     can and did.
-
-     The push-in and the cover are both triggered off currentTime, so they
-     come round sooner on their own; only the 1400ms push-in animation runs on
-     wall-clock time, and at 4x the clip has 1.6s left when it starts, which
-     still covers it. */
-  const FF = 4;
-  skip.addEventListener('click', () => {
-    const W = take;
-    if (!W || !W.duration || !isFinite(W.duration)){
-      queued = false; entered = true; looping = false;
-      hardCut();
-      return;
-    }
-    if (W.playbackRate >= FF) return;      // already winding
-    W.playbackRate = FF;
-    skip.classList.add('ffwd');
-    W.play().catch(() => {});
-  });
-
 })();
 </script>
 <script src="vendor/gsap.min.js"></script>
