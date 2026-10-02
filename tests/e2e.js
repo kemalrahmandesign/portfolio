@@ -46,8 +46,8 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   const sh = await E(()=>{const c=getComputedStyle(document.querySelector('.social img'));return c.animationName+'|'+c.animationIterationCount;});
   ok('socials shake once on hover', sh==='shake|1', sh);
 
-  // menu is not in the hero at all
-  ok('menu absent over the hero', (await E(()=>getComputedStyle(document.getElementById('topnav')).opacity))==='0');
+  // the menu is on the hero
+  ok('menu present over the hero', (await E(()=>getComputedStyle(document.getElementById('topnav')).opacity))==='1');
 
   // props
   const pc = await E(()=>document.querySelectorAll('.prop-hit').length);
@@ -72,24 +72,16 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('every hotspot reaches past its drawn box', hitSize.every(x=>x.endsWith('-18px -18px -18px -18px')||x.includes('-18px')), hitSize.join(' '));
 
   // cta -> take
-  ok('fast forward hidden before press', (await E(()=>getComputedStyle(document.getElementById('skip')).opacity))==='0');
+  ok('no fast forward button', (await E(()=>!document.getElementById('skip'))));
   await p.click('#cta'); await p.waitForTimeout(800);
-  ok('fast forward is just the icon, muted', (await E(()=>{const k=document.getElementById('skip'); const c=getComputedStyle(k);
-    return k.textContent.trim()==='' && c.backgroundColor==='rgba(0, 0, 0, 0)' && k.querySelector('svg').getBoundingClientRect().width>=28 && +getComputedStyle(k.querySelector('svg')).opacity<0.6;})));
   ok('props are inert and unlabelled while the take plays', (await E(()=>{
     return [...document.querySelectorAll('.prop-hit')].every(h=>getComputedStyle(h).pointerEvents==='none') &&
       [...document.querySelectorAll('.prop-tag')].every(t=>+getComputedStyle(t).opacity<0.1);})));
-  ok('fast forward shown during take', (await E(()=>getComputedStyle(document.getElementById('skip')).opacity))==='1');
   ok('socials gone during take', (await E(()=>getComputedStyle(document.querySelector('.social')).opacity))==='0');
   ok('menu out of the shot', (await E(()=>getComputedStyle(document.getElementById('topnav')).opacity))==='0');
   const t0=Date.now();
-  await p.click('#skip');
-  await p.waitForTimeout(150);
-  ok('fast forward speeds the clip up',
-     (await E(()=>{const v=[...document.querySelectorAll('.stage video')].map(x=>x.playbackRate);
-       return Math.max(...v);}))>1);
   await p.waitForSelector('#work:not([hidden])',{timeout:15000});
-  ok('fast forward lands in the monitor', true, (Date.now()-t0)+'ms');
+  ok('take lands in the monitor', true, (Date.now()-t0)+'ms');
   await p.waitForTimeout(2000);
   ok('menu arrives with the monitor', (await E(()=>getComputedStyle(document.getElementById('topnav')).opacity))==='1');
   await p.hover('#tnFace'); await p.waitForTimeout(700);
@@ -247,13 +239,9 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
 
   // second lap: everything that only worked once
   ok('playback rate reset', (await E(()=>[...document.querySelectorAll('.stage video')].every(v=>v.playbackRate===1))));
-  ok('fast forward re-enabled', (await E(()=>!document.getElementById('skip').disabled)));
   await p.waitForTimeout(2600);
   await p.click('#cta'); await p.waitForTimeout(900);
   ok('second take starts', (await E(()=>document.getElementById('hero').className)).includes('is-leaving'));
-  await p.click('#skip'); await p.waitForTimeout(150);
-  ok('fast forward works the second time',
-     (await E(()=>Math.max(...[...document.querySelectorAll('.stage video')].map(x=>x.playbackRate))))>1);
   await p.waitForSelector('#work:not([hidden])',{timeout:15000});
   await p.waitForTimeout(1800);
   await E(()=>{window.__cov2=false; const w=document.getElementById('wall');
