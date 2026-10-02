@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kemal Rahman</title>
+<script>try{history.scrollRestoration='manual'}catch(e){}</script>
 <script>try{if(sessionStorage.getItem('wallIn')==='1')document.documentElement.classList.add('wall-in')}catch(e){}</script>
 <link rel="icon" href="media/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -264,8 +265,8 @@ h1{
   text-align:center;
 }
 
-/* The tagline reads as one line broken around him: "Product design" to his
-   left, "with a smile" to his right, both on the same baseline and
+/* The tagline reads as one line broken around him: "Product designer" to his
+   left, "Visual storyteller" to his right, both on the same baseline and
    symmetric about the centre. In the reference their centres sit at 35.8% and
    64.3%, so the gap between them is 16.2% of the width. A flex row with that
    gap keeps them symmetric at any width, which matters because he is centred
@@ -377,6 +378,7 @@ h1{
    speed up so the button reads as working rather than broken, and the take
    starts the moment he finishes waving. */
 .hero.armed .cta{cursor:default}
+.scrubmode .cta-wrap{display:none}
 .hero.armed .cta .ring rect{animation-duration:.55s}
 /* The dashes are an SVG stroke animation, which the browser repaints on the
    main thread every frame. The button is fading out for the take, and the
@@ -1294,8 +1296,8 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   <div class="overlay">
     <h1 id="headline">Kemal Rahman</h1>
     <p class="tagline">
-      <span class="t-left">Product design</span>
-      <span class="t-right">with a smile</span>
+      <span class="t-left">Product designer</span>
+      <span class="t-right">Visual storyteller</span>
     </p>
   </div>
 
@@ -1610,6 +1612,8 @@ html.wall-in #wall{transform:translateY(0);transition:none}
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  const SCRUB = /[?&]scroll\b/.test(location.search);
+  if (SCRUB) document.documentElement.classList.add('scrubmode');
   const hero = document.getElementById('hero');
   const heroShell = document.getElementById('heroShell');
   const heroSlide = document.getElementById('heroSlide');
@@ -1896,6 +1900,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     cover.style.opacity = '';
     cover.classList.add('clear');
     window.scrollTo(0, 0);
+    requestAnimationFrame(() => window.scrollTo(0, 0));
   }
 
   // No take available, or one that never arrived: cut straight to the site.
@@ -2014,7 +2019,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   }
   let raw = 0;
   function onWheel(e){
-    if (revealed || entered) return;
+    if (revealed || entered || SCRUB) return;
     if (e.deltaY <= 0) { if (pull) { raw = 0; release(); } return; }
     e.preventDefault();
     raw += e.deltaY;
@@ -2029,13 +2034,78 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   let touchY = null;
   heroShell.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; raw = 0; }, {passive:true});
   heroShell.addEventListener('touchmove', e => {
-    if (touchY === null || revealed || entered) return;
+    if (touchY === null || revealed || entered || SCRUB) return;
     const dy = touchY - e.touches[0].clientY;
     if (dy <= 0) return;
     raw = dy;
     setPull(damp(raw), false);
   }, {passive:true});
   heroShell.addEventListener('touchend', () => { touchY = null; raw = 0; release(); }, {passive:true});
+
+  /* ---- ?scroll: the take is driven by the scroll wheel ----
+     A trial of the same intro without the call to action. Scrolling scrubs the
+     walk clip: down walks him to the desk, up walks him back, and reaching the
+     end hands off to the page exactly as the button does. Everything after
+     `enter()` is reused, only the clock is different. */
+  let scrubReset = () => {};
+  if (SCRUB && !reduced) {
+    const PX = 3400;                    // wheel pixels for the whole take
+    let target = 0, prog = 0, W = null, started = false, ready = false, zoomed = false, covered = false, raf = 0;
+    const begin = () => {
+      started = true; entered = true; looping = false;
+      hero.classList.add('is-leaving'); topnav.classList.add('away');
+      W = (live !== C) ? C : ([A, B].find(v => v !== live) || C);
+      take = W; ready = false;
+      W.loop = false; W.onended = null; W.src = src(CLIPS.walk.src); W.preload = 'auto';
+      const go = () => atTime(W, 0, () => {
+        ready = true; show(W, WALK_XF);
+        setTimeout(() => [A, B, C].forEach(v => { if (v !== W) v.pause(); }), WALK_XF + 80);
+      });
+      W.addEventListener('error', () => hardCut(), { once: true });
+      W.readyState >= 2 ? go() : W.addEventListener('loadeddata', go, { once: true });
+      cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
+    };
+    const back = () => {                // scrolled all the way back up
+      started = false; ready = false; entered = false; zoomed = covered = false;
+      W.classList.remove('zoom'); cover.classList.remove('take');
+      hero.classList.remove('is-leaving'); topnav.classList.remove('away');
+      idleLoop();
+    };
+    function frame(){
+      if (revealed || !started) return;
+      prog += (target - prog) * 0.12;
+      if (ready && W.duration) {
+        const end = W.duration, t = Math.min(end - 0.01, prog * end);
+        if (!W.seeking && Math.abs(W.currentTime - t) > 0.012) W.currentTime = t;
+        const z = t >= end - ZOOM, c = t >= end - TAKE;
+        if (z !== zoomed) { zoomed = z; W.classList.toggle('zoom', z); }
+        if (c !== covered) { covered = c; cover.classList.toggle('take', c); }
+        if (target >= 1 && prog > 0.995) { reveal(); return; }
+      }
+      if (target <= 0 && prog < 0.004 && ready) { back(); return; }
+      raf = requestAnimationFrame(frame);
+    }
+    const push = d => {
+      if (revealed) return;
+      if (!waveEnded) return;
+      if (!started) { if (d <= 0) return; begin(); }
+      target = Math.max(0, Math.min(1, target + d));
+    };
+    heroShell.addEventListener('wheel', e => { e.preventDefault(); push(e.deltaY / PX); }, { passive: false });
+    let ty = null;
+    heroShell.addEventListener('touchstart', e => { ty = e.touches[0].clientY; }, { passive: true });
+    heroShell.addEventListener('touchmove', e => {
+      if (ty === null) return;
+      const y = e.touches[0].clientY; push((ty - y) / (PX * 0.35)); ty = y;
+    }, { passive: true });
+    heroShell.addEventListener('touchend', () => { ty = null; }, { passive: true });
+    addEventListener('keydown', e => {
+      if (revealed || !heroShell.offsetParent) return;
+      const k = { ArrowDown: .06, PageDown: .15, ' ': .15, ArrowUp: -.06, PageUp: -.15 }[e.key];
+      if (k) { e.preventDefault(); push(k); }
+    });
+    scrubReset = () => { target = prog = 0; started = ready = zoomed = covered = false; };
+  }
 
   /* The arc and the text on it share one SVG, and its viewBox is set from the
      element's own pixel box so the two cannot drift apart. Drawing the shape
@@ -2525,7 +2595,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       cover.classList.remove('take', 'clear');
       cover.style.opacity = '';
       scrollTo(0, 0);
-      revealed = false; entered = false; queued = false;
+      revealed = false; entered = false; queued = false; scrubReset();
       cta.disabled = false;
       /* Every layer goes back to how it started. The take's playbackRate in
          particular: left at 4 it made the whole sequence run at 4x the second
