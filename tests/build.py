@@ -21,13 +21,12 @@ MEDIA = os.path.join(SITE, 'media')
 
 html = open(os.path.join(ROOT, 'index.html')).read()
 link = ('<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800'
-        '&family=Inter+Tight:wght@600;700;800&family=Instrument+Serif:ital@1'
+        '&family=Inter+Tight:wght@600;700;800'
         '&family=JetBrains+Mono:wght@400;500;700&family=Kaushan+Script&display=swap" rel="stylesheet">')
 assert html.count(link) == 1, 'the Google Fonts link changed: update tests/build.py'
 html = html.replace(link, '''<style>
 @font-face{font-family:Inter;font-weight:100 900;src:url(fonts/inter.woff2) format('woff2')}
 @font-face{font-family:'Inter Tight';font-weight:800;src:url(fonts/inter-tight-800.woff2) format('woff2')}
-@font-face{font-family:'Instrument Serif';font-style:italic;font-weight:400;src:url(fonts/instrument-serif-italic.woff2) format('woff2')}
 @font-face{font-family:'JetBrains Mono';font-weight:400;src:url(fonts/jetbrains-mono-400.woff2) format('woff2')}
 @font-face{font-family:'JetBrains Mono';font-weight:500;src:url(fonts/jetbrains-mono-500.woff2) format('woff2')}
 @font-face{font-family:'JetBrains Mono';font-weight:700;src:url(fonts/jetbrains-mono-700.woff2) format('woff2')}
