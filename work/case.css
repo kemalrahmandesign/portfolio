@@ -310,3 +310,6 @@ a{color:inherit}
   .topnav .tn-drop,.topnav.open .tn-drop,.topnav.dropped .tn-drop{position:static;display:flex;transform:none;opacity:1;pointer-events:none}
   .topnav .tn-drop a:nth-child(n){transform:none;opacity:1;margin:0;pointer-events:auto}
 }
+
+/* The side rail is the menu now. */
+.topnav{display:none !important}

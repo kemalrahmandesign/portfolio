@@ -15,12 +15,9 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
     const p = await open(`work/${w}.html`);
     const nav = await p.evaluate(()=>({face:!!document.getElementById('tnFace'),
       links:[...document.querySelectorAll('.tn-drop a')].map(a=>a.getAttribute('aria-label')||a.textContent)}));
-    ok(`${w}: has the regular top nav`, nav.face && nav.links.join()==='home,about,experience,work,contact', JSON.stringify(nav));
-    const pills = await p.evaluate(()=>{const as=[...document.querySelectorAll('.tn-drop a')].filter(a=>getComputedStyle(a).display!=='none').map(a=>a.getBoundingClientRect());
-      return {n:as.length, head:getComputedStyle(document.getElementById('tnFace')).display, home:document.querySelectorAll('.sn .sn-link')[0].textContent};});
-    ok(`${w}: four pills, no head, Home leads the rail`, pills.n===4 && pills.head==='none' && pills.home==='Home', JSON.stringify(pills));
-    ok(`${w}: pills have the fill blob`, (await p.evaluate(()=>document.querySelectorAll('.tn-drop .bl').length))===5 || (await p.evaluate(()=>document.querySelectorAll('.tn-drop .bl').length))===4);
-    const text = await p.evaluate(()=>document.body.innerText);
+    const pills = await p.evaluate(()=>({bar:getComputedStyle(document.querySelector('.topnav')).display, home:document.querySelectorAll('.sn .sn-link')[0].textContent}));
+    ok(`${w}: no top bar, Home leads the rail`, pills.bar==='none' && pills.home==='Home', JSON.stringify(pills));
+        const text = await p.evaluate(()=>document.body.innerText);
     ok(`${w}: no Toyota/Lexus, no little sibling`, !/toyota|lexus|little sibling/i.test(text));
     await p.close();
   }
@@ -34,11 +31,11 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   // the black wall drops before leaving
   const wq = await open('work/osmosis.html'); await wq.waitForTimeout(300);
   const nav0 = wq.waitForURL('**/index.html*',{timeout:4000}).catch(()=>{});
-  await wq.click('.tn-drop a[href$="#about"]'); await wq.waitForTimeout(430);
+  await wq.hover('.sn'); await wq.waitForTimeout(500); await wq.click('.sn .sn-link >> nth=0'); await wq.waitForTimeout(430);
   const dropping = await wq.evaluate(()=>{const w=document.getElementById('wall'); const r=w.getBoundingClientRect(); return w.classList.contains('down') && r.bottom>0;});
-  ok('a menu choice drops the black wall first', dropping);
+  ok('Home in the rail drops the black wall first', dropping);
   await nav0; await wq.waitForTimeout(900);
-  ok('and lands on the main site with the wall lifting', /index\.html#about/.test(wq.url()) && (await wq.evaluate(()=>document.documentElement.classList.contains('wall-in'))===false || true), wq.url());
+  ok('and lands on the main site with the wall lifting', /index\.html/.test(wq.url()) && (await wq.evaluate(()=>document.documentElement.classList.contains('wall-in'))===false || true), wq.url());
   await wq.waitForTimeout(1800);
   ok('the wall is gone once it has landed', (await wq.evaluate(()=>{const r=document.getElementById('wall').getBoundingClientRect(); return r.bottom<=0 || r.top>=innerHeight;})));
   await wq.close();
@@ -94,7 +91,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   const t1 = await ty.evaluate(()=>({pop:document.getElementById('about').classList.contains('pop'), op:+getComputedStyle(document.querySelector('#about .lede')).opacity,
     rail:+getComputedStyle(document.querySelector('.sn')).opacity, rows:document.querySelectorAll('.sn .sn-link').length}));
   ok('about pops in with no typing', t1.pop && t1.op===1, JSON.stringify(t1));
-  ok('side rail shows, Home held back on the first pass', t1.rail===1 && t1.rows===7 && (await ty.evaluate(()=>getComputedStyle(document.querySelector('.sn .sn-link').parentElement).display))==='none', JSON.stringify(t1));
+  ok('side rail shows, Home first', t1.rail===1 && t1.rows===7 && (await ty.evaluate(()=>getComputedStyle(document.querySelector('.sn .sn-link').parentElement).display))!=='none', JSON.stringify(t1));
   await ty.hover('.sn'); await ty.waitForTimeout(700);
   ok('hovering the rail opens the names', await ty.evaluate(()=>+getComputedStyle(document.querySelector('.sn-link')).opacity>0.4));
   await ty.click('.sn-link >> nth=2'); await ty.waitForTimeout(1800);

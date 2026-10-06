@@ -389,7 +389,7 @@ h1{
 /* The pill stays unfilled. Hover thickens and darkens the outline rather
    than flooding it, because a solid fill at this size covers a good part of
    the shot behind it. */
-.cta:hover,.cta:focus-visible{color:var(--ink)}
+.cta:hover,.cta:focus-visible{box-shadow:0 1px 2px rgba(10,10,10,.12),0 12px 28px rgba(10,10,10,.22)}
 .cta:hover .ring rect,.cta:focus-visible .ring rect{stroke-width:.18em}
 .cta:focus-visible{outline:none}
 .cta .arw{
@@ -755,6 +755,9 @@ h1{
 .tn-face::after{content:"";position:absolute;left:50%;top:50%;
   width:56px;height:56px;transform:translate(-50%,-50%)}
 .topnav{position:fixed}
+/* The side rail is the menu now. The old bar is kept in the markup because the
+   page script drives it, but it is never shown. */
+.topnav{display:none !important}
 .tn-face{position:relative}
 
 /* Hover flips each letter over, one after the next from the left, the way a
@@ -1099,7 +1102,8 @@ h1{
      the strip below the frame, saying there is more. */
   /* --fh is the frame's final height. The next section is pulled up until
      its title sits 104px under the frame. */
-  --fh:min(53.4375vw, 90svh);
+  --mw:min(100vw - 2 * var(--pad), var(--stage-max) - 2 * var(--pad), 160svh);
+  --fh:min(var(--mw) * .5625, 90svh);
   height:100svh;position:relative;margin-bottom:calc(-1 * (100svh - var(--fh) - 104px));
   width:var(--vw,100%);
   margin-left:calc((var(--vw,100%) - 100%) / -2);
@@ -1127,7 +1131,7 @@ h1{
      window (whichever of width or height runs out first), leaving a border
      of page round it. Kemal found the stretch to full bleed odd on scroll,
      and the reel is 16:9, so now nothing in it is ever cropped either. */
-  --end:min(95vw, 160svh);
+  --end:var(--mw);
   width:calc(30vw + (var(--end) - 30vw) * var(--grow));
   aspect-ratio:16/9;
   /* At --grow 0 the frame is entirely under the fold, not peeking over it.
@@ -2923,13 +2927,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   if (!window.SideNav || !w) return;
   const sn = SideNav.init([{ label: 'Home', home: true }, ...[['about','About'],['experience','Experience'],['reel','Reel'],['cases','Case studies'],['building','Building'],['contact','Contact']]
     .map(([id, label]) => ({ label, el: document.getElementById(id) }))], it => window.__goTo(it.home ? 'hero' : it.el.id));
-  /* Home waits until they have been through the page: on the way in it is
-     only a way back to where they just were. */
-  let seen = false; try { seen = sessionStorage.getItem('explored') === '1'; } catch (e) {}
-  sn.showHome(seen);
-  new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting && !seen){ seen = true; sn.showHome(true); try { sessionStorage.setItem('explored', '1'); } catch (x) {} }
-  }), { threshold: 0.3 }).observe(document.getElementById('building'));
+  sn.showHome(true);
   const sync = () => sn.show(!w.hidden);
   new MutationObserver(sync).observe(w, { attributes: true, attributeFilter: ['hidden'] }); sync();
 })();
