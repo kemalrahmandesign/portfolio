@@ -16,7 +16,6 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
     h=document.querySelector('h1').getBoundingClientRect();
     return {navB:Math.round(n.bottom), h1T:Math.round(h.top), h1B:Math.round(h.bottom)};});
   ok('masthead clears the menu', hero.h1T > hero.navB, JSON.stringify(hero));
-  ok('no head in the desktop nav', await E(()=>getComputedStyle(document.getElementById('tnFace')).display==='none'));
 
   // overscroll
   const x0 = await E(()=>Math.round(document.querySelector('h1').getBoundingClientRect().left));
@@ -47,7 +46,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('socials shake once on hover', sh==='shake|1', sh);
 
   // the menu is on the hero
-  ok('menu present over the hero', (await E(()=>getComputedStyle(document.getElementById('topnav')).opacity))==='1');
+  ok('no top nav bar', (await E(()=>getComputedStyle(document.getElementById('topnav')).display))==='none');
 
   // props
   const pc = await E(()=>document.querySelectorAll('.prop-hit').length);
@@ -79,27 +78,13 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
     return [...document.querySelectorAll('.prop-hit')].every(h=>getComputedStyle(h).pointerEvents==='none') &&
       [...document.querySelectorAll('.prop-tag')].every(t=>+getComputedStyle(t).opacity<0.1);})));
   ok('socials gone during take', (await E(()=>getComputedStyle(document.querySelector('.social')).opacity))==='0');
-  ok('menu out of the shot', (await E(()=>getComputedStyle(document.getElementById('topnav')).opacity))==='0');
   const t0=Date.now();
   await p.waitForSelector('#work:not([hidden])',{timeout:15000});
   ok('take lands in the monitor', true, (Date.now()-t0)+'ms');
   await p.waitForTimeout(2000);
-  ok('menu arrives with the monitor', (await E(()=>getComputedStyle(document.getElementById('topnav')).opacity))==='1');
-  const order = await E(()=>[...document.querySelectorAll('.tn-drop a')]
-      .filter(a=>getComputedStyle(a).display!=='none')
-      .sort((a,c)=>a.getBoundingClientRect().left-c.getBoundingClientRect().left).map(a=>a.getAttribute('aria-label')));
-  ok('hover opens about, experience | work, contact (no home pill)',
-     order.join(',')==='about,experience,work,contact', order.join(','));
-  ok('menu is lowercase', order.every(t=>t===t.toLowerCase()));
-  const pills = await E(()=>{const as=[...document.querySelectorAll('.tn-drop a')].filter(a=>getComputedStyle(a).display!=='none').map(a=>a.getBoundingClientRect());
-    return {n:as.length, mid:Math.round(Math.max(...as.map(r=>r.top+r.height/2))-Math.min(...as.map(r=>r.top+r.height/2))),
-      centre:Math.round((as[0].left+as[as.length-1].right)/2-innerWidth/2)};});
-  ok('each pill carries its fill blob and does not tilt', (await E(()=>{
-    const as=[...document.querySelectorAll('.tn-drop a')].filter(a=>getComputedStyle(a).display!=='none');
-    return as.length===4 && as.every(a=>a.querySelector('.bl') && getComputedStyle(a).transform==='matrix(1, 0, 0, 1, 0, 0)' || getComputedStyle(a).transform==='none');})));
-  ok('four pills in a level row, centred', pills.n===4 && pills.mid<3 && Math.abs(pills.centre)<4, JSON.stringify(pills));
-  const flip = await E(()=>document.querySelectorAll('.tn-drop a .tk-c').length);
-  ok('links split into flip cells', flip>20, flip+' cells');
+  await p.mouse.move(30,450); await p.waitForTimeout(700);
+  const rail = await E(()=>[...document.querySelectorAll('.sn .sn-link')].filter(a=>getComputedStyle(a.parentElement).display!=='none').map(a=>a.textContent));
+  ok('side rail: Home first, then the sections', rail.join()==='Home,About,Experience,Reel,Case studies,Building,Contact', rail.join());
   await p.mouse.move(700,700); await p.waitForTimeout(500);
 
   // about
@@ -126,8 +111,8 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   }
   ok('montage is full size by the time it reaches the top',
      parseFloat(grow[1].split(':')[1])>0.1 && parseFloat(grow[4].split(':')[1])>=0.999, grow.join(' '));
-  const frameSz = await E(()=>{const f=document.getElementById('montageFrame').getBoundingClientRect(); return {w:Math.round(f.width/document.documentElement.clientWidth*100), h:Math.round(f.height/innerHeight*100)};});
-  ok('montage ends at 95% of the window width', frameSz.w===95, JSON.stringify(frameSz));
+  const frameSz = await E(()=>{const f=document.getElementById('montageFrame').getBoundingClientRect(), c=document.querySelector('.case-frame').getBoundingClientRect(); return {w:Math.round(f.width), caseW:Math.round(c.width)};});
+  ok('montage ends at the same width as the case study boxes', Math.abs(frameSz.w-frameSz.caseW)<=2, JSON.stringify(frameSz));
   ok('montage stage is sticky', (await E(()=>getComputedStyle(document.querySelector('.montage-stage')).position))==='sticky');
   /* Full window, not the width of the centred column it lives in. */
   ok('montage spans the window', (await E(()=>{

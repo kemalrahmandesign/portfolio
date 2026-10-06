@@ -31,7 +31,8 @@
 .sn.open .sn-link{opacity:.5;transform:none;pointer-events:auto;transition-delay:.05s}
 .sn.open .sn-link:hover,.sn.open .sn-link:focus-visible{opacity:1;outline:0}
 .sn.open .sn-link.cur{opacity:1;font-weight:800}
-@media (max-width:1100px){.sn{display:none}}
+.sn::after{content:"";position:absolute;inset:-14px -16px -14px -14px}
+@media (max-width:760px){.sn{left:6px}.sn-bar{width:20px}.sn-link{font-size:14px}}
 @media (prefers-reduced-motion:reduce){.sn,.sn-bg,.sn-link{transition:none}}
 `;
   const MINOR = 2;                      // quiet lines between two names
@@ -109,8 +110,12 @@
     addEventListener('resize', kick);
     draw();
 
-    root.addEventListener('pointerenter', () => root.classList.add('open'));
-    root.addEventListener('pointerleave', () => root.classList.remove('open'));
+    /* A mouse opens it by pointing; a finger by tapping the lines, and
+       tapping anywhere else shuts it. */
+    root.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') root.classList.add('open'); });
+    root.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') root.classList.remove('open'); });
+    root.addEventListener('click', e => { if (!e.target.closest('.sn-link')) root.classList.toggle('open'); });
+    document.addEventListener('click', e => { if (!root.contains(e.target)) root.classList.remove('open'); });
     root.addEventListener('focusin', () => root.classList.add('open'));
     root.addEventListener('focusout', e => { if (!root.contains(e.relatedTarget)) root.classList.remove('open'); });
 
