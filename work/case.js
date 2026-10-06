@@ -167,3 +167,15 @@
   sn.showHome(true);
   sn.show(true);
 })();
+
+/* The way back: to the case-study list on the main site, under the wall. */
+(() => {
+  const a = document.createElement('a');
+  a.className = 'back'; a.href = '../index.html#cases';
+  a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>Back to work';
+  a.addEventListener('click', e => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    e.preventDefault(); window.__leave(a.getAttribute('href'));
+  });
+  document.body.append(a);
+})();
