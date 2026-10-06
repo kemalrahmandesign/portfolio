@@ -301,3 +301,12 @@ a{color:inherit}
   .arch-map{aspect-ratio:1/1}
 }
 @media (prefers-reduced-motion:reduce){ .arch-card.swap > *{animation:none} .an{transition:none} }
+
+/* Wide desktop: no head. The four section pills sit in a row, always open,
+   and Home lives at the top of the side rail. */
+@media (hover:hover) and (min-width:761px){
+  .tn-face,.tn-tip{display:none}
+  .topnav{background:none;box-shadow:none;padding:0}
+  .topnav .tn-drop,.topnav.open .tn-drop,.topnav.dropped .tn-drop{position:static;display:flex;transform:none;opacity:1;pointer-events:none}
+  .topnav .tn-drop a:nth-child(n){transform:none;opacity:1;margin:0;pointer-events:auto}
+}
