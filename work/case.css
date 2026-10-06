@@ -260,8 +260,9 @@ a{color:inherit}
 .ax{position:absolute;font:600 11px/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;opacity:.4;pointer-events:none}
 .ax-top{top:14px;left:50%;transform:translateX(-50%)}
 .ax-bot{bottom:14px;left:50%;transform:translateX(-50%)}
-.ax-l{left:16px;top:50%;transform:translateY(-50%) rotate(-90deg);transform-origin:left center;margin-top:44px}
-.ax-r{right:16px;top:50%;transform:translateY(-50%) rotate(90deg);transform-origin:right center;margin-top:-44px}
+.ax-l,.ax-r{top:50%;writing-mode:vertical-rl;white-space:nowrap}
+.ax-l{left:14px;transform:translateY(-50%) rotate(180deg)}
+.ax-r{right:14px;transform:translateY(-50%)}
 .an{
   position:absolute;transform:translate(-50%,-50%);width:clamp(38px,5.6vw,56px);aspect-ratio:1;border-radius:50%;
   background:var(--ink);color:var(--bg);border:0;padding:0;cursor:pointer;
@@ -313,3 +314,15 @@ a{color:inherit}
 
 /* The side rail is the menu now. */
 .topnav{display:none !important}
+
+/* A way back: to the work list on the main site, with the same wall drop. */
+.back{
+  position:fixed;z-index:70;top:clamp(10px,1.6vh,20px);left:clamp(10px,1.6vw,26px);
+  display:inline-flex;align-items:center;gap:.5em;padding:.62em 1.05em .62em .8em;border-radius:50px;
+  background:#fff;box-shadow:var(--lift);color:var(--ink);text-decoration:none;
+  font:700 14px/1 Inter,sans-serif;letter-spacing:-.005em;
+  transition:transform .35s var(--spring),box-shadow .25s ease;
+}
+.back svg{width:1.15em;height:1.15em;transition:transform .35s var(--spring)}
+.back:hover,.back:focus-visible{transform:translateX(2px);outline:0}
+.back:hover svg,.back:focus-visible svg{transform:translateX(-4px)}
