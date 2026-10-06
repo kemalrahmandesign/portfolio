@@ -92,16 +92,20 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   const wk = await w.evaluate(()=>({veil:+getComputedStyle(document.getElementById('cover')).opacity, top:Math.round(document.getElementById('cases').getBoundingClientRect().top)}));
   ok('Work from a case page shows the work, not a white screen', wk.veil===0 && Math.abs(wk.top)<140, JSON.stringify(wk));
   await w.close();
-  // the About text types in
-  const ty = await open('index.html#about'); await ty.waitForSelector('#work:not([hidden])',{timeout:8000}); await ty.waitForTimeout(1300);
-  const t1 = await ty.evaluate(()=>{const cs=[...document.querySelectorAll('#about .lede .c')]; const typed=cs.map(c=>c.classList.contains('t'));
-    const n=typed.filter(Boolean).length; return {n, total:cs.length, prefix:typed.every((v,i)=>!v||typed.slice(0,i).every(Boolean)), typing:document.getElementById('about').classList.contains('typing'),
-      caret:!!document.querySelector('#about .lede .c.last')};});
-  ok('about types in as a growing prefix, with a caret', t1.n>0 && t1.n<t1.total && t1.prefix && t1.typing && t1.caret, JSON.stringify(t1));
-  await ty.waitForTimeout(7000);
-  const t2 = await ty.evaluate(()=>({all:[...document.querySelectorAll('#about .lede .c')].every(c=>c.classList.contains('t')), typing:document.getElementById('about').classList.contains('typing'), hello:document.querySelector('#about .lede .ph').textContent}));
-  ok('and finishes the whole paragraph, hello first', t2.all && !t2.typing && /^Hi, I.m Kemal!/.test(t2.hello), JSON.stringify(t2));
+  // the About text pops in fast, no typing, and the side rail is there
+  const ty = await open('index.html#about'); await ty.waitForSelector('#work:not([hidden])',{timeout:8000}); await ty.waitForTimeout(1500);
+  const t1 = await ty.evaluate(()=>({pop:document.getElementById('about').classList.contains('pop'), op:+getComputedStyle(document.querySelector('#about .lede')).opacity,
+    rail:+getComputedStyle(document.querySelector('.sn')).opacity, rows:document.querySelectorAll('.sn .sn-link').length}));
+  ok('about pops in with no typing', t1.pop && t1.op===1, JSON.stringify(t1));
+  ok('side rail shows with six names', t1.rail===1 && t1.rows===6, JSON.stringify(t1));
+  await ty.hover('.sn'); await ty.waitForTimeout(700);
+  ok('hovering the rail opens the names', await ty.evaluate(()=>+getComputedStyle(document.querySelector('.sn-link')).opacity>0.4));
+  await ty.click('.sn-link >> nth=1'); await ty.waitForTimeout(1800);
+  ok('a name jumps to its section', await ty.evaluate(()=>Math.abs(document.getElementById('experience').getBoundingClientRect().top)<160));
   await ty.close();
+  const cp = await open('work/osmosis.html'); await cp.waitForTimeout(1200);
+  ok('case pages carry the rail', await cp.evaluate(()=>document.querySelectorAll('.sn .sn-link').length>=5 && +getComputedStyle(document.querySelector('.sn')).opacity===1));
+  await cp.close();
   ok('no JS errors', errs.length===0, errs.join(' | '));
   await b.close();
 })();

@@ -852,17 +852,6 @@ h1{
   max-width:min(22em,100%);margin-inline:auto;
 }
 .lede .w{display:inline-block;opacity:var(--o,1);transition:opacity .18s linear}
-/* Typed in, a character at a time, like someone at a keyboard. Every
-   character is in the layout from the start (just not painted), so the lines
-   never reflow as it goes. The caret rides on the last typed one. */
-.lede .c{position:relative}
-.about.typing .lede .c:not(.t){color:transparent}
-.lede .c.last::after{
-  content:"";position:absolute;left:100%;top:.12em;height:.88em;width:.075em;margin-left:.04em;
-  background:var(--ink);animation:caret 1s steps(1) infinite;
-}
-@keyframes caret{50%{opacity:0}}
-.about.typing .about-cue{opacity:0}
 /* The cue: a handwritten note and an arrow that bobs, in the studio's
    Kaushan Script. It leaves as soon as the reading starts. */
 .about-cue{
@@ -898,21 +887,12 @@ h1{
 .xp{padding:clamp(60px,12vh,140px) 0 clamp(40px,8vh,100px)}
 .xp-list{list-style:none;margin:0 auto;padding:0;max-width:980px;display:grid;gap:clamp(14px,2vh,22px)}
 .xp-card{
-  display:grid;grid-template-columns:auto 1fr auto;align-items:center;
+  display:grid;grid-template-columns:1fr auto;align-items:center;
   gap:clamp(14px,2vw,26px);
   background:#fff;border-radius:28px;box-shadow:var(--lift);
   padding:clamp(16px,2.2vw,26px) clamp(18px,2.6vw,32px);
   transition:transform .45s cubic-bezier(.34,1.56,.64,1);
 }
-.xp-card:hover{transform:translateY(-4px) rotate(-.8deg)}
-.xp-card:nth-child(even):hover{transform:translateY(-4px) rotate(.8deg)}
-.xp-mono{
-  width:clamp(48px,5vw,64px);aspect-ratio:1;border-radius:50%;
-  background:var(--ink);color:var(--bg);display:grid;place-items:center;
-  font:800 clamp(20px,2.2vw,28px)/1 var(--font-display);letter-spacing:-.04em;
-  transition:transform .6s cubic-bezier(.34,1.56,.64,1);
-}
-.xp-card:hover .xp-mono{transform:rotate(-14deg) scale(1.08)}
 .xp-who{margin:0;font:800 clamp(22px,2.6vw,36px)/1.05 var(--font-display);letter-spacing:-.035em}
 .xp-what{margin:.3em 0 0;font-size:clamp(13px,1.1vw,16px);color:rgba(10,10,10,.58);line-height:1.4}
 .xp-when{
@@ -920,21 +900,11 @@ h1{
   padding:.7em 1.1em;border-radius:50px;border:1.5px solid var(--ink);
   font-variant-numeric:tabular-nums;
 }
-/* The family: a dashed outline around the two siblings, named on its edge. */
-.xp-fam{
-  list-style:none;position:relative;border:2px dashed rgba(10,10,10,.28);border-radius:36px;
-  padding:clamp(26px,3.4vh,40px) clamp(10px,1.4vw,16px) clamp(10px,1.4vw,16px);
-  display:grid;gap:clamp(10px,1.4vh,16px);
-}
-.xp-fam > ul{list-style:none;margin:0;padding:0;display:grid;gap:inherit}
-.xp-fam-tag{
-  position:absolute;top:0;left:clamp(22px,3vw,40px);transform:translateY(-50%);
-  background:var(--bg);padding:0 .6em;
-  font:700 12px/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;
-}
+.xp-fam{list-style:none;display:grid}
+.xp-fam > ul{list-style:none;margin:0;padding:0;display:grid;gap:clamp(14px,2vh,22px)}
 @media (max-width:640px){
-  .xp-card{grid-template-columns:auto 1fr;border-radius:22px}
-  .xp-when{grid-column:2;justify-self:start}
+  .xp-card{grid-template-columns:1fr;border-radius:22px}
+  .xp-when{justify-self:start}
 }
 
 /* ---------- case studies ----------
@@ -983,7 +953,6 @@ h1{
    "coming soon" pill where "view project" would be. Not links. */
 .building{padding:0 0 clamp(60px,12vh,140px)}
 .build-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2.4vw,32px)}
-.build{cursor:not-allowed}
 .build-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.85) brightness(.94)}
 .build-frame{
   position:relative;overflow:hidden;border-radius:28px;aspect-ratio:3/2;box-shadow:var(--lift);
@@ -991,7 +960,6 @@ h1{
   background:#e4e3e0;
   transition:transform .5s cubic-bezier(.34,1.56,.64,1);
 }
-.build:hover .build-frame{transform:rotate(-1deg)}
 .build-name{
   font:800 clamp(28px,3.4vw,52px)/1 var(--font-display);letter-spacing:-.045em;
   text-align:center;padding:0 8%;color:rgba(10,10,10,.28);
@@ -1282,7 +1250,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
         <svg class="ring" aria-hidden="true" focusable="false">
           <rect width="100%" height="100%" pathLength="100"/>
         </svg>
-        Cool stuff
+        View my work
         <span class="arw" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
                stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
@@ -1341,22 +1309,18 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     </div>
     <ul class="xp-list" id="cv">
       <li class="xp-card">
-        <span class="xp-mono" aria-hidden="true">K</span>
         <div><h3 class="xp-who">Kemal Rahman Design</h3>
           <p class="xp-what">Founder. Design and development, end to end</p></div>
         <span class="xp-when">2026 &ndash; now</span>
       </li>
       <li class="xp-fam">
-        <span class="xp-fam-tag">Osmosis Labs</span>
         <ul>
           <li class="xp-card">
-            <span class="xp-mono" aria-hidden="true">P</span>
             <div><h3 class="xp-who">Polaris</h3>
               <p class="xp-what">Senior Product Designer &amp; Lead UX/UI Researcher</p></div>
             <span class="xp-when">2025</span>
           </li>
           <li class="xp-card">
-            <span class="xp-mono" aria-hidden="true">O</span>
             <div><h3 class="xp-who">Osmosis DEX</h3>
               <p class="xp-what">Junior Product Designer &amp; Lead UX/UI Researcher</p></div>
             <span class="xp-when">2024</span>
@@ -1364,7 +1328,6 @@ html.wall-in #wall{transform:translateY(0);transition:none}
         </ul>
       </li>
       <li class="xp-card">
-        <span class="xp-mono" aria-hidden="true">B</span>
         <div><h3 class="xp-who">Brainfood</h3>
           <p class="xp-what">UX Researcher</p></div>
         <span class="xp-when">2020 &ndash; 21</span>
@@ -2619,6 +2582,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     hardCut();
     setTimeout(land, 260);
   }
+  window.__goTo = goTo;
   document.querySelectorAll('.topnav [data-go]').forEach(a => {
     a.addEventListener('click', e => { e.preventDefault(); goTo(a.dataset.go); });
   });
@@ -2763,36 +2727,13 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   const chars = allWords.flatMap(w => [...w.querySelectorAll('.c')]);
   const helloChars = phrases[0] ? phrases[0].flatMap(w => [...w.querySelectorAll('.c')]).length : 0;
 
-  /* ---- about: typed in ----
-     "Hi, I'm Kemal!" goes in at a human pace with a beat after the comma
-     and another once it is done, then the rest of the paragraph follows
-     quickly, still pale, for the scroll to fill in. */
-  let typeTimer = 0;
-  function setTyped(n){
-    chars.forEach((c, i) => { c.classList.toggle('t', i < n); c.classList.toggle('last', i === n - 1); });
-  }
-  function finishTyping(){
-    clearTimeout(typeTimer);
-    setTyped(chars.length);
-    about.classList.remove('typing');
-    setTimeout(() => chars.forEach(c => c.classList.remove('last')), 1400);
-  }
-  function typeAbout(){
-    clearTimeout(typeTimer);
-    about.classList.add('typing'); setTyped(0);
-    let i = 0;
-    const step = () => {
-      i++; setTyped(i);
-      if (i >= chars.length){ finishTyping(); return; }
-      const ch = chars[i - 1].textContent, hello = i <= helloChars;
-      let d = hello ? 70 + Math.random() * 70 : 11 + Math.random() * 15;
-      if (/[,.!]/.test(ch)) d += hello ? 260 : 110;
-      if (i === helloChars) d += 340;
-      typeTimer = setTimeout(step, d);
-    };
-    typeTimer = setTimeout(step, 450);
-  }
-  function armTyping(){ clearTimeout(typeTimer); about.classList.add('typing'); setTyped(0); }
+  /* ---- about: a quick hop in ----
+     No typing. People waited for it, then assumed there was nothing more to
+     do. The paragraph pops in fast, pale, and the scroll takes over from
+     there, which is the thing they need to find out. */
+  allWords.forEach((w, i) => w.style.setProperty('--i', i));
+  function popAbout(){ about.classList.remove('pre'); about.classList.add('pop'); }
+  function armAbout(){ about.classList.remove('pop'); about.classList.add('pre'); }
 
   /* Read by scrolling. Progress through the tall section maps onto the
      words: everything up to the reading point is full ink, the next few
@@ -2809,16 +2750,14 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       w.style.setProperty('--o', o.toFixed(2));
     });
     about.classList.toggle('read', -r.top > 24);
-    /* Scrolling on means the reader is ahead of the typing: finish it. */
-    if (-r.top > 24 && about.classList.contains('typing')) finishTyping();
   }
   if (lede && !still){
     addEventListener('scroll', readAbout, { passive: true });
     addEventListener('resize', readAbout);
     new MutationObserver(readAbout).observe(document.getElementById('work'), { attributes: true, attributeFilter: ['hidden'] });
     readAbout();
-    armTyping();
-    onView(lede, 0.4, typeAbout, armTyping);
+    armAbout();
+    onView(lede, 0.4, popAbout, armAbout);
   }
 
   /* ---- section titles: a bounce and a scribble ----
@@ -2902,6 +2841,17 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       } finally { btn.disabled = false; }
     });
   }
+})();
+</script>
+<script src="work/sidenav.js"></script>
+<script>
+(() => {
+  const w = document.getElementById('work');
+  if (!window.SideNav || !w) return;
+  const sn = SideNav.init([['about','About'],['experience','Experience'],['reel','Reel'],['cases','Case studies'],['building','Building'],['contact','Contact']]
+    .map(([id, label]) => ({ label, el: document.getElementById(id) })), it => window.__goTo(it.el.id));
+  const sync = () => sn.show(!w.hidden);
+  new MutationObserver(sync).observe(w, { attributes: true, attributeFilter: ['hidden'] }); sync();
 })();
 </script>
 </body>
