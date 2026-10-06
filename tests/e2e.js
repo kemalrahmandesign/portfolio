@@ -16,7 +16,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
     h=document.querySelector('h1').getBoundingClientRect();
     return {navB:Math.round(n.bottom), h1T:Math.round(h.top), h1B:Math.round(h.bottom)};});
   ok('masthead clears the menu', hero.h1T > hero.navB, JSON.stringify(hero));
-  ok('avatar loaded', await E(()=>{const i=document.getElementById('tnFaceImg');return i.naturalWidth>0;}));
+  ok('no head in the desktop nav', await E(()=>getComputedStyle(document.getElementById('tnFace')).display==='none'));
 
   // overscroll
   const x0 = await E(()=>Math.round(document.querySelector('h1').getBoundingClientRect().left));
@@ -72,8 +72,9 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('every hotspot reaches past its drawn box', hitSize.every(x=>x.endsWith('-18px -18px -18px -18px')||x.includes('-18px')), hitSize.join(' '));
 
   // cta -> take
-  ok('no fast forward button', (await E(()=>!document.getElementById('skip'))));
+  ok('fast forward hidden before press', (await E(()=>getComputedStyle(document.getElementById('skip')).opacity))==='0');
   await p.click('#cta'); await p.waitForTimeout(800);
+  ok('fast forward is there during the take', (await E(()=>getComputedStyle(document.getElementById('skip')).opacity))==='1');
   ok('props are inert and unlabelled while the take plays', (await E(()=>{
     return [...document.querySelectorAll('.prop-hit')].every(h=>getComputedStyle(h).pointerEvents==='none') &&
       [...document.querySelectorAll('.prop-tag')].every(t=>+getComputedStyle(t).opacity<0.1);})));
@@ -84,22 +85,19 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   ok('take lands in the monitor', true, (Date.now()-t0)+'ms');
   await p.waitForTimeout(2000);
   ok('menu arrives with the monitor', (await E(()=>getComputedStyle(document.getElementById('topnav')).opacity))==='1');
-  await p.hover('#tnFace'); await p.waitForTimeout(700);
   const order = await E(()=>[...document.querySelectorAll('.tn-drop a')]
       .filter(a=>getComputedStyle(a).display!=='none')
       .sort((a,c)=>a.getBoundingClientRect().left-c.getBoundingClientRect().left).map(a=>a.getAttribute('aria-label')));
   ok('hover opens about, experience | work, contact (no home pill)',
      order.join(',')==='about,experience,work,contact', order.join(','));
   ok('menu is lowercase', order.every(t=>t===t.toLowerCase()));
-  const pills = await E(()=>{const f=document.getElementById('tnFace').getBoundingClientRect();
-    const as=[...document.querySelectorAll('.tn-drop a')].filter(a=>getComputedStyle(a).display!=='none').map(a=>a.getBoundingClientRect());
-    const fc=(f.left+f.right)/2;
-    return {left:as.filter(r=>r.right<f.left).length, right:as.filter(r=>r.left>f.right).length,
-      sym:Math.round((fc-as[0].left)-(as[3].right-fc)), mid:Math.round((as[0].top+as[0].bottom)/2-(f.top+f.bottom)/2)};});
+  const pills = await E(()=>{const as=[...document.querySelectorAll('.tn-drop a')].filter(a=>getComputedStyle(a).display!=='none').map(a=>a.getBoundingClientRect());
+    return {n:as.length, mid:Math.round(Math.max(...as.map(r=>r.top+r.height/2))-Math.min(...as.map(r=>r.top+r.height/2))),
+      centre:Math.round((as[0].left+as[as.length-1].right)/2-innerWidth/2)};});
   ok('each pill carries its fill blob and does not tilt', (await E(()=>{
     const as=[...document.querySelectorAll('.tn-drop a')].filter(a=>getComputedStyle(a).display!=='none');
     return as.length===4 && as.every(a=>a.querySelector('.bl') && getComputedStyle(a).transform==='matrix(1, 0, 0, 1, 0, 0)' || getComputedStyle(a).transform==='none');})));
-  ok('two pills each side of the face, level and symmetric', pills.left===2 && pills.right===2 && Math.abs(pills.sym)<3 && Math.abs(pills.mid)<3, JSON.stringify(pills));
+  ok('four pills in a level row, centred', pills.n===4 && pills.mid<3 && Math.abs(pills.centre)<4, JSON.stringify(pills));
   const flip = await E(()=>document.querySelectorAll('.tn-drop a .tk-c').length);
   ok('links split into flip cells', flip>20, flip+' cells');
   await p.mouse.move(700,700); await p.waitForTimeout(500);
@@ -215,7 +213,6 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
 
   // studio
   await p.evaluate(()=>scrollTo(0,0)); await p.waitForTimeout(200);
-  await p.hover('#tnFace'); await p.waitForTimeout(500);
   /* Polled across the fall rather than sampled on one instant. The wall
      covers for about 150ms before the swap, and where in the run that lands
      depends on how busy the page was; a fixed sample point tests the
@@ -225,7 +222,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
      miss a 150ms window between its own round trips. */
   await E(()=>{window.__cov=false; const w=document.getElementById('wall');
     (function f(){const r=w.getBoundingClientRect(); if (r.top<=0 && r.bottom>=innerHeight) window.__cov=true; else if(!window.__stop) requestAnimationFrame(f);})();});
-  await p.click('#tnFace');
+  await E(()=>window.__goTo('hero'));
   await p.waitForTimeout(1200);
   const sawCover = await E(()=>window.__cov);
   ok('wall covers before the swap', sawCover);
@@ -244,7 +241,7 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
   await p.waitForTimeout(1800);
   await E(()=>{window.__cov2=false; const w=document.getElementById('wall');
     (function f(){const r=w.getBoundingClientRect(); if (r.top<=0 && r.bottom>=innerHeight) window.__cov2=true; else requestAnimationFrame(f);})();});
-  await p.click('#tnFace');
+  await E(()=>window.__goTo('hero'));
   await p.waitForTimeout(240);
   const topAt = () => E(()=>Math.round(document.getElementById('wall').getBoundingClientRect().top));
   const a1 = await topAt(); await p.waitForTimeout(130); const a2 = await topAt();

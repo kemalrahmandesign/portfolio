@@ -66,6 +66,7 @@
     wall.classList.add('down');
     setTimeout(() => { location.href = href; }, 560);
   };
+  window.__leave = leave;
   addEventListener('pageshow', e => { if (e.persisted && wall) wall.classList.remove('down'); });
   if (nav){
     nav.querySelectorAll('.tn-drop a').forEach(a => a.addEventListener('click', e => {
@@ -92,9 +93,11 @@
         a.addEventListener('pointerenter', at); a.addEventListener('pointerleave', at);
       });
       nav.addEventListener('pointerenter', () => nav.classList.add('open'));
-      nav.addEventListener('pointerleave', () => nav.classList.remove('open'));
+      const WIDE = matchMedia('(min-width:761px)').matches;
+      if (WIDE) nav.classList.add('open');
+      nav.addEventListener('pointerleave', () => { if (!WIDE) nav.classList.remove('open'); });
       nav.addEventListener('focusin', () => nav.classList.add('open'));
-      nav.addEventListener('focusout', e => { if (!nav.contains(e.relatedTarget)) nav.classList.remove('open'); });
+      nav.addEventListener('focusout', e => { if (!WIDE && !nav.contains(e.relatedTarget)) nav.classList.remove('open'); });
       face.addEventListener('click', () => leave('../index.html'));
     } else {
       const set = o => { nav.classList.toggle('dropped', o); face.setAttribute('aria-expanded', o ? 'true' : 'false'); };
@@ -160,6 +163,7 @@
     if (label.length > 26) label = label.slice(0, 25).trim() + '\u2026';
     return { label, el };
   }).filter(i => i.label);
-  const sn = SideNav.init(items);
+  const sn = SideNav.init([{ label: 'Home', home: true }, ...items], it => { if (it.home) window.__leave('../index.html'); else it.el.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  sn.showHome(true);
   sn.show(true);
 })();

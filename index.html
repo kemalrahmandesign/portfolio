@@ -318,18 +318,18 @@ h1{
 .cta{
   position:relative;
   pointer-events:auto;appearance:none;cursor:pointer;
-  /* Measured off the reference: the word fills about half the pill's height
-     and sits close to the ends, so the type is heavier and larger and the
-     padding is tighter than the first pass, which had the text at 42% of the
-     height and floating in the middle of a long capsule. */
-  font:inherit;font-weight:800;font-size:clamp(16px,1.7vw,35px);
-  letter-spacing:-.018em;color:var(--ink);background:transparent;
+  /* A plain ink pill with a round arrow: friendly, readable on any frame of
+     the studio, and nothing to wonder about. */
+  font:inherit;font-weight:700;font-size:clamp(16px,1.45vw,28px);
+  letter-spacing:-.012em;color:#fff;background:var(--ink);
   border:0;border-radius:999px;
-  padding:.52em .62em .52em 1.05em;display:inline-flex;align-items:center;gap:.5em;
+  padding:.5em .5em .5em 1.15em;display:inline-flex;align-items:center;gap:.7em;
+  box-shadow:0 1px 2px rgba(10,10,10,.12),0 8px 22px rgba(10,10,10,.16);
   opacity:0;transform:translateY(14px);
   transition:opacity .55s ease .45s,transform .55s cubic-bezier(.16,1,.3,1) .45s,
-             color .18s ease;
+             box-shadow .25s ease;
 }
+.cta .ring{display:none}
 
 /* The dashes travel around the pill.
 
@@ -380,7 +380,7 @@ h1{
    speed up so the button reads as working rather than broken, and the take
    starts the moment he finishes waving. */
 .hero.armed .cta{cursor:default}
-.scrubmode .cta-wrap{display:none}
+.scrubmode .cta-wrap,.scrubmode .skip{display:none}
 .hero.armed .cta .ring rect{animation-duration:.55s}
 /* The dashes are an SVG stroke animation, which the browser repaints on the
    main thread every frame. The button is fading out for the take, and the
@@ -394,8 +394,8 @@ h1{
 .cta:focus-visible{outline:none}
 .cta .arw{
   flex:none;display:grid;place-items:center;
-  width:1.34em;height:1.34em;border-radius:50%;
-  background:var(--ink);color:#fff;
+  width:1.5em;height:1.5em;border-radius:50%;
+  background:#fff;color:var(--ink);
   transition:transform .18s cubic-bezier(.16,1,.3,1);
 }
 .cta .arw svg{width:.66em;height:.66em;display:block}
@@ -423,7 +423,7 @@ h1{
    The headline, the button and the skip link are small, so promoting them
    costs nothing. They share a duration and easing and start in the same frame,
    so they still leave together. */
-#headline,.tagline,.cta{transition:opacity 420ms ease}
+#headline,.tagline,.cta,.skip{transition:opacity 420ms ease}
 .hero.is-leaving #headline,
 .hero.is-leaving .tagline{opacity:0}
 /* .cta carries a 550ms entry delay from .is-in; restate the transition so
@@ -640,6 +640,33 @@ h1{
   letter-spacing:-.01em;
 }
 
+/* ---------- fast forward ----------
+   This used to be a text link that skipped the intro, and it was on screen
+   from the first frame: an exit offered before there was anything to exit.
+   It now does the opposite job. It appears only once the take is running and
+   it does not cut away; it seeks the clip to the start of the push-in, so the
+   move into the monitor still plays, just sooner.
+
+   The icon is the transport symbol for exactly that, two triangles, rather
+   than the skip-to-end bar: this is fast forward, not a cut. */
+.skip{
+  position:absolute;right:var(--pad);bottom:var(--pad);z-index:4;
+  appearance:none;border:0;cursor:pointer;background:none;padding:10px;
+  display:inline-flex;align-items:center;justify-content:center;
+  color:var(--ink);
+  opacity:0;transform:translateY(8px);pointer-events:none;
+  transition:opacity 320ms ease 260ms,transform 320ms cubic-bezier(.16,1,.3,1) 260ms,color .2s ease;
+}
+.hero.is-leaving .skip{opacity:1;transform:none;pointer-events:auto}
+.skip svg{opacity:.38;transition:opacity .2s ease}
+/* The two triangles overlap by a sliver. Muted with a translucent colour
+   that sliver was painted twice and showed as a darker band; muting the whole
+   icon as one layer (opacity on the svg) flattens it first. */
+.skip:hover svg,.skip:focus-visible svg{opacity:.75}
+.skip:active{transform:scale(.92)}
+.skip.ffwd svg{opacity:.7}
+.skip svg{display:block}
+
 /* ---------- the handoff ---------- */
 /* The monitor's power-on flicker happens inside the clip, so this cover has
    only one job: close the gap between the video's white and the page's white.
@@ -832,6 +859,15 @@ h1{
   .topnav.open .tn-drop a:hover .bl::before,.topnav.open .tn-drop a:focus-visible .bl::before{transform:scale(1)}
   .topnav.open .tn-drop a:hover,.topnav.open .tn-drop a:focus-visible{color:var(--bg);transition-delay:.06s}
   .topnav.open .tn-drop:hover a:not(:hover):not(:focus-visible){opacity:.55}
+}
+
+/* Wide desktop: no head. The four section pills sit in a row, always open,
+   and Home lives at the top of the side rail. */
+@media (hover:hover) and (min-width:761px){
+  .tn-face,.tn-tip{display:none}
+  .topnav{background:none;box-shadow:none;padding:0}
+  .topnav .tn-drop,.topnav.open .tn-drop,.topnav.dropped .tn-drop{position:static;display:flex;transform:none;opacity:1;pointer-events:none}
+  .topnav .tn-drop a:nth-child(n){transform:none;opacity:1;margin:0;pointer-events:auto}
 }
 
 /* ---------- about ----------
@@ -1250,7 +1286,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
         <svg class="ring" aria-hidden="true" focusable="false">
           <rect width="100%" height="100%" pathLength="100"/>
         </svg>
-        View my work
+        My work
         <span class="arw" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
                stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
@@ -1271,6 +1307,12 @@ html.wall-in #wall{transform:translateY(0);transition:none}
 
 
 
+  <button class="skip" id="skip" type="button" aria-label="Fast forward" title="Fast forward">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M3 5.4c0-1 1.1-1.6 2-1.1l8.6 5.4a1.3 1.3 0 0 1 0 2.2L5 17.7c-.9.5-2-.1-2-1.1z"/>
+      <path d="M12.4 5.4c0-1 1.1-1.6 2-1.1L23 9.7a1.3 1.3 0 0 1 0 2.2l-8.6 5.8c-.9.5-2-.1-2-1.1z"/>
+    </svg>
+  </button>
 </section>
 
   <div class="underside" id="underside" aria-hidden="true">
@@ -1556,6 +1598,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   const stage = document.getElementById('stage');
   const poster = document.getElementById('poster');
   const cta = document.getElementById('cta');
+  const skip = document.getElementById('skip');
   const cover = document.getElementById('cover');
   const work = document.getElementById('work');
   const A = document.getElementById('vidA');
@@ -2476,11 +2519,13 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   if (topnav && matchMedia('(hover: hover)').matches) topnav.querySelectorAll('.tn-drop a').forEach(a => { splitTicker(a); addBlob(a); });
 
   let navOpen = false;
+  const WIDE = matchMedia('(hover:hover) and (min-width:761px)').matches;
   function setNav(open){
     navOpen = open;
-    topnav.classList.toggle('open', open);
+    topnav.classList.toggle('open', open || WIDE);
     face.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
+  if (WIDE) topnav.classList.add('open');
   if (topnav){
     topnav.addEventListener('pointerenter', e => { if (e.pointerType !== 'touch') setNav(true); });
     topnav.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') setNav(false); });
@@ -2555,6 +2600,8 @@ html.wall-in #wall{transform:translateY(0);transition:none}
          time through, and `skip.disabled` left the button dead. */
       [A, B, C].forEach(v => { v.classList.remove('zoom', 'fixc'); v.pause(); v.playbackRate = 1; });
       take = null;
+      skip.disabled = false;
+      skip.classList.remove('ffwd');
       live = null;
       poster.style.transition = 'none'; poster.style.opacity = '1'; poster.style.zIndex = '2';
       live = poster;
@@ -2684,6 +2731,32 @@ html.wall-in #wall{transform:translateY(0);transition:none}
 
 
   cta.addEventListener('click', enter);
+  /* Fast forward: run the clip faster, do not jump over it.
+
+     The first version seeked to just before the push-in, which got you to the
+     monitor but threw away the walk, the sit and the cat. Kemal wanted the
+     tape sped up, which is also the thing the icon promises. playbackRate is
+     the honest version of that and no container can refuse it, where a seek
+     can and did.
+
+     The push-in and the cover are both triggered off currentTime, so they
+     come round sooner on their own; only the 1400ms push-in animation runs on
+     wall-clock time, and at 4x the clip has 1.6s left when it starts, which
+     still covers it. */
+  const FF = 4;
+  skip.addEventListener('click', () => {
+    const W = take;
+    if (!W || !W.duration || !isFinite(W.duration)){
+      queued = false; entered = true; looping = false;
+      hardCut();
+      return;
+    }
+    if (W.playbackRate >= FF) return;      // already winding
+    W.playbackRate = FF;
+    skip.classList.add('ffwd');
+    W.play().catch(() => {});
+  });
+
 })();
 </script>
 <script src="vendor/gsap.min.js"></script>
@@ -2848,8 +2921,15 @@ html.wall-in #wall{transform:translateY(0);transition:none}
 (() => {
   const w = document.getElementById('work');
   if (!window.SideNav || !w) return;
-  const sn = SideNav.init([['about','About'],['experience','Experience'],['reel','Reel'],['cases','Case studies'],['building','Building'],['contact','Contact']]
-    .map(([id, label]) => ({ label, el: document.getElementById(id) })), it => window.__goTo(it.el.id));
+  const sn = SideNav.init([{ label: 'Home', home: true }, ...[['about','About'],['experience','Experience'],['reel','Reel'],['cases','Case studies'],['building','Building'],['contact','Contact']]
+    .map(([id, label]) => ({ label, el: document.getElementById(id) }))], it => window.__goTo(it.home ? 'hero' : it.el.id));
+  /* Home waits until they have been through the page: on the way in it is
+     only a way back to where they just were. */
+  let seen = false; try { seen = sessionStorage.getItem('explored') === '1'; } catch (e) {}
+  sn.showHome(seen);
+  new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting && !seen){ seen = true; sn.showHome(true); try { sessionStorage.setItem('explored', '1'); } catch (x) {} }
+  }), { threshold: 0.3 }).observe(document.getElementById('building'));
   const sync = () => sn.show(!w.hidden);
   new MutationObserver(sync).observe(w, { attributes: true, attributeFilter: ['hidden'] }); sync();
 })();

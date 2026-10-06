@@ -37,7 +37,7 @@
   const MINOR = 2;                      // quiet lines between two names
 
   function init(items, jump){
-    items = items.filter(i => i && i.el);
+    items = items.filter(i => i && (i.el || i.home));
     if (items.length < 2) return { show(){} };
     const st = document.createElement('style'); st.textContent = CSS; document.head.append(st);
 
@@ -49,6 +49,7 @@
 
     const ticks = [];                   // { bar, u }  u = position in item units
     const links = [];
+    const homeRows = [];
     items.forEach((it, i) => {
       for (let m = 0; m <= (i < items.length - 1 ? MINOR : 0); m++){
         const li = document.createElement('li'); li.className = 'sn-row' + (m ? '' : ' major');
@@ -64,6 +65,7 @@
           li.append(a); links.push(a);
         }
         list.append(li);
+        if (it.home) homeRows.push(li);
         ticks.push({ bar, u: i + m / (MINOR + 1), major: !m });
       }
     });
@@ -74,14 +76,17 @@
 
     /* Where we are, as a fractional index: how far through the gap between
        one tracked section's top and the next one's the reading line has got. */
+    const lead = Math.max(0, items.findIndex(i => i.el));
     function where(){
       const line = innerHeight * 0.4;
-      const tops = items.map(i => i.el.getBoundingClientRect().top);
+      const real = items.slice(lead);
+      const tops = real.map(i => i.el.getBoundingClientRect().top);
+      if (tops[0] > line) return Math.max(0, lead - 1);
       let k = 0;
       for (let i = 0; i < tops.length; i++) if (tops[i] <= line) k = i;
       const next = tops[k + 1];
       const f = next === undefined ? 0 : Math.min(1, Math.max(0, (line - tops[k]) / Math.max(1, next - tops[k])));
-      return tops[0] > line ? 0 : k + f;
+      return lead + k + f;
     }
     let raf = 0, last = -1;
     function draw(){
@@ -109,7 +114,8 @@
     root.addEventListener('focusin', () => root.classList.add('open'));
     root.addEventListener('focusout', e => { if (!root.contains(e.relatedTarget)) root.classList.remove('open'); });
 
-    return { show(on){ root.classList.toggle('on', !!on); if (on){ last = -1; kick(); } } };
+    const showHome = on => { homeRows.forEach(r => { r.hidden = !on; r.style.display = on ? '' : 'none'; }); };
+    return { showHome, show(on){ root.classList.toggle('on', !!on); if (on){ last = -1; kick(); } } };
   }
   window.SideNav = { init };
 })();
