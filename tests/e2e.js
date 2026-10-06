@@ -152,13 +152,11 @@ const ok = (n,c,d='') => console.log((c?'PASS':'FAIL')+'  '+n+(d?'  '+d:''));
     document.querySelector('.lede').textContent.replace(/\s+/g,' ').includes('I’m a product designer who spent'))));
   const aboutRead = async at => { await p.evaluate(v=>{const a=document.getElementById('about');
       scrollTo(0, a.getBoundingClientRect().top + scrollY + (a.offsetHeight - innerHeight) * v);}, at);
-    /* Back at the top the section re-arms and types itself in again; wait it out. */
-    if (at===0) await p.waitForFunction(()=>+getComputedStyle(document.querySelector('.about-cue')).opacity>0.9,null,{timeout:25000}).catch(()=>{});
+    if (at===0) await p.waitForFunction(()=>+getComputedStyle(document.querySelector('.about-cue')).opacity>0.9,null,{timeout:5000}).catch(()=>{});
     await p.waitForTimeout(400);
     return E(()=>{const ws=[...document.querySelectorAll('.lede .w')].map(w=>+getComputedStyle(w).opacity);
       return {lit:ws.filter(o=>o>0.95).length, n:ws.length, cue:+getComputedStyle(document.querySelector('.about-cue')).opacity};}); };
-  /* The About text types itself in first, and the cue stays away until it has. */
-  await p.waitForFunction(()=>!document.getElementById('about').classList.contains('typing'),null,{timeout:20000}).catch(()=>{});
+  await p.waitForTimeout(1200);
   const r0 = await aboutRead(0), r1 = await aboutRead(1);
   ok('about starts with the hello lit and a scroll cue', r0.lit>0 && r0.lit<r0.n && r0.cue>0.9, JSON.stringify(r0));
   ok('scrolling reads the whole paragraph and the cue leaves', r1.lit===r1.n && r1.cue<0.1, JSON.stringify(r1));

@@ -149,3 +149,17 @@
     map.classList.remove('has-pick');
   }
 })();
+
+/* The side rail: one line per titled section. */
+(() => {
+  if (!window.SideNav) return;
+  const names = { 'hero-c': 'Overview', nums: 'In numbers', reflect: 'The lesson' };
+  const items = [...document.querySelectorAll('section')].map(el => {
+    const h = el.querySelector('h2');
+    let label = el.dataset.nav || (h && h.textContent.trim()) || names[[...el.classList].find(c => names[c])] || '';
+    if (label.length > 26) label = label.slice(0, 25).trim() + '\u2026';
+    return { label, el };
+  }).filter(i => i.label);
+  const sn = SideNav.init(items);
+  sn.show(true);
+})();
