@@ -220,9 +220,13 @@ body{
    so the push is a straight scale with nothing to re-centre. 1.75 takes the screen past the frame edges, bezel and rounded corners included, so the last frame is only screen. */
 @keyframes pushin-p{
   from{transform:scale(1)}
-  to  {transform:scale(1.75)}
+  to  {transform:scale(2.6)}
 }
-@media (max-aspect-ratio:1/1){ .stage video.zoom{animation-name:pushin-p} }
+/* Measured off the real take: the clip's own move settles at about 7.6s, and the
+   screen then sits at 50% across, 49% down, 43% of the frame wide and 51% tall.
+   Scaling about that point keeps it dead centre; 2.6x clears the frame on any
+   phone shape, rounded corners included. It starts as the clip's move ends. */
+@media (max-aspect-ratio:1/1){ .stage video.zoom{animation-name:pushin-p;animation-duration:1900ms;transform-origin:50% 49%} }
 
 /* Shown only when the clips cannot be fetched, so the layout still reads. */
 .stage-missing{
@@ -2015,7 +2019,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     let zoomed = false, armed = false;
     const at = () => {
       const end = W.duration || 10;
-      if (!zoomed && W.currentTime >= end - ZOOM) {
+      if (!zoomed && W.currentTime >= end - (PORTRAIT ? 2.4 : ZOOM)) {
         zoomed = true;
         W.classList.add('zoom');        // push the panel to full frame
       }
