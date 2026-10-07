@@ -222,11 +222,9 @@ body{
   from{transform:scale(1)}
   to  {transform:scale(2.6)}
 }
-/* Measured off the real take: the clip's own move settles at about 7.6s, and the
-   screen then sits at 50% across, 49% down, 43% of the frame wide and 51% tall.
-   Scaling about that point keeps it dead centre; 2.6x clears the frame on any
-   phone shape, rounded corners included. It starts as the clip's move ends. */
-@media (max-aspect-ratio:1/1){ .stage video.zoom{animation-name:pushin-p;animation-duration:1900ms;transform-origin:50% 49%} }
+/* On a phone the push is driven from the script, frame by frame off the clip's own clock,
+   so it cannot start late or drift if playback stalls (see the take in enter()). */
+@media (max-aspect-ratio:1/1){ .stage video.zoom{animation:none} }
 
 /* Shown only when the clips cannot be fetched, so the layout still reads. */
 .stage-missing{
@@ -1254,10 +1252,14 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     flex-direction:column;align-items:center;gap:.25em;
     font-size:clamp(15px,4.4vw,22px);
   }
+  /* Up in the gap between the tagline and his head: lower down it sat on Nova. */
   .cta-wrap{
-    top:auto;bottom:14vh;transform:none;
+    top:27.5%;bottom:auto;transform:translateY(-50%);
     left:0;right:0;justify-content:center;
   }
+  /* Bigger, on the floor under Nova. */
+  .social{bottom:clamp(14px,3.2vh,34px);gap:clamp(14px,4.4vw,22px)}
+  .social a{width:clamp(46px,12.5vw,60px)}
 }
 @media (prefers-reduced-motion:reduce){
   .scroll .chev{animation:none}
@@ -2028,6 +2030,22 @@ html.wall-in #wall{transform:translateY(0);transition:none}
         cover.classList.add('take');
       }
     };
+    if (PORTRAIT) {
+      /* Measured off the real take: the clip's own move settles at about 7.6s of 10 and
+         the lit screen then sits at 50% across, 49% down, 43% of the frame wide. Scale
+         about that point, eased, reaching 2.6x at the very end so the screen covers the
+         frame on any phone shape and the page can take over from pure screen. */
+      const PUSH = 2.6, PUSH_FROM = 2.6;       // final scale; seconds before the end it starts
+      const push = () => {
+        const end = W.duration || 10;
+        const p = Math.min(1, Math.max(0, (W.currentTime - (end - PUSH_FROM)) / (PUSH_FROM - 0.05)));
+        const e = 0.5 - 0.5 * Math.cos(Math.PI * p);
+        W.style.transformOrigin = '50% 49%';
+        W.style.transform = p > 0 ? `scale(${(1 + (PUSH - 1) * e).toFixed(4)})` : '';
+        if (!revealed) (W.requestVideoFrameCallback ? W.requestVideoFrameCallback(push) : requestAnimationFrame(push));
+      };
+      push();
+    }
     if (W.requestVideoFrameCallback) {
       const tick = () => { at(); if (!armed) W.requestVideoFrameCallback(tick); };
       W.requestVideoFrameCallback(tick);
@@ -2668,7 +2686,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       /* Every layer goes back to how it started. The take's playbackRate in
          particular: left at 4 it made the whole sequence run at 4x the second
          time through, and `skip.disabled` left the button dead. */
-      [A, B, C].forEach(v => { v.classList.remove('zoom', 'fixc'); v.pause(); v.defaultPlaybackRate = 1; v.playbackRate = 1; });
+      [A, B, C].forEach(v => { v.classList.remove('zoom', 'fixc'); v.style.transform = ''; v.style.transformOrigin = ''; v.pause(); v.defaultPlaybackRate = 1; v.playbackRate = 1; });
       take = null;
       skip.disabled = false;
       skip.classList.remove('ffwd');
