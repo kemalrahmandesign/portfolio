@@ -1828,6 +1828,9 @@ html.wall-in #wall{transform:translateY(0);transition:none}
        straight to it, skipping the greeting and the walk. */
     const deep = location.hash.slice(1);
     if (['about','experience','reel','cases','building','contact'].includes(deep)){
+      /* Consume the address: a refresh from here should start at the studio like
+         any other, not jump straight back into the page. */
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
       waveEnded = true;
       goTo(deep);
       liftWall(750);
@@ -1868,7 +1871,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   const probe = new Image();
   probe.onload  = boot;
   probe.onerror = () => { useFallback = true; boot(); };
-  probe.src = POSTER;
+  probe.src = 'media/hub.jpg';          // always the local file: it decides local vs CDN for everything
 
   /* Set once the greeting is done, so enter() knows whether to run now or
      bank the press until it is. */
@@ -2053,16 +2056,19 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   }
   heroShell.addEventListener('wheel', onWheel, { passive: false });
 
+  /* A finger is left alone: the arc fought the browser's own pull to refresh and
+     felt wrong on a phone. It stays a mouse and trackpad thing. */
+  const TOUCHY = matchMedia('(hover: none)').matches;
   let touchY = null;
-  heroShell.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; raw = 0; }, {passive:true});
-  heroShell.addEventListener('touchmove', e => {
+  if (!TOUCHY) heroShell.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; raw = 0; }, {passive:true});
+  if (!TOUCHY) heroShell.addEventListener('touchmove', e => {
     if (touchY === null || revealed || entered || SCRUB) return;
     const dy = touchY - e.touches[0].clientY;
     if (dy <= 0) return;
     raw = dy;
     setPull(damp(raw), false);
   }, {passive:true});
-  heroShell.addEventListener('touchend', () => { touchY = null; raw = 0; release(); }, {passive:true});
+  if (!TOUCHY) heroShell.addEventListener('touchend', () => { touchY = null; raw = 0; release(); }, {passive:true});
 
   /* ---- ?scroll: the take is driven by the scroll wheel ----
      A trial of the same intro without the call to action. Scrolling scrubs the
