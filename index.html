@@ -222,9 +222,7 @@ body{
   from{transform:scale(1)}
   to  {transform:scale(1.16)}
 }
-/* No extra push on a phone: the take zooms into the screen by itself, and a transform
-   animation starting on a full-screen video flickers on iOS. */
-@media (max-aspect-ratio:1/1){ .stage video.zoom{animation:none} }
+@media (max-aspect-ratio:1/1){ .stage video.zoom{animation-name:pushin-p} }
 
 /* Shown only when the clips cannot be fetched, so the layout still reads. */
 .stage-missing{
@@ -557,7 +555,6 @@ h1{
 /* While the take plays, or a press is waiting for the wave to finish, the
    props are inert and their writing and arrows are gone. */
 .hero.is-leaving .prop-hit,.hero.armed .prop-hit{pointer-events:none}
-/* No props to poke on a phone: a tap would leave a label stuck on screen. */
 @media (hover:none){.prop-hit{pointer-events:none}.prop-tag,.prop-curls{display:none}}
 .hero.is-leaving .prop-tag,.hero.is-leaving .prop-curls,
 .hero.armed .prop-tag,.hero.armed .prop-curls{opacity:0;transition:opacity .15s ease}
@@ -1572,7 +1569,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     POSTER = HF + 'hf_20261007_053730_e6fe7289-46ad-4cda-b68c-9a7c053dfb1f.png';
     CLIPS.wave = { src: HF + 'hf_20261007_054120_fb75ec3d-3211-4db3-8218-575d167ab048.mp4', head: 0.067 };
     CLIPS.idle = null;
-    CLIPS.walk = { src: HF + 'hf_20261007_055038_565f18ac-e66b-4ddd-acb6-3364b279b04e.mp4', head: 0, speed: { from: 3.2, rate: 1.5 } };
+    CLIPS.walk = { src: HF + 'hf_20261007_055038_565f18ac-e66b-4ddd-acb6-3364b279b04e.mp4', head: 0, speed: { from: 2.8, rate: 1.9 } };
   }
 
   /* Fallback source, used only when media/ is empty.
@@ -1605,8 +1602,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
        size it renders at on a 2x screen. */
   };
   let useFallback = false;
-  const blobs = {};                     // clips pulled into memory (phones)
-  const src = p => blobs[p] || (useFallback && FALLBACK[p]) || p;
+  const src = p => (useFallback && FALLBACK[p]) || p;
 
   // Seconds of crossfade over the idle's wrap. Must match .stage.looping in CSS.
   const XF = 0.34;
@@ -1707,21 +1703,16 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     ms ? setTimeout(settle, ms + 30) : settle();
   }
 
-  /* Starts playing straight away instead of waiting for `canplay`.
-
-     iOS will not fetch a video it has not been asked to play, so waiting for
-     readiness before calling play() waited forever: the wave never started
-     and the take only began once a tap forced the download. play() on a muted
-     inline video is allowed without a gesture, so ask first and raise the
-     layer once a frame is actually on its way. */
   function playOnce(el, clip, onEnd, fade){
     el.loop = false;
     el.onended = onEnd || null;
     el.src = src(clip.src);
-    if (clip.head) el.addEventListener('loadedmetadata', () => { try { el.currentTime = clip.head; } catch (e) {} }, { once: true });
-    el.addEventListener('playing', () => painted(el, () => show(el, fade)), { once: true });
-    const p = el.play();
-    if (p && p.catch) p.catch(() => { if (onEnd && clip === CLIPS.wave) onEnd(); });   // autoplay refused: skip the greeting
+    atTime(el, clip.head, () => {
+      const p = el.play(); if (p && p.catch) p.catch(() => {});
+      /* One more painted frame after play() starts, because the seek's frame
+         and the first playing frame are not always the same one. */
+      painted(el, () => show(el, fade));
+    });
   }
 
   /* ---- the idle loop ----
@@ -1798,15 +1789,6 @@ html.wall-in #wall{transform:translateY(0);transition:none}
      cache during the idle instead. */
   function warm(clip){
     if (!clip) return;
-    if (PORTRAIT) {
-      /* A phone will not read ahead on its own, so the take was fetched when the
-         button was pressed and the delay was the whole download. Pull it into
-         memory while the wave plays; if the host refuses a cross-origin read the
-         plain URL still works, just later. */
-      fetch(src(clip.src), { mode: 'cors' }).then(r => r.ok ? r.blob() : Promise.reject())
-        .then(b => { blobs[clip.src] = URL.createObjectURL(b); }).catch(() => {});
-      return;
-    }
     const v = document.createElement('video');
     v.preload = 'auto'; v.muted = true; v.src = src(clip.src);
     warm.held = v;
@@ -1824,8 +1806,6 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     document.querySelectorAll('.social img, .hello-social img').forEach(
       img => {
         const k = 'media/social-' + img.dataset.k + '.png';
-        /* Local file first, the CDN copy if it is not there: the probe above can
-           come back fine (a portrait poster on the CDN) while media/ is empty. */
         img.onerror = () => { img.onerror = null; if (FALLBACK[k]) img.src = FALLBACK[k]; };
         img.src = src(k);
       });
@@ -1853,8 +1833,6 @@ html.wall-in #wall{transform:translateY(0);transition:none}
        straight to it, skipping the greeting and the walk. */
     const deep = location.hash.slice(1);
     if (['about','experience','reel','cases','building','contact'].includes(deep)){
-      /* Consume the address: a refresh from here should start at the studio like
-         any other, not jump straight back into the page. */
       try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
       waveEnded = true;
       goTo(deep);
@@ -1885,7 +1863,6 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     if (!reduced) {
       if (CLIPS.wave) {
         playOnce(C, CLIPS.wave, waveOver, 220);
-        C.addEventListener('error', waveOver, { once: true });   // a wave that cannot load must not hold the button
         setTimeout(waveOver, 8000);
       } else { waveEnded = true; idleLoop(); }
       warm(CLIPS.walk);
@@ -2021,7 +1998,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     const sp = CLIPS.walk && CLIPS.walk.speed;
     const at = () => {
       const end = W.duration || 10;
-      if (sp && W.currentTime >= sp.from && W.playbackRate === 1) W.playbackRate = sp.rate;   // one step: ramping every frame stuttered
+      if (sp && W.currentTime >= sp.from && W.playbackRate === 1) W.playbackRate = sp.rate;
       if (!zoomed && W.currentTime >= end - ZOOM) {
         zoomed = true;
         W.classList.add('zoom');        // push the panel to full frame
@@ -2080,19 +2057,16 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   }
   heroShell.addEventListener('wheel', onWheel, { passive: false });
 
-  /* A finger is left alone: the arc fought the browser's own pull to refresh and
-     felt wrong on a phone. It stays a mouse and trackpad thing. */
-  const TOUCHY = matchMedia('(hover: none)').matches;
   let touchY = null;
-  if (!TOUCHY) heroShell.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; raw = 0; }, {passive:true});
-  if (!TOUCHY) heroShell.addEventListener('touchmove', e => {
+  heroShell.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; raw = 0; }, {passive:true});
+  heroShell.addEventListener('touchmove', e => {
     if (touchY === null || revealed || entered || SCRUB) return;
     const dy = touchY - e.touches[0].clientY;
     if (dy <= 0) return;
     raw = dy;
     setPull(damp(raw), false);
   }, {passive:true});
-  if (!TOUCHY) heroShell.addEventListener('touchend', () => { touchY = null; raw = 0; release(); }, {passive:true});
+  heroShell.addEventListener('touchend', () => { touchY = null; raw = 0; release(); }, {passive:true});
 
   /* ---- ?scroll: the take is driven by the scroll wheel ----
      A trial of the same intro without the call to action. Scrolling scrubs the
