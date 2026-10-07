@@ -1946,7 +1946,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
        until the wave ends removes the trigger; this removes the bug. */
     const W = (live !== C) ? C : ([A, B].find(v => v !== live) || C);
     take = W;
-    W.classList.add('fixc');            // pull the walk's skin and red back to the idle's
+    if (!PORTRAIT) W.classList.add('fixc');   // desktop only: the matrix was fitted to the landscape pair
 
     /* The click has to go somewhere even if the take does not play.
        playOnce waits for the clip to reach readyState 2 before it starts
@@ -2086,7 +2086,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       started = true; entered = true; looping = false;
       hero.classList.add('is-leaving');
       W = (live !== C) ? C : ([A, B].find(v => v !== live) || C);
-      take = W; ready = false; W.classList.add('fixc');
+      take = W; ready = false; if (!PORTRAIT) W.classList.add('fixc');
       W.loop = false; W.onended = null; W.src = blobUrl || src(CLIPS.walk.src); W.preload = 'auto';
       W.playbackRate = 1;
       const go = () => atTime(W, 0, () => {
