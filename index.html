@@ -144,7 +144,7 @@ body{
 
    The portrait half of this is interim until the 9:16 regeneration; that is
    the real fix, and it replaces the max-aspect half of this query. */
-@media (max-aspect-ratio:1/1),(min-aspect-ratio:2/1){
+@media (min-aspect-ratio:2/1){
   .stage video,.stage img{object-fit:contain;object-position:center center}
 }
 
@@ -216,6 +216,13 @@ body{
 .stage video.zoom{
   animation:pushin 1400ms cubic-bezier(.33,0,.2,1) forwards;
 }
+/* Portrait: the phone screen already sits dead centre at the end of the take,
+   so the push is a straight scale with nothing to re-centre. */
+@keyframes pushin-p{
+  from{transform:scale(1)}
+  to  {transform:scale(1.16)}
+}
+@media (max-aspect-ratio:1/1){ .stage video.zoom{animation-name:pushin-p} }
 
 /* Shown only when the clips cannot be fetched, so the layout still reads. */
 .stage-missing{
@@ -645,7 +652,7 @@ h1{
   -webkit-mask-image:linear-gradient(to bottom,#000 0,#000 18%,transparent 100%);
           mask-image:linear-gradient(to bottom,#000 0,#000 18%,transparent 100%);
 }
-@media (max-aspect-ratio:1/1),(min-aspect-ratio:2/1){ .u-flip{object-fit:contain;object-position:center center} }
+@media (min-aspect-ratio:2/1){ .u-flip{object-fit:contain;object-position:center center} }
 .underside svg{display:block;width:100%;height:100%;position:relative;z-index:1}
 .underside .fill{fill:var(--ink)}
 .underside text{
@@ -1546,7 +1553,23 @@ html.wall-in #wall{transform:translateY(0);transition:none}
      the browser was cover-cropping it at paint time. Cropping it in advance
      means the poster and the clips are the same shape before compositing, and
      measured against the original processed the same way it is +0.03 levels. */
-  const POSTER = 'media/hub.jpg';
+  let POSTER = 'media/hub.jpg';
+
+  /* ---- portrait set ----
+     A phone gets its own 9:16 shoot: the same still opens the page and closes
+     the wave, so there is no idle to loop and he simply rests on it. The take
+     is him pulling an iPhone out, swiping up as the camera pushes in, and
+     landing on the lit screen. From `speed.from` seconds on (once the phone is
+     out of the pocket) it plays faster. Served from the Higgsfield CDN until
+     the files are committed under media/. */
+  const PORTRAIT = matchMedia('(max-aspect-ratio:1/1)').matches;
+  if (PORTRAIT) {
+    const HF = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/';
+    POSTER = HF + 'hf_20261007_053730_e6fe7289-46ad-4cda-b68c-9a7c053dfb1f.png';
+    CLIPS.wave = { src: HF + 'hf_20261007_054120_fb75ec3d-3211-4db3-8218-575d167ab048.mp4', head: 0.067 };
+    CLIPS.idle = null;
+    CLIPS.walk = { src: HF + 'hf_20261007_055038_565f18ac-e66b-4ddd-acb6-3364b279b04e.mp4', head: 0, speed: { from: 3.2, rate: 1.6 } };
+  }
 
   /* Fallback source, used only when media/ is empty.
 
@@ -1731,6 +1754,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
 
   let looping = false;
   function idleLoop(){
+    if (!CLIPS.idle) return;            // portrait: rests on the last frame of the wave
     const pair = [A, B];
     const clip = CLIPS.idle;
     pair.forEach(v => { v.loop = false; v.onended = null; v.src = src(clip.src); });
@@ -1965,8 +1989,12 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     // Hand over during the clip's final stretch, by which point the monitor has
     // powered on inside the shot and the frame is mostly white.
     let zoomed = false, armed = false;
+    const sp = CLIPS.walk && CLIPS.walk.speed;
     const at = () => {
       const end = W.duration || 10;
+      if (sp && W.currentTime >= sp.from && W.playbackRate < sp.rate) {
+        W.playbackRate = Math.min(sp.rate, W.playbackRate + 0.04);   // ease up to speed
+      }
       if (!zoomed && W.currentTime >= end - ZOOM) {
         zoomed = true;
         W.classList.add('zoom');        // push the panel to full frame

@@ -2521,3 +2521,25 @@ the same dates in the same role, in a list whose entire job is to be read
 quickly. One row, "Polaris", with Osmosis Labs in the role line.
 
 Case blocks went from 16:10 to 21:9.
+
+## Portrait (9:16) set, October 2026
+
+Replaces the letterboxed landscape clips on phones. Wan 3.0, `enable_thinking`,
+`generate_audio:false`, 3s and 10s at 768x1344 (Wan ignores 1080p here). No
+idle loop: the wave ends back on the still, so the page rests on it.
+
+```
+start / rest frame  (closed-mouth smile, Nova asleep, one bike)  e6fe7289-46ad-4cda-b68c-9a7c053dfb1f
+wave, 3s            (teeth slightly showing mid-wave, Nova tail flick)  fb75ec3d-3211-4db3-8218-575d167ab048
+phone end frame     (iPhone screen, flat #f1f0ee)               62b23cad-deba-494e-83a6-31f09ed7475f
+phone take, 10s     (pocket -> iPhone, swipe up, push in)       565f18ac-e66b-4ddd-acb6-3364b279b04e
+```
+
+Wired in `index.html` as the `PORTRAIT` block next to `POSTER`. The take plays
+at 1x until `speed.from` (3.2s, once the phone is out of the pocket) and eases
+up to 1.6x; both numbers were guessed without seeing the clip, so tune them.
+The CSS push at the end is a straight 1.16 scale (`pushin-p`). Served from the
+Higgsfield CDN; commit the files under `media/` when they can be downloaded.
+Lessons: the desktop smile is a soft flat band of teeth, and a prompt that
+names the number of bikes ("exactly ONE") is what stops the portrait recompose
+inventing a second one.
