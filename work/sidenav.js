@@ -32,7 +32,7 @@
 .sn.open .sn-link:hover,.sn.open .sn-link:focus-visible{opacity:1;outline:0}
 .sn.open .sn-link.cur{opacity:1;font-weight:800}
 .sn::after{content:"";position:absolute;inset:-14px -16px -14px -14px}
-@media (max-width:760px){.sn{left:6px}.sn-bar{width:20px}.sn-link{font-size:14px}}
+@media (max-width:760px){.sn{display:none}}
 @media (prefers-reduced-motion:reduce){.sn,.sn-bg,.sn-link{transition:none}}
 `;
   const MINOR = 2;                      // quiet lines between two names

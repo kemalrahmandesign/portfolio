@@ -313,7 +313,7 @@ a{color:inherit}
 }
 
 /* The side rail is the menu now. */
-.topnav{display:none !important}
+@media (min-width:761px){.topnav{display:none !important}}
 
 /* A way back: to the work list on the main site, with the same wall drop. */
 .back{

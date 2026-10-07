@@ -768,9 +768,10 @@ h1{
 .tn-face::after{content:"";position:absolute;left:50%;top:50%;
   width:56px;height:56px;transform:translate(-50%,-50%)}
 .topnav{position:fixed}
-/* The side rail is the menu now. The old bar is kept in the markup because the
-   page script drives it, but it is never shown. */
-.topnav{display:none !important}
+/* On a desktop the side rail is the menu and the bar is never shown (it stays in
+   the markup because the page script drives it). A phone has no room for a rail,
+   so it keeps the bar and its tap-open list. */
+@media (min-width:761px){.topnav{display:none !important}}
 .tn-face{position:relative}
 
 /* Hover flips each letter over, one after the next from the left, the way a
