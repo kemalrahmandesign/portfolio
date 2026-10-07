@@ -555,6 +555,8 @@ h1{
 /* While the take plays, or a press is waiting for the wave to finish, the
    props are inert and their writing and arrows are gone. */
 .hero.is-leaving .prop-hit,.hero.armed .prop-hit{pointer-events:none}
+/* No props to poke on a phone: a tap would leave a label stuck on screen. */
+@media (hover:none){.prop-hit{pointer-events:none}.prop-tag,.prop-curls{display:none}}
 .hero.is-leaving .prop-tag,.hero.is-leaving .prop-curls,
 .hero.armed .prop-tag,.hero.armed .prop-curls{opacity:0;transition:opacity .15s ease}
 
@@ -1564,11 +1566,14 @@ html.wall-in #wall{transform:translateY(0);transition:none}
      the files are committed under media/. */
   const PORTRAIT = matchMedia('(max-aspect-ratio:1/1)').matches;
   if (PORTRAIT) {
-    const HF = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/';
-    POSTER = HF + 'hf_20261007_053730_e6fe7289-46ad-4cda-b68c-9a7c053dfb1f.png';
-    CLIPS.wave = { src: HF + 'hf_20261007_054120_fb75ec3d-3211-4db3-8218-575d167ab048.mp4', head: 0.067 };
+    /* Imported into Higgsfield's upload storage: the generation-result links
+       (d8j0ntlcm91z4) are not reliable for hotlinking, the upload ones are what
+       the landscape clips have always played from. */
+    const HF = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FE0Xjh16Sot9aoCPbOwO7vYemS/';
+    POSTER = HF + '63f87b84-05e2-4248-b347-0b2f34c87b86.png';
+    CLIPS.wave = { src: HF + '5261f9f0-7130-42da-8d46-a7b3d1f59438.mp4', head: 0.067 };
     CLIPS.idle = null;
-    CLIPS.walk = { src: HF + 'hf_20261007_055038_565f18ac-e66b-4ddd-acb6-3364b279b04e.mp4', head: 0, speed: { from: 3.2, rate: 1.6 } };
+    CLIPS.walk = { src: HF + '25ed34e2-ec2a-48a0-9aea-9fbbfa9c3485.mp4', head: 0, speed: { from: 3.2, rate: 1.6 } };
   }
 
   /* Fallback source, used only when media/ is empty.
@@ -1860,6 +1865,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     if (!reduced) {
       if (CLIPS.wave) {
         playOnce(C, CLIPS.wave, waveOver, 220);
+        C.addEventListener('error', waveOver, { once: true });   // a wave that cannot load must not hold the button
         setTimeout(waveOver, 8000);
       } else { waveEnded = true; idleLoop(); }
       warm(CLIPS.walk);
