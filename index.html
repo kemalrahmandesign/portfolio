@@ -1569,7 +1569,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     POSTER = HF + 'hf_20261007_053730_e6fe7289-46ad-4cda-b68c-9a7c053dfb1f.png';
     CLIPS.wave = { src: HF + 'hf_20261007_054120_fb75ec3d-3211-4db3-8218-575d167ab048.mp4', head: 0.067 };
     CLIPS.idle = null;
-    CLIPS.walk = { src: HF + 'hf_20261007_055038_565f18ac-e66b-4ddd-acb6-3364b279b04e.mp4', head: 0, speed: { from: 2.8, rate: 1.9 } };
+    CLIPS.walk = { src: HF + 'hf_20261007_055038_565f18ac-e66b-4ddd-acb6-3364b279b04e.mp4', head: 0, rate: 1.3 };
   }
 
   /* Fallback source, used only when media/ is empty.
@@ -1602,7 +1602,8 @@ html.wall-in #wall{transform:translateY(0);transition:none}
        size it renders at on a 2x screen. */
   };
   let useFallback = false;
-  const src = p => (useFallback && FALLBACK[p]) || p;
+  const blobs = {};                     // clips pulled into memory (phones)
+  const src = p => blobs[p] || (useFallback && FALLBACK[p]) || p;
 
   // Seconds of crossfade over the idle's wrap. Must match .stage.looping in CSS.
   const XF = 0.34;
@@ -1703,16 +1704,21 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     ms ? setTimeout(settle, ms + 30) : settle();
   }
 
+  /* Starts playing straight away instead of waiting for `canplay`.
+
+     iOS will not fetch a video it has not been asked to play, so waiting for
+     readiness before calling play() waited forever: the wave never started
+     and the take only began once a tap forced the download. play() on a muted
+     inline video is allowed without a gesture, so ask first and raise the
+     layer once a frame is actually on its way. */
   function playOnce(el, clip, onEnd, fade){
     el.loop = false;
     el.onended = onEnd || null;
     el.src = src(clip.src);
-    atTime(el, clip.head, () => {
-      const p = el.play(); if (p && p.catch) p.catch(() => {});
-      /* One more painted frame after play() starts, because the seek's frame
-         and the first playing frame are not always the same one. */
-      painted(el, () => show(el, fade));
-    });
+    if (clip.head) el.addEventListener('loadedmetadata', () => { try { el.currentTime = clip.head; } catch (e) {} }, { once: true });
+    el.addEventListener('playing', () => painted(el, () => show(el, fade)), { once: true });
+    const p = el.play();
+    if (p && p.catch) p.catch(() => { if (onEnd && clip === CLIPS.wave) onEnd(); });   // autoplay refused: skip the greeting
   }
 
   /* ---- the idle loop ----
@@ -1789,6 +1795,15 @@ html.wall-in #wall{transform:translateY(0);transition:none}
      cache during the idle instead. */
   function warm(clip){
     if (!clip) return;
+    if (PORTRAIT) {
+      /* A phone will not read ahead on its own, so the take was fetched when the
+         button was pressed and the delay was the whole download. Pull it into
+         memory while the wave plays; if the host refuses a cross-origin read the
+         plain URL still works, just later. */
+      fetch(src(clip.src), { mode: 'cors' }).then(r => r.ok ? r.blob() : Promise.reject())
+        .then(b => { blobs[clip.src] = URL.createObjectURL(b); }).catch(() => {});
+      return;
+    }
     const v = document.createElement('video');
     v.preload = 'auto'; v.muted = true; v.src = src(clip.src);
     warm.held = v;
@@ -1982,6 +1997,9 @@ html.wall-in #wall{transform:translateY(0);transition:none}
        not a level difference, so no filter removes it and only the blend can
        cover it. The first half second of the clip is him turning away, which is
        the cheapest half second in the take to spend on a dissolve. */
+    /* A phone plays the whole take a little faster, set once before it starts: changing
+       the rate part-way made iOS restart the clip. */
+    if (CLIPS.walk.rate) { W.defaultPlaybackRate = CLIPS.walk.rate; W.playbackRate = CLIPS.walk.rate; }
     playOnce(W, CLIPS.walk, reveal, WALK_XF);
     /* The idle loop's last element is still playing when the press lands,
        and it keeps decoding under the walk for the rest of its ten seconds.
@@ -1995,10 +2013,8 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     // Hand over during the clip's final stretch, by which point the monitor has
     // powered on inside the shot and the frame is mostly white.
     let zoomed = false, armed = false;
-    const sp = CLIPS.walk && CLIPS.walk.speed;
     const at = () => {
       const end = W.duration || 10;
-      if (sp && W.currentTime >= sp.from && W.playbackRate === 1) W.playbackRate = sp.rate;
       if (!zoomed && W.currentTime >= end - ZOOM) {
         zoomed = true;
         W.classList.add('zoom');        // push the panel to full frame
@@ -2648,7 +2664,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       /* Every layer goes back to how it started. The take's playbackRate in
          particular: left at 4 it made the whole sequence run at 4x the second
          time through, and `skip.disabled` left the button dead. */
-      [A, B, C].forEach(v => { v.classList.remove('zoom', 'fixc'); v.pause(); v.playbackRate = 1; });
+      [A, B, C].forEach(v => { v.classList.remove('zoom', 'fixc'); v.pause(); v.defaultPlaybackRate = 1; v.playbackRate = 1; });
       take = null;
       skip.disabled = false;
       skip.classList.remove('ffwd');
