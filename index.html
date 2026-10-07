@@ -217,10 +217,10 @@ body{
   animation:pushin 1400ms cubic-bezier(.33,0,.2,1) forwards;
 }
 /* Portrait: the phone screen already sits dead centre at the end of the take,
-   so the push is a straight scale with nothing to re-centre. */
+   so the push is a straight scale with nothing to re-centre. 1.75 takes the screen past the frame edges, bezel and rounded corners included, so the last frame is only screen. */
 @keyframes pushin-p{
   from{transform:scale(1)}
-  to  {transform:scale(1.16)}
+  to  {transform:scale(1.75)}
 }
 @media (max-aspect-ratio:1/1){ .stage video.zoom{animation-name:pushin-p} }
 
