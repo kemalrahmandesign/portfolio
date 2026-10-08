@@ -1925,6 +1925,10 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   function reveal(){
     if (revealed) return;
     revealed = true;
+    /* The studio clips are finished with. A phone has a small pool of video decoders and the
+       portrait take is 1080x1920, so leaving all three clips loaded under the page starved the
+       reel further down. Release them; the studio reloads its clips when it is shown again. */
+    [A, B, C].forEach(v => { v.pause(); v.removeAttribute('src'); v.load(); });
     work.hidden = false;
     /* Two frames: one for the element to leave `hidden` and be laid out, one
        for the starting styles to be committed. Adding the class in the same
@@ -2825,9 +2829,16 @@ html.wall-in #wall{transform:translateY(0);transition:none}
      It loops seamlessly, so pausing and resuming never shows a seam. */
   const reel = document.getElementById('reelVideo');
   if (reel && !reduced){
+    let onScreen = false;
+    const playReel = () => { if (onScreen && reel.paused) { const p = reel.play(); if (p && p.catch) p.catch(() => {}); } };
     new IntersectionObserver(es => es.forEach(e => {
-      if (e.isIntersecting) reel.play().catch(() => {}); else reel.pause();
+      onScreen = e.isIntersecting;
+      if (onScreen) playReel(); else reel.pause();
     }), { threshold: 0.25 }).observe(reel);
+    // A phone can refuse the first play or be slow to load: try again as data arrives, and on the first touch.
+    ['loadeddata', 'canplay', 'stalled', 'suspend'].forEach(ev => reel.addEventListener(ev, playReel));
+    addEventListener('touchstart', playReel, { passive: true });
+    addEventListener('scroll', playReel, { passive: true });
   }
 
 
