@@ -406,7 +406,7 @@ h1{
 .cta:active{scale:.97;rotate:0deg;translate:0 0}
 /* The arrow shoots out of its circle and drops back in from the other side. */
 .cta .arw{overflow:hidden}
-.cta:hover .arw svg,.cta:focus-visible .arw svg{animation:shoot .7s cubic-bezier(.5,0,.2,1) infinite}
+.cta:hover .arw svg,.cta:focus-visible .arw svg{animation:shoot .7s cubic-bezier(.5,0,.2,1) 1}
 @keyframes shoot{
   0%{transform:translateX(0)} 40%{transform:translateX(170%)}
   41%{transform:translateX(-170%)} 80%,100%{transform:translateX(0)}
