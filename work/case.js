@@ -17,11 +17,27 @@
   }), { threshold: 0.12 });
   document.querySelectorAll('.rise').forEach(el => still ? el.classList.add('in') : io.observe(el));
 
-  /* Films in the storyboard play while on screen and rest otherwise. */
+  /* Portrait phones get the portrait cut of the opening film. Swapped before
+     anything below reads the source, so the scrub loads the right file. */
+  document.querySelectorAll('video[data-portrait]').forEach(v => {
+    if (matchMedia('(max-aspect-ratio: 1/1)').matches){
+      v.src = v.dataset.portrait;
+      if (v.dataset.portraitPoster) v.poster = v.dataset.portraitPoster;
+    }
+  });
+
+  /* Films in the storyboard play while on screen and rest otherwise. A phone
+     that refused the autoplay (iOS Low Power Mode refuses them all) lets the
+     end of a tap start one, so try again then, and as data lands. */
   document.querySelectorAll('video[data-auto]').forEach(v => {
+    let seen = false;
+    const go = () => { if (seen && !still && v.paused) v.play().catch(() => {}); };
     new IntersectionObserver(es => es.forEach(e => {
-      if (e.isIntersecting && !still) v.play().catch(() => {}); else v.pause();
+      seen = e.isIntersecting;
+      if (seen) go(); else v.pause();
     }), { threshold: 0.25 }).observe(v);
+    ['touchend', 'click'].forEach(ev => addEventListener(ev, go, { passive: true }));
+    ['loadeddata', 'canplay'].forEach(ev => v.addEventListener(ev, go));
   });
 
   /* Scroll as the playhead, the way the Loco site does it: never seek while
@@ -43,15 +59,17 @@
     addEventListener('scroll', read, { passive: true }); addEventListener('resize', read);
     v.addEventListener('loadedmetadata', read);
     read(); requestAnimationFrame(tick);
+    /* iOS does not download a video that has never been played, whatever
+       preload says, so on a phone a scrubbed film had no duration and never
+       moved off its poster; and when it did load, every seek was a range
+       request over the network. Pull the file into memory and scrub that. */
+    /* The markup says preload="none" so the element does not fetch the same
+       file alongside; if the fetch fails it streams as before. */
+    fetch(v.src).then(r => r.ok ? r.blob() : Promise.reject())
+      .then(b => { v.src = URL.createObjectURL(b); })
+      .catch(() => { v.preload = 'auto'; v.load(); });
   });
 
-  /* Portrait phones get the portrait cut of the opening film. */
-  document.querySelectorAll('video[data-portrait]').forEach(v => {
-    if (matchMedia('(max-aspect-ratio: 1/1)').matches){
-      v.src = v.dataset.portrait;
-      if (v.dataset.portraitPoster) v.poster = v.dataset.portraitPoster;
-    }
-  });
 
   /* ---- the menu: the same as the main site ----
      A pointer opens the pills on hover and the face goes home; a finger taps

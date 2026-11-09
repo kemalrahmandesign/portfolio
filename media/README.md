@@ -199,5 +199,16 @@ Playwright Chromium the tests run in. The poster is the reel's title card
 ("Selected work" over the Vanta window) and is all a visitor who asked for
 reduced motion sees.
 
+`reel-720.mp4` is the same reel for screens up to 900px wide (picked by the
+`<source media>` in the markup): scaled to 1280x720 with lanczos, still 60fps,
+CRF 22, `+faststart` (3.9 MB, SSIM 0.991 against the scaled original). A
+phone's frame is narrower than 1280 device pixels, so it shows nothing less,
+and it is under half the download. Rebuild it from `reel.mp4` if the reel
+changes:
+
+```bash
+ffmpeg -i media/reel.mp4 -vf scale=1280:720:flags=lanczos -c:v libx264 -preset slow -crf 22 -profile:v high -level 4.2 -pix_fmt yuv420p -g 120 -an -movflags +faststart media/reel-720.mp4
+```
+
 It plays only while the frame is on screen and pauses when it leaves. The edit,
 the shot list and how to rebuild it are in `montage/README.md`.

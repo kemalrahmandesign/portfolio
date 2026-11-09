@@ -1414,6 +1414,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
       <div class="montage-frame" id="montageFrame">
         <video id="reelVideo" muted loop playsinline preload="metadata" poster="media/reel-poster.jpg"
                aria-label="Selected work, 2024 to 2026: Vanta, Loco Exotics, Flowerbx, Osmosis, G-Force and Polaris">
+          <source src="media/reel-720.mp4" type="video/mp4" media="(max-width: 900px)">
           <source src="media/reel.mp4" type="video/mp4">
           <source src="media/reel.webm" type="video/webm">
         </video>
@@ -1799,14 +1800,20 @@ html.wall-in #wall{transform:translateY(0);transition:none}
      Setting src at click time means a cold fetch of a multi-megabyte file at
      the exact moment the user is watching for a reaction. Pull it into the
      cache during the idle instead. */
+  /* Called once the greeting is actually on screen (or has failed), never at
+     boot: started alongside the wave, a multi-megabyte take shares the
+     connection with it and the wave starts that much later. */
   function warm(clip){
-    if (!clip) return;
+    if (!clip || warm.done) return;
+    warm.done = true;
     if (PORTRAIT) {
       /* A phone will not read ahead on its own, so the take was fetched when the
          button was pressed and the delay was the whole download. Pull it into
          memory while the wave plays; if the host refuses a cross-origin read the
          plain URL still works, just later. */
-      fetch(src(clip.src), { mode: 'cors' }).then(r => r.ok ? r.blob() : Promise.reject())
+      const ac = window.AbortController ? new AbortController() : null;
+      warm.abort = () => { if (ac && !blobs[clip.src]) ac.abort(); };
+      fetch(src(clip.src), { mode: 'cors', signal: ac ? ac.signal : undefined }).then(r => r.ok ? r.blob() : Promise.reject())
         .then(b => { blobs[clip.src] = URL.createObjectURL(b); }).catch(() => {});
       return;
     }
@@ -1883,19 +1890,31 @@ html.wall-in #wall{transform:translateY(0);transition:none}
        stalls or 404s must not swallow a press. */
     if (!reduced) {
       if (CLIPS.wave) {
+        C.addEventListener('playing', () => warm(CLIPS.walk), { once: true });
         playOnce(C, CLIPS.wave, waveOver, 220);
         setTimeout(waveOver, 8000);
-      } else { waveEnded = true; idleLoop(); }
-      warm(CLIPS.walk);
+      } else { waveEnded = true; idleLoop(); warm(CLIPS.walk); }
     } else {
       waveEnded = true;
     }
   }
 
-  const probe = new Image();
-  probe.onload  = boot;
-  probe.onerror = () => { useFallback = true; boot(); };
-  probe.src = POSTER;
+  /* A phone's still is on the CDN, so there is no local copy to probe for, and
+     waiting on the probe meant waiting for the whole image: the headline and
+     the wave sat behind a full-size download on a phone connection. Boot at
+     once; the poster paints whenever it arrives. Not synchronously, though:
+     boot() reaches state declared further down this script and the motion
+     script after it, so it waits for the parser to finish, which is no wait
+     at all next to an image download. */
+  if (PORTRAIT) {
+    if (document.readyState === 'loading') addEventListener('DOMContentLoaded', boot, { once: true });
+    else setTimeout(boot);
+  } else {
+    const probe = new Image();
+    probe.onload  = boot;
+    probe.onerror = () => { useFallback = true; boot(); };
+    probe.src = POSTER;
+  }
 
   /* Set once the greeting is done, so enter() knows whether to run now or
      bank the press until it is. */
@@ -1906,6 +1925,7 @@ html.wall-in #wall{transform:translateY(0);transition:none}
   function waveOver(){
     if (waveEnded) return;
     waveEnded = true;
+    warm(CLIPS.walk);                 // a no-op unless the wave never started playing
     if (queued) enter();              // banked press: straight into the take
     else idleLoop();
   }
@@ -1989,16 +2009,40 @@ html.wall-in #wall{transform:translateY(0);transition:none}
 
        So: a load error, or four seconds without playback actually starting,
        falls through to the same instant cut the skip button uses. */
+    /* Four seconds with nothing arriving, though, not four seconds in total.
+       A phone streaming the take over a slow connection is still receiving
+       data at four seconds, and cutting it off there skipped the take for
+       exactly the visitors it was hardest to load for. While data keeps
+       coming it gets up to twelve. */
     let running = false, watchdog = 0;
-    const bail = () => {
-      if (running) return;
+    const t0 = Date.now();
+    let fed = t0;
+    const feed = () => { fed = Date.now(); };
+    const done = () => {
       running = true;
       clearTimeout(watchdog);
+      W.removeEventListener('progress', feed);
+      W.removeEventListener('loadeddata', feed);
+    };
+    const bail = () => {
+      if (running) return;
+      done();
       hardCut();
     };
-    W.addEventListener('playing', () => { running = true; clearTimeout(watchdog); }, { once: true });
+    W.addEventListener('progress', feed);
+    W.addEventListener('loadeddata', feed);
+    W.addEventListener('playing', done, { once: true });
     W.addEventListener('error', bail, { once: true });
-    watchdog = setTimeout(bail, 4000);
+    const check = () => {
+      if (running) return;
+      const now = Date.now();
+      if (now - fed > 4000 || now - t0 > 12000) bail();
+      else watchdog = setTimeout(check, 500);
+    };
+    watchdog = setTimeout(check, 4000);
+    /* A pre-download still in flight would share the connection with the
+       element that now needs the same file to play. Drop it. */
+    if (warm.abort) { warm.abort(); warm.abort = null; }
 
     /* 500ms, not the 320ms the other swaps use. The walk clip is a re-render of
        the original take, so it no longer opens on the hub frame as tightly: the
@@ -2837,7 +2881,10 @@ html.wall-in #wall{transform:translateY(0);transition:none}
     }), { threshold: 0.25 }).observe(reel);
     // A phone can refuse the first play or be slow to load: try again as data arrives, and on the first touch.
     ['loadeddata', 'canplay', 'stalled', 'suspend'].forEach(ev => reel.addEventListener(ev, playReel));
-    addEventListener('touchstart', playReel, { passive: true });
+    /* iOS only counts the end of a tap as a gesture, so touchstart and scroll
+       can never unlock a refused play (Low Power Mode refuses every autoplay);
+       touchend and click can. */
+    ['touchstart', 'touchend', 'click'].forEach(ev => addEventListener(ev, playReel, { passive: true }));
     addEventListener('scroll', playReel, { passive: true });
   }
 
@@ -2992,9 +3039,16 @@ html.wall-in #wall{transform:translateY(0);transition:none}
 
   /* The Loco card is a film; it plays only while it is on screen. */
   document.querySelectorAll('.case video').forEach(v => {
+    let seen = false;
+    const go = () => { if (seen && !still && v.paused) v.play().catch(() => {}); };
     new IntersectionObserver(es => es.forEach(e => {
-      if (e.isIntersecting && !still) v.play().catch(() => {}); else v.pause();
+      seen = e.isIntersecting;
+      if (seen) go(); else v.pause();
     }), { threshold: 0.2 }).observe(v);
+    /* A phone that refused the autoplay (iOS Low Power Mode refuses them all)
+       lets the end of a tap start it, so try again then, and as data lands. */
+    ['touchend', 'click'].forEach(ev => addEventListener(ev, go, { passive: true }));
+    ['loadeddata', 'canplay'].forEach(ev => v.addEventListener(ev, go));
   });
 
   /* ---- the contact form ----

@@ -59,7 +59,19 @@ library into the repo, as was done for three.js before it was removed).
 monospace labels top and bottom, a running timecode, a thin progress line. On
 the site: a quiet frame around each section that ticks as you scroll.
 
-**Session 4, late fixes (latest).** Polaris cover (case page and main card) is
+**Mobile video pass (latest).** Phones no longer wait for the whole portrait
+still to download before showing the headline or requesting the wave (the
+local-poster probe is skipped on portrait). The take's pre-download starts once
+the wave is playing, not alongside it, and is dropped if the button is pressed
+before it finishes, so the clip streams with the full connection. The take's
+watchdog now waits while data is still arriving (up to 12s) instead of cutting
+to the site at 4s. Reel and home case cards retry play on `touchend`/`click`
+(the only events iOS Low Power Mode accepts). Phones get `media/reel-720.mp4`
+(3.9MB vs 8.4MB). `media/osmosis/web/*.mp4` had their index at the end of the
+file and are remuxed with `+faststart`. Loco's two scroll-scrubbed films are
+pulled into memory (iOS never loaded them, and seeks were network requests).
+
+**Session 4, late fixes.** Polaris cover (case page and main card) is
 back to the old Framer Mac image (ajWSdaaK), per Kemal. The news block now uses
 the full-size home screen: the earlier tight crop of it was only 1080px wide and
 looked blurry. The only Framer hotlink left on the Polaris page is that cover.
